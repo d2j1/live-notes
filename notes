@@ -6098,4 +6098,10 @@ Inbound rules - this is used to configure from where we want to allow the traffi
 Outbound rule - This is used to configure where we will send the response. in this ip addresses are added to allow the traffic.
 
 
+https://github.com/arpitbbhayani/system-design-questions
+
+https://github.com/KingsGambitLab/Lecture_Notes/blob/master/Non-DSA%20Notes/HLD%20Notes/System%20Design%20-%20Microservices.md
+
+
+
 
