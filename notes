@@ -6031,4 +6031,40 @@ https://github.com/KingsGambitLab/Lecture_Notes/tree/master/Non-DSA%20Notes/HLD%
 System Design - Microservices 1 
 
 
+Flipkart - 
+
+Product service
+Order service
+Payment service
+Tracking Service
+Search Service
+Authentication Service
+
+
+
+Initially they started with monolith architecture. all above listed service were module in that project.
+
+Monolith was single point of failure whenever they have to deploy code and other code related things.
+
+and same code was running on all the machines. 
+
+as the traffic grew, they scaled by increasing machines but all the machines are running the same code.
+
+and it was very hard for all the teams to work together on this project and even small single deployment was restarting all the machines one by one.
+
+In monolith all the components are part of the same application.
+
+ Strangler fig pattern - in this monolith and microservices architecture is combined to create the projects.
+ 
+  Basically this pattern is used when converting very big monolith into microservices. They identify the less depedent modules and starts converting them to microservices.
+  
+  Most of the companies are using this pattern.
+  
+Monolith - 
+
+Pros - Single deployment, Services can talk to each other via a simple function call (low latency), 
+
+Cons - No tech stack flxibility, a small issue can bring the entire application down, huge deployment time, Understanding codebase is very hard, the traffic on one service might have more traffic than another service,  No selective scalling is possible,     
+
+00:57:34
 
