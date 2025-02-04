@@ -6064,7 +6064,38 @@ Monolith -
 
 Pros - Single deployment, Services can talk to each other via a simple function call (low latency), 
 
-Cons - No tech stack flxibility, a small issue can bring the entire application down, huge deployment time, Understanding codebase is very hard, the traffic on one service might have more traffic than another service,  No selective scalling is possible,     
+Cons - No tech stack flxibility, a small issue can bring the entire application down, huge deployment time, Understanding codebase is very hard, the traffic on one service might have more traffic than another service,  No selective scalling is possible, not cost effectice in most cases.
 
-00:57:34
+Microservices architecture - It says that divide the code base into smaller and individual services.
+
+In there will be multiple executable files and small independant codebases.
+
+most of the projects has microservice and monolith combined to achieve the efficiency.
+
+pros - Individual deployments are feasible, No cascading failures, tech stack, Selective scalling, Developer onboarding is relatively easy, less cascading failure.
+
+Cons -  Managing so many microservices can be very challenging, debugging can be difficult as request tracking is difficult, more latency due to communication between microservices via network, infracture cost can increase. 
+
+
+API gateway and Load balancer - 
+
+we can use api gateways provided by cloud providers we just have to configure these. 
+
+API Gateway - used to route the traffic to the correct microservice. it can also be used for rate limiting. and it can be used for authentication. 
+
+Mostly rate limiter are placed at the API gateway level .
+
+mostly Authentication is placed at API gateway level.
+
+ 
+In monolith architecture we can keep the load balancer and api gateway on the same machine and when there is a microservice architecture we need the seperate load balancer for each microservice as each microservice will have more than one machine in it.  
+
+
+Only api gateway is on public ip address and all the other microservices are on the private ip address, so inside microservices will only accept the traffic from API gateway.
+
+Inbound rules - this is used to configure from where we want to allow the traffic, in this ip addresses are added to allow the traffic. 
+
+Outbound rule - This is used to configure where we will send the response. in this ip addresses are added to allow the traffic.
+
+
 
