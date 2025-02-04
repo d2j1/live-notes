@@ -1,0 +1,172 @@
+
+
+
+https://event.webinarjam.com/go/live/125/5o3plbllaxgu59gr7snol3k
+
+How to Design API, How to develop database schema ,  how to efficiently use design patterns, desigining parking lot,  what is application server, load balancer, 
+
+Nosql vs RDBMS, message vs caching, how facebook is able to handle kernal storage, how amazon prime handles massive video content
+
+
+objective - skills
+update info everyday like name resume description
+
+
+
+
+Spring boot - 
+
+Other end points - 
+
+/auditevents - Audit events for your application 
+/beans - List of all beans registered in the spring application context
+/mappings - List of all @RequestMapping paths.
+
+there are many more actuator endpoints availabe check spring boot documentation.
+
+By default, only /health is exposed, to exposed all actuator endpoints over HTTP add below wild card property in application.properties file.
+
+#Use wilcard "*" to expose all endpoints.
+#Can also expose individual endpoints with a comma-delimited list 
+management.endpoints.web.exposure.include =*   // exposing all endppoints using wildcard
+
+ 
+Scaler notes - 
+
+
+working knowledge of Angular 
+Be passionate about the process
+
+helps u plan your journey 
+
+career advice - what is the blue print to start learning with scaler
+
+take advice on how to use scaler, TA, mentor , how to interact with instructors, How to build relations with the people in the batch 
+
+Take advice from metor on how to manage time, how to manage work and 
+
+
+Core Java notes - 
+ == - checks if elements on both sides of this operator equal or not 
+
+! - not operator - negates what ever the result is.
+
+striver sheets - 646 questions 
+
+120 - 150 days of coding
+
+5 question per day 
+
+DSA LLD and HLD
+
+
+
+
+Questions reading - 
+
+What is a covariant return type in Java? A covariant return type in Java refers to the ability of a subclass method to override a superclass method and return a more specific type than the return type of the overridden method.
+
+can we overirde static methods in java ?  
+NO, we can't override static methods since method overriding relies on dynamic binding at runtime, but static methods are bonded at compile time with static binding. As a result, we are unable to override static methods.
+
+
+
+---------------------------------------------
+
+TUF array - 
+
+when array is declared in main method then it is populated with garbage values.
+
+and if array is declared in class as instance variable then int array will be populated as 0 (zero). 
+
+we can declare an array of size 10^6 in main method and in class it is of size 10^7. 
+
+
+follow brute -> Better -> optimal solution approach.
+
+ First ask interviewer about the test cases then soplve question by brute force and then optimize it and again optimize it.
+
+
+
+
+
+
+Arrays.sort( object[] or int[] ) - this works for integer. It is uses TimSort internally. TC - nlogn and n2 in worse case. Quicksort is faster than Timsort and it sorts array inplace so its sppace complexity is O(1). 
+
+
+
+Q. left Rotate array by K places. 
+
+
+
+
+QlikView - 
+
+
+Developed dashboards by taking requirements from the clients.
+
+Developed 2 dashboards sinngle handedly. 
+
+solved 6 critical bugs.
+
+added KPI features to the existing dashboards.
+
+foxocon@protonmail.com	
+Zlib@123
+
+
+
+--------------------------------
+
+sliding window technique questions - 
+
+1️⃣ Maximum Sum Subarray of Size K: Given an array of integers and a positive integer 'k', find the maximum sum of any contiguous subarray of size 'k'.
+
+2️⃣ Longest Substring Without Repeating Characters: Given a string, find the length of the longest substring without repeating characters.
+
+3️⃣ Smallest Subarray with a Given Sum: Given an array of positive integers and a target sum, find the minimum length of a contiguous subarray whose sum is greater than or equal to the target sum.
+
+4️⃣ Fruit Into Baskets: Given an array of integers where each value represents the number of fruits in a tree, you are allowed to pick two different types of fruits. Find the maximum number of fruits you can obtain.
+
+5️⃣ Permutation in a String: Given two strings 's1' and 's2', check if 's2' contains any permutation of 's1'.
+
+6️⃣ Find All Anagrams in a String: Given a string 's' and a non-empty string 'p', find all the start indices of 'p's anagrams in 's'.
+
+7️⃣ Subarray Product Less Than K: Given an array of positive integers and a target integer 'k', find the number of contiguous subarrays whose product is less than 'k'.
+
+8️⃣ Minimum Window Substring: Given two strings 's' and 't', find the minimum window in 's' that contains all the characters from 't' in complexity O(n).
+
+9️⃣ Maximum Length of Repeated Subarray: Given two integer arrays 'nums1' and 'nums2', find the maximum length of a subarray that appears in both arrays.
+
+🔟 Trapping Rain Water: Given an elevation map, representing heights of bars, find the total amount of water that can be trapped.
+
+------------------------------------------
+
+chrome shortcuts - 
+
+ctrl + tab - to switch tabs
+ctrl + w to close tab 
+ctrl + shift + w - to close current window
+
+windows shortcuts - 
+
+minimize current window - alt + space + n 
+maximize current window - alt + space + x 
+
+-----------------
+
+vague - of uncertain, indefenite or unclear character or meaning.
+
+to butt in - (informal ) - To interrupt someone or something. 
+ex - He kept on butting in with silly comments.
+
+to throw around - To toss someone or something back and forth.
+
+
+cohort - a group of people with shared characteristic.
+
+delegate - a person sent or authorized to represent others, in particular an elected representative sent to a conference.
+
+
+Make sure app does perform the job that it should do. 
+then try to apply oo principles and then apply oo paterns and principles and then strive for maintainable, reusable design. 

@@ -1,0 +1,1421 @@
+
+
+
+1 Create a new directory and change into it.
+
+mkdir git_exercises
+
+2. Use the init command to create a Git repository in that directory.
+
+ git init
+
+Initialized empty Git repository in /home/dj/git_exercises/.git/
+
+this commmand initialize the new git repository
+
+
+3. Observe that there is now a .git directory.
+
+ls -a
+
+.git
+
+
+4. Create a README file.
+
+ touch README.md
+
+
+5. Look at the output of the status command; the README you created should appear as an
+untracked file.
+
+git status
+
+
+On branch master
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        README.md
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+
+6. Use the add command to add the new file to the staging area. Again, look at the output of
+the status command.
+
+git add README.md
+
+
+ git status
+
+
+On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+        new file:   README.md
+
+
+
+7. Now use the commit command to commit the contents of the staging area.
+
+git commit -m "added readme file"
+
+[master (root-commit) bcd31f7] added readme file
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 README.md
+
+
+8. Create a src directory and add a couple of files to it.
+
+mkdir src
+
+ cd src/
+
+ touch Solution.java
+
+touch Student.java
+
+
+9. Use the add command, but name the directory, not the individual files. Use the status
+command. See how both files have been staged. Commit them.
+
+cd ..
+
+ git add src
+
+ git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   src/Solution.java
+        new file:   src/Student.java
+
+
+
+git commit -m "solution and student classes added"
+
+[master 9f7c78c] solution and student classes added
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/Solution.java
+ create mode 100644 src/Student.java
+
+
+10. Make a change to one of the files. Use the diff command to view the details of the change.
+
+cd src/
+
+nano Solution.java
+
+
+git diff
+
+
+diff --git a/src/Solution.java b/src/Solution.java
+index e69de29..0218d0d 100644
+--- a/src/Solution.java
++++ b/src/Solution.java
+@@ -0,0 +1 @@
++This is the new changes in the file.
+
+
+
+11. Next, add the changed file, and notice how it moves to the staging area in the status
+output. Also observe that the diff command you did before using add now gives no output.
+Why not? What do you have to do to see a diff of the things in the staging area? (Hint:
+review the slides if you can’t remember.)
+
+git add Solution.java
+
+
+git status
+
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   Solution.java
+
+
+ git diff
+
+there is not output after git diff command because all the changes are staged and there is no different or new changes to show.
+
+we need to use the below command to get the difference between the staging and last commmit
+
+git diff --staged
+
+
+diff --git a/src/Solution.java b/src/Solution.java
+index e69de29..0218d0d 100644
+--- a/src/Solution.java
++++ b/src/Solution.java
+@@ -0,0 +1 @@
++This is the new changes in the file.
+
+
+
+
+12. Now – without committing – make another change to the same file you changed in step 10.
+Look at the status output, and the diff output. Notice how you can have both staged and
+unstaged changes, even when you’re talking about a single file. Observe the difference when
+you use the add command to stage the latest round of changes. Finally, commit them. You
+should now have started to get a feel for the staging area.
+
+ nano Solution.java
+
+ git status
+
+
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   Solution.java
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   Solution.java
+
+
+in above we can see that changes are staged and also few changes are not staged yet.
+
+
+git diff
+
+
+diff --git a/src/Solution.java b/src/Solution.java
+index 0218d0d..a089dda 100644
+--- a/src/Solution.java
++++ b/src/Solution.java
+@@ -1 +1,4 @@
++
+ This is the new changes in the file.
++
++This are the change of step 12.
+
+git add Solution.java
+
+
+git commit -m "Solution file updated"
+
+
+[master 2cf19cc] Solution file updated
+ 1 file changed, 4 insertions(+)
+
+
+
+13. Use the log command in order to see all of the commits you made so far.
+
+
+git log
+
+
+commit 2cf19cce2fc8edb9f227f83355c282e862ba6552 (HEAD -> master)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:46:56 2024 +0530
+
+    Solution file updated
+
+commit 9f7c78c9268969e5e6b93fe10ede365ecd8d3d27
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:35:12 2024 +0530
+
+    solution and student classes added
+
+commit bcd31f7ce025e7e9aa0eb96ab6fb90d900dac9c9
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:32:02 2024 +0530
+
+    added readme file
+
+
+14. Use the show command to look at an individual commit. How many characters of the
+commit identifier can you get away with typing at a minimum?
+
+git show bcd31f7ce025e7e9aa0eb96ab6fb90d900dac9c9
+commit bcd31f7ce025e7e9aa0eb96ab6fb90d900dac9c9
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:32:02 2024 +0530
+
+    added readme file
+
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..e69de29
+
+
+minimum of 4 characters of a commit hash are needed to get the information of the git commit 
+
+
+15. Make a couple more commits, at least one of which should add an extra file.
+
+
+
+touch oneMoreFile.java
+
+touch anotherFile.java
+
+git add .
+
+git commit -m "Another commit"
+
+[master 19ca4ca] Another commit
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/anotherFile.java
+ create mode 100644 src/oneMoreFile.java
+
+
+Stretch task - 
+
+1. Use the Git rm command to remove a file. Look at the status afterwards. Now commit the
+deletion.
+
+git rm anotherFile.java
+rm 'src/anotherFile.java'
+
+
+git status
+
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        deleted:    anotherFile.java
+
+
+
+2. Delete another file, but this time do not use Git to do it; e.g. if you are on Linux, just use the
+normal (non-Git) rm command; on Windows use del.
+
+rm -f oneMoreFile.java
+
+
+3. Look at the status. Compare it to the status output you had after using the Git built-in rm
+command. Is anything different? After this, commit the deletion.
+
+
+git status
+
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        deleted:    anotherFile.java
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    oneMoreFile.java
+
+
+the difference between the git rm and rm -f filename command is that git rm command automatically adds the changes to the staging area and our normal remove command does not add the changes to the stagging area automatically. we need to add those changes manually to the staging area.
+
+
+
+4. Use the Git mv command to move or rename a file; for example, rename README to
+README.txt. Look at the status. Commit the change.
+
+cd ..
+
+git mv README.md README.txt
+
+
+git status
+
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        renamed:    README.md -> README.txt
+        deleted:    src/anotherFile.java
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    src/oneMoreFile.java
+
+
+5. Now do another rename, but this time using the operating system’s command to do so. How
+does the status look? Will you get the right outcome if you were to commit at this point?
+(Answer: almost certainly not, so don’t. ) Work out how to get the status to show that it
+will not lose the file, and then commit. Did Git at any point work out that you had done a
+rename?
+
+
+mv README.txt README.md
+
+
+git status
+
+
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        renamed:    README.md -> README.txt
+        deleted:    src/anotherFile.java
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    README.txt
+        deleted:    src/oneMoreFile.java
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        README.md
+
+
+ git add README.md
+
+ git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        renamed:    src/anotherFile.java -> README.txt
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    README.txt
+        deleted:    src/oneMoreFile.java
+
+it is not able to figure out what happen with the file called README.txt
+
+
+
+6. Use git help log to find out how to get Git to display just the most recent 3 commits. Try
+it.
+
+
+git log -n 3
+
+commit 19ca4ca60ca861148a221bdfb99c4008f90de402 (HEAD -> master)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:52:47 2024 +0530
+
+    Another commit
+
+commit 2cf19cce2fc8edb9f227f83355c282e862ba6552
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:46:56 2024 +0530
+
+    Solution file updated
+
+commit 9f7c78c9268969e5e6b93fe10ede365ecd8d3d27
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:35:12 2024 +0530
+
+    solution and student classes added
+
+
+
+7. If you don’t remember, look back in the slides to see what the --stat option did on the
+diff command. Find out if this also works with the show command. How about the log
+command?
+
+
+ git log --stat
+
+
+commit 19ca4ca60ca861148a221bdfb99c4008f90de402 (HEAD -> master)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:52:47 2024 +0530
+
+    Another commit
+
+ src/anotherFile.java | 0
+ src/oneMoreFile.java | 0
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+
+commit 2cf19cce2fc8edb9f227f83355c282e862ba6552
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:46:56 2024 +0530
+
+    Solution file updated
+
+ src/Solution.java | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 9f7c78c9268969e5e6b93fe10ede365ecd8d3d27
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:35:12 2024 +0530
+
+    solution and student classes added
+
+ src/Solution.java | 0
+ src/Student.java  | 0
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+
+commit bcd31f7ce025e7e9aa0eb96ab6fb90d900dac9c9
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:32:02 2024 +0530
+
+    added readme file
+
+ README.md | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+
+
+it is showing how many files changed and other statistical information.
+
+8. Imagine you want to see a diff that summarizes all that happened between two commit
+identifiers. Use the diff command, specifying two commit identifiers joined by two dots
+(that is, something like abc123..def456). Check the output is what you expect.
+
+
+
+ git diff 9f7c..19ca
+
+
+diff --git a/src/Solution.java b/src/Solution.java
+index e69de29..a089dda 100644
+--- a/src/Solution.java
++++ b/src/Solution.java
+@@ -0,0 +1,4 @@
++
++This is the new changes in the file.
++
++This are the change of step 12.
+diff --git a/src/anotherFile.java b/src/anotherFile.java
+new file mode 100644
+index 0000000..e69de29
+diff --git a/src/oneMoreFile.java b/src/oneMoreFile.java
+new file mode 100644
+index 0000000..e69de29
+
+
+git diff --stat 9f7c..19ca
+
+
+ src/Solution.java    | 4 ++++
+ src/anotherFile.java | 0
+ src/oneMoreFile.java | 0
+ 3 files changed, 4 insertions(+)
+
+
+
+
+Exercise 2
+
+Main Task
+
+1. Run the status command. Notice how it tells you what branch you are in.
+
+git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        renamed:    src/anotherFile.java -> README.txt
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    README.txt
+        deleted:    src/oneMoreFile.java
+
+on the first line itself it tells that you are on master branch.
+
+2. Use the branch command to create a new branch.
+
+git branch new_branch
+
+
+3. Use the checkout command to switch to it.
+
+git checkout new_branch
+D       src/anotherFile.java
+D       src/oneMoreFile.java
+Switched to branch 'new_branch'
+
+
+4. Make a couple of commits in the branch – perhaps adding a new file and/or editing existing
+ones.
+
+
+git commit -m "New changes"
+
+
+[new_branch ae266f4] New changes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ rename src/anotherFile.java => README.txt (100%)
+
+
+touch newFileForBranching.java
+
+ git add newFileForBranching.java
+
+git commit -m "second commit for branching"
+
+[new_branch 70e0651] second commit for branching
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/newFileForBranching.java
+
+
+5. Use the log command to see the latest commits. The two you just made should be at the
+top of the list.
+
+git log
+commit 70e0651f373b1827ac599fb59905439b150a11fb (HEAD -> new_branch)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 17:16:54 2024 +0530
+
+    second commit for branching
+
+commit ae266f4b196e93ed2bdc31b64c2354fb5e2483d9
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 17:15:10 2024 +0530
+
+    New changes
+
+commit 19ca4ca60ca861148a221bdfb99c4008f90de402 (master)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:52:47 2024 +0530
+
+    Another commit
+
+
+
+6. Use the checkout command to switch back to the master branch. Run log again. Notice
+your commits don’t show up now. Check the files also – they should have their original
+contents.
+
+git checkout master
+D       src/oneMoreFile.java
+Switched to branch 'master'
+
+
+ git log
+commit 19ca4ca60ca861148a221bdfb99c4008f90de402 (HEAD -> master)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:52:47 2024 +0530
+
+    Another commit
+
+commit 2cf19cce2fc8edb9f227f83355c282e862ba6552
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:46:56 2024 +0530
+
+    Solution file updated
+
+commit 9f7c78c9268969e5e6b93fe10ede365ecd8d3d27
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:35:12 2024 +0530
+
+    solution and student classes added
+
+commit bcd31f7ce025e7e9aa0eb96ab6fb90d900dac9c9
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 16:32:02 2024 +0530
+
+    added readme file
+
+ls
+Solution.java  Student.java  anotherFile.java
+
+no new changes are visible here.
+
+
+7. Use the checkout command to switch back to your branch. Use gitk to take a look at the
+commit graph; notice it’s linear.
+
+
+git checkout new_branch
+
+D       src/oneMoreFile.java
+Switched to branch 'new_branch'
+
+
+gitk 
+
+
+I can see the graph, its linear.
+
+
+8. Now checkout the master branch again. Use the merge command to merge your branch in
+to it. Look for information about it having been a fast-forward merge. Look at git log, and
+see that there is no merge commit. Take a look in gitk and see how the DAG is linear.
+
+
+git merge new_branch
+Updating 19ca4ca..70e0651
+Fast-forward
+ src/anotherFile.java => README.txt | 0
+ src/newFileForBranching.java       | 0
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+ rename src/anotherFile.java => README.txt (100%)
+ create mode 100644 src/newFileForBranching.java
+
+
+git log
+commit 70e0651f373b1827ac599fb59905439b150a11fb (HEAD -> master, new_branch)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 17:16:54 2024 +0530
+
+    second commit for branching
+
+commit ae266f4b196e93ed2bdc31b64c2354fb5e2483d9
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 17:15:10 2024 +0530
+
+    New changes
+
+
+there is no merge commit for this.
+
+gitk
+
+
+
+9. Switch back to your branch. Make a couple more commits.
+
+git checkout new_branch
+
+D       src/oneMoreFile.java
+Switched to branch 'new_branch'
+
+ touch newFile1.java
+
+ git add newFile1.java
+
+git commit -m "new file added"
+[new_branch 4a25e01] new file added
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/newFile1.java
+
+ touch newFile2.java
+
+ git add newFile2.java
+
+git commit -m "ANother new file added"
+
+[new_branch 99539b5] ANother new file added
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/newFile2.java
+
+ touch newFile3.java
+
+ git add newFile3.java
+
+ git commit -m "Third new file added"
+
+[new_branch 32c57a0] Third new file added
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/newFile3.java
+
+
+
+
+10. Switch back to master. Make a commit there, which should edit a different file from the
+ones you touched in your branch – to be sure there is no conflict.
+
+ git checkout master
+
+D       src/oneMoreFile.java
+Switched to branch 'master'
+
+
+touch fileFromMaster.java
+
+git add fileFromMaster.java
+
+git commit -m "new file from master"
+
+[master 299c4b4] new file from master
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/fileFromMaster.java
+
+
+
+11. Now merge your branch again. (Aside: you don’t need to do anything to inform Git that you
+only want to merge things added since your previous merge. Due to the way Git works, that
+kind of issue simply does not come up, unlike in early versions of Subversion.)
+
+
+ git merge new_branch
+
+Merge made by the 'ort' strategy.
+ src/newFile1.java | 0
+ src/newFile2.java | 0
+ src/newFile3.java | 0
+ 3 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/newFile1.java
+ create mode 100644 src/newFile2.java
+ create mode 100644 src/newFile3.java
+
+
+
+12. Look at git log. Notice that there is a merge commit. Also look in gitk. Notice the DAG
+now shows how things forked, and then were joined up again by a merge commit.
+
+
+ git log
+commit a2ba5912301ef75d8d541cd25f22cbbc4bfb05f1 (HEAD -> master)
+Merge: 299c4b4 32c57a0
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 17:35:11 2024 +0530
+
+    this is important merge.
+    Merge branch 'new_branch'
+
+commit 299c4b4f032524fdbeb5f96370c8a9c7ccd86729
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 17:32:17 2024 +0530
+
+    new file from master
+
+commit 32c57a0821562c5d4f368df4ddf1a126fd43a557 (new_branch)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 17:30:22 2024 +0530
+
+    Third new file added
+
+
+gitk - 
+
+
+I can see the graph shows two branches merged in main or master.
+
+
+
+Stretch Task
+
+
+1. Once again, checkout your branch. Make a couple of commits.
+
+
+git checkout new_branch
+
+touch newFile4.java
+
+
+git add newFile4.java
+
+git commit -m "New file 4 added"
+
+[new_branch 81a2bc4] New file 4 added
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/newFile4.java
+
+
+touch newFile5.java
+
+git add newFile5.java
+
+git commit -m "new file 5 commit"
+
+[new_branch f6b319e] new file 5 commit
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 src/newFile5.java
+
+
+nano newFile1.java
+
+git add newFile1.java
+
+git commit -m "new file 1 changed"
+
+
+[new_branch 1fc5d6f] new file 1 changed
+ 1 file changed, 1 insertion(+)
+
+
+2. Return to your master branch. Make a commit there that changes the exact same line, or
+lines, as commits in your branch did.
+
+
+ git checkout master
+
+D       src/oneMoreFile.java
+Switched to branch 'master'
+
+nano newFile1.java
+
+git add  newFile1.java
+
+ git commit -m "new file 1 updated in master branch"
+
+[master eb811d4] new file 1 updated in master branch
+ 1 file changed, 1 insertion(+)
+
+
+3. Now try to merge your branch. You should get a conflict.
+
+ git merge new_branch
+
+Auto-merging src/newFile1.java
+CONFLICT (content): Merge conflict in src/newFile1.java
+Automatic merge failed; fix conflicts and then commit the result.
+
+
+4. Open the file(s) that is in conflict. Search for the conflict marker. Edit the file to remove the
+conflict markers and resolve the conflict.
+
+nano newFile1.java
+
+
+5. Now try to commit. Notice that Git will not allow you to do this when you still have
+potentially unresolved conflicts. Look at the output of status too.
+
+git merge new_branch
+error: Merging is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+ git status
+On branch master
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+        new file:   newFile4.java
+        new file:   newFile5.java
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+        both modified:   newFile1.java
+
+
+
+
+6. Use the add command to add the files that you have resolved conflicts in to the staging area. Then use commit to commit the merge commit.
+
+git add newFile1.java
+
+ git commit -m "Merge conflict solved"
+
+[master 4b5ef47] Merge conflict solved
+
+
+
+7. Take a look at git log and gitk, and make sure things are as you expected.
+
+git log
+commit 4b5ef47d1042a01eeba5e783c70dbfba5d6fa466 (HEAD -> master)
+Merge: eb811d4 1fc5d6f
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 17:49:31 2024 +0530
+
+    Merge conflict solved
+
+commit eb811d4d5bf8f55fd14f0cf4d3130b1fbb526ef4
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 17:43:39 2024 +0530
+
+    new file 1 updated in master branch
+
+yes branches are merged as expected.
+
+8. If time allows, you may wish to...
+
+ Delete everything but your .git directory, then do a checkout command, to prove
+to yourself that this really will restore all of you current working copy.
+
+
+cd ..
+
+rm -d src -r
+
+ls
+README.md  README.txt
+
+rm -f README.md README.txt
+
+
+ls -a
+.  ..  .git
+
+
+ git checkout .
+
+
+cd src
+
+ ls
+Solution.java  fileFromMaster.java  newFile2.java  newFile4.java  newFileForBranching.java
+Student.java   newFile1.java        newFile3.java  newFile5.java  oneMoreFile.java
+
+
+changes are restored as expected.
+
+
+
+
+ Create a situation where one branch has changed a file, but the other branch has
+deleted it. What happens when you try to merge? How will you resolve it?
+
+ git checkout new_branch
+
+Previous HEAD position was 4b5ef47 Merge conflict solved
+Switched to branch 'new_branch'
+
+ nano newFile1.java
+
+git add newFile1.java
+
+git commit -m "new file merge updated"
+
+[new_branch c98cb46] new file merge updated
+ 1 file changed, 2 insertions(+)
+
+git checkout master
+Switched to branch 'master'
+
+ git rm newFile1.java
+
+rm 'src/newFile1.java'
+
+ git add .
+
+git commit -m "new file 1 is deleted"
+
+[master bb94f98] new file 1 is deleted
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ delete mode 100644 src/newFile1.java
+
+ git merge new_branch
+
+
+CONFLICT (modify/delete): src/newFile1.java deleted in HEAD and modified in new_branch.  Version new_branch of src/newFile1.java left in tree.
+Automatic merge failed; fix conflicts and then commit the result.
+
+I have decide to delete the newFile1.java file. 
+
+git rm newFile1.java
+rm 'src/newFile1.java'
+
+
+
+git merge new_branch
+
+
+ Look at the help page for merge, and find out how you specify a custom message for
+the merge commit if it is automatically generated.
+
+
+git help merge
+
+
+
+git merge new_branch -m "This merge is important"
+
+
+ Look at the help page for merge, and find out how to prevent Git from automatically
+committing the merge commit it generates, but instead give you chance to inspect it
+and merge it yourself.
+
+
+
+git help merge
+
+git merge feature-branch --no-commit
+
+
+
+Exercise 4
+Main Task
+1. Make a commit, and make a silly typo in the commit message.
+
+nano newFile1.java
+
+git add newFile1.java
+
+git commit -m "this is the typeo"
+
+[master d03bd11] this is the typeo
+ 1 file changed, 1 insertion(+)
+ create mode 100644 src/newFile1.java
+
+
+
+2. Use the --amend flag to enable you to fix the commit message.
+
+ git commit --amend -m "this commit is fixed"
+
+[master 9b06cba] this commit is fixed
+ Date: Mon Sep 30 18:13:44 2024 +0530
+ 1 file changed, 1 insertion(+)
+ create mode 100644 src/newFile1.java
+
+
+
+
+3. Look at the log and notice how the mistake is magically gone.
+
+
+ git log
+
+commit 9b06cbabdc27401c548c65c189f20a0cd61aa84e (HEAD -> master)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 18:13:44 2024 +0530
+
+    this commit is fixed
+
+
+
+4. Now make a commit where you make a typo in one of the files. Once again, use --amend to
+magic away your problems.
+
+nano newFile1.java
+
+ git add newFile1.java
+
+ git commit -m "this is updated new file"
+
+[master 51352bf] this is updated new file
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+ nano newFile1.java
+
+ git add newFile1.java
+
+ git commit --amend -m "typo has been removed from this file"
+
+[master 67a141e] typo has been removed from this file
+ Date: Mon Sep 30 18:16:58 2024 +0530
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+
+git log
+commit 67a141e185e7a0e0eea7981af1a5b7af9d7c2eae (HEAD -> master)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 18:16:58 2024 +0530
+
+    typo has been removed from this file
+
+commit 9b06cbabdc27401c548c65c189f20a0cd61aa84e
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 18:13:44 2024 +0530
+
+    this commit is fixed
+
+
+5. Create a branch. Make a commit.
+
+git branch new_branch
+
+
+git checkout new_branch 
+
+nano newFile3.java
+
+
+6. Now switch back to your master branch. Make a (non-conflicting) commit there also.
+
+git checkout master
+M       src/newFile2.java
+M       src/newFile3.java
+Switched to branch 'master'
+
+nano newFile2.java
+
+
+git add .
+
+
+ git commit -m "new file 2 has been added"
+[master 6b36205] new file 2 has been added
+ 1 file changed, 1 insertion(+)
+
+
+
+7. Now switch back to your branch.
+
+git checkout new_branch
+
+
+
+8. Use the rebase command in your branch. Look at the DAG in gitk, and note that you have
+the commit from the master branch, but no merge commit.
+
+ git rebase master
+Successfully rebased and updated refs/heads/new_branch.
+
+gitk
+
+
+ git log
+commit dc77e100e7c6bc4da8acdfb717e883aeac65bf8c (HEAD -> new_branch)
+Author: d2j1 <dhananjayjadhav2151@gmail.com>
+Date:   Mon Sep 30 18:23:54 2024 +0530
+
+    new file 3 is uodated
+
+
+no new merge commits
+
+
+9. Make one more commit in your branch.
+ nano newFile4.java
+
+git add newFile4.java
+
+ git commit -m "New file 4 has been updated"
+[new_branch 7b0430d] New file 4 has been updated
+ 1 file changed, 1 insertion(+)
+
+
+10. Return to master. Merge your branch. Notice how, thanks to the rebase, this is a fastforward merge.
+
+
+git checkout master
+
+Switched to branch 'master'
+
+git merge new_branch
+
+Updating 6b36205..7b0430d
+Fast-forward
+ src/newFile3.java | 1 +
+ src/newFile4.java | 1 +
+ 2 files changed, 2 insertions(+)
+
+
+
+Stretch Task
+
+
+1. Find somebody from your team from the previous exercise. Have them push a commit to
+the central repository.
+
+Done.
+
+2. Make a commit locally yourself also. Note that you should not have pulled their commit at
+this point.
+
+nano newFile5.java
+
+git add newFile5.java
+
+git commit -m "file 5 has been updated"
+
+[master ab28d2d] file 5 has been updated
+ 1 file changed, 1 insertion(+)
+
+3. Try to push, and watch it fail.
+
+
+git push -u origin master
+
+To master
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to 'master'
+hint: Updates were rejected because the remote contains work that you do not have locally.
+hint: Either integrate the remote changes before pushing again,
+
+
+
+4. Now, pull but using the --rebase flag.
+
+git pull --rebase
+
+remote: Counting objects: 3, done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 3 (delta 1), reused 0 (delta 0), pack-reused 0
+From master
+ * branch            main       -> FETCH_HEAD
+
+
+5. Use git log and gitk to verify that there is no merge commit, and the DAG is linear.
+
+git log
+
+gitk
+
+I can see that there is not git merge commit.
+
+
+6. Notice that your commit is the latest one, even though temporally the other member of
+your team made their commit afterwards. Why is this?
+
+
+git push -u origin master
+
+when we use the git pull --rebase then git rewrites the commit history by placing my commit on top of the changes fetched from remote repository.
+
+
+
+
+
+
+
+
+
+Exercise 3
+
+For this task, you will work in a small group. Between 2 and 4 people is about right.
+
+
+Main Task
+
+
+1. First, one person in the group should create a public repository using their GitHub account.
+
+Repository created - group-project
+
+
+
+2. This same person should then follow the instructions from GitHub to add a remote, and
+then push their repository. Do not forget the –u flag, as suggested by GitHub!
+
+git init
+
+echo "# Group Project" >> README.md
+
+
+git add README.md
+
+
+git commit -m "Initial commit"
+
+
+git remote add origin 
+
+https://github.com/mayu09/group-project.git
+
+
+git push -u origin main
+
+Counting objects: 3, done.
+Writing objects: 100% (3/3), 233 bytes | 233.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/<username>/group-project.git
+ * [new branch]      main -> main
+Branch 'main' set up to track remote branch 'main' from 'origin'.
+
+
+
+3. All of the other members of the group should then be added as collaborators, so they can
+commit to the repository also.
+
+collaborators added. 
+
+4. Next, everyone else in the group should clone the repository from GitHub. Verify that the
+context of the repository is what is expected.
+
+Cloned in my local.
+
+git clone https://github.com/mayu09/group-project.git
+
+
+Cloning into 'group-project'...
+remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (3/3), done.
+Resolving deltas: 100% (0/0), done.
+On branch main
+Your branch is up to date with 'origin/main'.
+
+
+5. One of the group members who just cloned should now make a local commit, then push it.
+Everyone should verify that when they pull, that commit is added to their local repository
+(use git log to check for it).
+
+I made below changes in the code file.
+
+echo "Some initial code." >> code.java
+
+git add code.java
+
+git commit -m "Add initial code"
+
+git push
+
+
+Counting objects: 3, done.
+Writing objects: 100% (3/3), 50 bytes | 50.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/mayu09/group-project.git
+ * dj      main -> main
+
+
+
+6. Look at each other’s git log output. Notice how the SHA-1 is the same for a given commit
+across every copy of the repository. Why is this important?
+
+yes it is same for all
+
+72e967d8f6638c1b88ffb5082b12e0dbaeae3302
+
+
+
+7. Two members of the group should now make a commit locally, and race to push it. To keep
+things simple, be sure to edit different files. What happens to the runner-up?
+
+
+echo "Another file." >> anotherFile.java
+git add anotherFile.java
+git commit -m "Add another file"
+git push
+
+Counting objects: 3, done.
+Writing objects: 100% (3/3), 50 bytes | 50.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/mayu09/group-project.git
+ * [new branch]      main -> main
+
+
+
+8. The runner-up should now pull. As a group, look at the output of the command. Additionally, look at the git log, and notice that there is a merge commit. You may also
+wish to view the DAG in gitk.
+
+
+as my commit was first, my friend has to pull the changes i pushed and then he has to push.
+
+9. Repeat the last two steps a couple of times, to practice.
+
+Done.
+
+
+Stretch Task
+
+
+1. Now create a situation where two group members both edit the same line in the same file
+and commit it locally. Race to push.
+
+I have made the change on line no 4 in code.java file.
+
+git add code.java
+
+git commit -m "change in code.java"
+
+git push
+
+
+again my push was successful and my friend has to pull the changes from remote.
+
+
+
+2. When the runner-up does a pull, they should get a merge conflict.
+
+
+now when he tried to merge the changes there is merge conflict.
+
+Auto-merging code.java
+CONFLICT (content): Merge conflict in code.java
+Automatic merge failed; fix conflicts and then commit the result.
+
+
+
+3. Look as a group at the file in conflict, and resolve it.
+
+
+he has to open the file and updated the code to resolve the conflict.
+
+
+
+4. Use the add command to stage the fix, and then use commit to make the merge commit.
+Notice how this procedure is exactly the one you got used to when resolving conflicts in
+branches.
+
+
+git add code.java
+git commit -m "conflict is resolved in code.java file"
+
+
+

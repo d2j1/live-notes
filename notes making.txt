@@ -1,0 +1,92 @@
+mail notes directly to the djreads@kindle.com
+
+7/4/2024
+
+JavaScript
+React JS
+WebRTC
+DSA
+SQL
+
+
+
+
+DSA - 
+
+DP 4 - application of knapsack 
+
+Doubt solving - Linked list, stack and queue
+Doubt solving - tree and heap
+Doubt solving - DP and graphs
+
+notes with questions done list- 
+
+LinkedList 1 : Introduction
+
+
+daily tasks 
+
+Mount blue challenge
+Online coding contenst 
+Hackathons
+
+
+Javascript - 
+
+async  await
+optional chaining 
+
+shimmer UI - resembles the page's actual ui, so users will understand how quickly the web or mobile app will load even before the content has shown up. It gives people an idea of what's about to come and what's happening ( it's currently loading) when a  page full of content/data takes more than 3-5 seconds to laod.
+
+
+
+High priority -
+
+Microservices.
+Docker.
+Java Generics 
+LLD
+
+mid priority - 
+Interview questions.
+
+Sorting and pagination in JPA.
+
+Maven - with cmmands like build, test and all other.
+
+Spring MVC.
+Kubernetes
+
+low priority - 
+
+Java EE ( for contribution in spring ecosystem )
+
+To learn about spring security -
+
+first learn servlet, servlet mapping, HttpRequest and HttpResponse and filters, filterChains
+
+web.xml is a deployment descriptor
+
+Sping Security - 
+Create a project.
+Lombok.
+
+
+Spring boot - 
+
+ModelMapper
+@RestControllerAdvice
+Custom Exceptions
+
+Media type header while sending other than json resources.
+
+--------------------
+
+
+--- ongoing ---
+
+--- previous ---
+
+---upcoming ---
+
+-- Done --

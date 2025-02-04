@@ -1,0 +1,6034 @@
+ 
+
+
+
+For ever Idea 1 - y subarray find the minimum height.
+
+Idea 2 - For every height find the width.
+
+we have to find the nearest smaller on the left of the of the current element and nearews smaller on right of the current element.
+
+
+if wee consider nearst smaller on left = j and nearest smaller on right = k, then total width will be k-j-1.
+
+and height will be = A[i]
+
+so from this height and width we can find out the total area covered by the rectangle.
+
+
+pseudo code - 
+
+NSL[N]
+NSR[N]
+
+maxArea = 0
+
+for i from 0 to N-1 {
+
+height = A[i]
+
+l = NSL[i]
+r = NSR[i]
+
+width = r -l -1;
+area = height * width;
+
+maxArea = max( maxArea, area);
+}
+
+print maxArea;
+
+
+TC - O(n)
+SC - O(n)
+
+
+Q - Find sum of (max - min) for all subarrays.
+
+
+max minus min
+
+
+arr - [1, 2, 3]
+
+subarray     max       min      max-min
+[1]	      1         1          0
+[1,2]         2         1          2-1 = 1
+[1, 2, 3]     3         1          3-1 = 2
+[2]           2         2          2-2 =0
+[2,3]         3         2          3-2=1
+[3]	      3         3	    3-3=0
+
+so the total sum will be 4
+
+
+BF - for every subarray find min, find max then take sum of their difference.
+
+TC - O(n^3)
+
+if we use the carry forwars the min and max then TC will reduce to O(n^2)
+
+
+
+Optmization - 
+
+sumMax = sum of all the max of all subarrays .
+sumMin = sum of all the min  of all subarrays
+
+ans will be sumMax = sumMin
+
+in above example it will be -  14 - 10 = 4
+
+now lets try to solve sum of all subarrays max - 
+
+for arr A = 2, 7 , 3
+
+subarray  	max element
+2			2
+2, 7			7
+2,7,3			7
+7			7
+7,3			7
+3			3
+
+so the total sum of the max will be = 33
+
+7*4 +  3* 1+ 2*1 = 33
+
+so here 7 is contributed 4 times, 3 is contributed once and 2 is contributed once.
+
+in this we can use the contribution technique.
+
+
+in how many subarrays ith element is the maximum element - 
+
+arr = [1, 8, 3, 5, 4, 2, 11, 7, 2]
+index  0 , 1, 2, 3,4, 5, 6,  7, 8
+
+so from the above array we can say that the 5 will be maximum in below subarrays 
+
+3, 5
+3, 5, 4
+3, 5, 4, 2
+5
+5, 4
+5, 4, 2
+
+
+contribution will be = summation of all A[i] * no of all subarrays in which A[i] is max
+
+so from above example we can say that 
+
+on left side of the 5 we can create subarray from 3 and on right we can have subarrayupto 2.
+
+the subarrays starting from the  element value 3 and ending on the element value 2, 5 will be the maximum value element.
+
+so to find out the sub array range we need to find the Nearest greater element on left and nearest greater element on the right of the element with the value 5.
+
+
+choices of left index  for element 5 = index 2
+ or 3. ie two choices.
+ 
+ choices of right index = 3, 4, 5. here we have three choices.
+ 
+ so the no of subarrays in which 5 will be the max value  = choices of left index * choices of right index = 2 * 3 = 6
+ 
+ so in 6 subarrays  will be the maximum value.
+ 
+ Generalization - 
+ 
+  total subarrays where arr[i] is max =  (i-NGL[i])  * (NGR[i]-i)
+  
+  
+  
+  code - 
+  
+  ans =0
+  	
+  NGR[N]
+  NGL[N]
+  
+  
+  for ( i from 0 to N-1) {
+  
+   count = (NGR[i] -i) * (i - NGL[i]);
+   ans += A[i] * count;
+   }
+   
+   return ans;
+   
+   
+   
+   so the code for finding out total sum of max element will be - 
+   
+   
+   int findMax(A[]) {
+   
+   ans =0
+   NGR[N]
+   NGL[N]
+   
+   for( i from 0 to N-1){
+   
+   count = (NGR[i]-i) *  (i - NGL[i])
+   ans += A[i] * cpount;
+   }
+
+return ans;   
+}
+
+
+
+now calculate the sum of min of every subarray - 
+
+arr = 2, 7, 4
+		min
+2		2
+2, 7		2
+2, 7, 4		2
+7		7
+7, 4		4
+4		4
+
+so the total sum of the min is 21.
+
+we can use the code written for the finding the sum of max of all subarrays, we just have to make the values of the array negative, so it will give the sum of all minimum elements in an array then take the negative of the returned value which will be our sum of the minimum elements in each subarray.
+
+
+TC - O(N)
+SC - O(N)
+
+
+make the values of the array A negative and then pass that array to the findMax function above. then whatever it is returning, take that values negative, that will be the sum of all the minimums of all subarrays.
+
+
+
+int maxSum = findMax(A);
+
+// make array values negative 
+
+for( int i=0; i < A.length; i++){
+ 	A[i] = 0-A[i];
+ }
+ 
+ int minSum = 0 - findMax(A);
+ 
+ so the final ans will be =  maxSum - minSum;
+
+
+
+
+code  - 
+
+not using above approach of finding the minimum sum of all subarrays.
+
+
+  public int solve(ArrayList<Integer> A) {
+
+        long maxTotal =0;
+        long count =0;
+         long mod = 1000000007;
+
+         ArrayList<Integer> ngl = NGL(A);
+         ArrayList<Integer> ngr = NGR(A);
+
+
+        for( int i= 0; i < A.size(); i++){
+
+    long left = i - ngl.get(i);
+    long right = ngr.get(i) - i;
+
+          count = (left * right) % mod;
+    maxTotal = (maxTotal + ((long)A.get(i) * count) % mod) % mod;
+        }
+
+        long minTotal =0;
+
+         ArrayList<Integer> nsl = NSL(A);
+         ArrayList<Integer> nsr = NSR(A);
+
+        for( int i= 0; i < A.size(); i++){
+            long left = i - nsl.get(i);
+    long right = nsr.get(i) - i;
+    count = (left * right) % mod;
+    minTotal = (minTotal + ((long)A.get(i) * count) % mod) % mod;
+        }
+
+       
+
+       return (int)((maxTotal - minTotal + mod) % mod);
+
+    }
+
+
+    public  ArrayList<Integer> NGL(ArrayList<Integer> A){
+         Stack<Integer> st = new Stack<Integer>();
+        ArrayList<Integer> ans = new ArrayList<Integer>();
+
+        for( int i =0; i < A.size(); i++){
+
+            while(!st.isEmpty() && A.get(st.peek()) < A.get(i)){
+                st.pop();
+            }
+
+            if( st.isEmpty()){
+                ans.add(-1);
+            }else{
+                ans.add(st.peek());
+            }
+
+            st.push(i);
+
+        }
+
+        return ans;
+    }
+
+    public  ArrayList<Integer> NGR(ArrayList<Integer> A) {
+
+           Stack<Integer> st = new Stack<Integer>();
+        ArrayList<Integer> ans = new ArrayList<Integer>();
+
+        for( int i =A.size()-1; i >= 0; i--){
+
+            while(!st.isEmpty() && A.get(st.peek()) <= A.get(i)){
+                st.pop();
+            }
+
+            if( st.isEmpty()){
+                ans.add(A.size()); 
+            }else{
+                ans.add(st.peek());
+            }
+
+            st.push(i);
+
+        }
+
+        Collections.reverse(ans);
+        return ans;
+
+    }
+
+    public  ArrayList<Integer> NSL(ArrayList<Integer> A){
+         Stack<Integer> st = new Stack<Integer>();
+        ArrayList<Integer> ans = new ArrayList<Integer>();
+
+        for( int i =0; i < A.size(); i++){
+
+            while(!st.isEmpty() && A.get(st.peek()) > A.get(i)){
+                st.pop();
+            }
+
+            if( st.isEmpty()){
+                ans.add(-1);
+            }else{
+                ans.add(st.peek());
+            }
+
+            st.push(i);
+
+        }
+
+        return ans;
+    }
+
+    public  ArrayList<Integer> NSR(ArrayList<Integer> A) {
+
+           Stack<Integer> st = new Stack<Integer>();
+        ArrayList<Integer> ans = new ArrayList<Integer>();
+
+        for( int i =A.size()-1; i >= 0; i--){
+
+            while(!st.isEmpty() && A.get(st.peek()) >= A.get(i)){
+                st.pop();
+            }
+
+            if( st.isEmpty()){
+                ans.add(A.size()); 
+            }else{
+                ans.add(st.peek());
+            }
+
+            st.push(i);
+
+        }
+
+        Collections.reverse(ans);
+        return ans;
+
+    }	
+    
+    
+    
+DSA: Queues: Implementation & Problems
+
+
+Think of the brute force first 
+Vocalize while coding
+
+try to take the hints if u are stuck.
+
+give mock interviews
+
+
+Queue - first in first out.
+
+operations supported - 
+
+Enqueue(x) - add x at the rear end
+Dequeue() - remove front element.
+front() / peek() - return element at front.
+isEmpty()
+size()
+
+implement queue using array - 
+
+class Queue {
+    private int[] arr;
+    private int front;
+    private int rear;
+    private int size;
+    private int capacity;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+        this.arr = new int[capacity];
+        this.front = 0;
+        this.size = 0;
+        this.rear = -1;
+    }
+
+    // Add an element to the queue
+    public void enqueue(int item) {
+        if (isFull()) {
+            System.out.println("Queue is full!");
+            return;
+        }
+        rear = (rear + 1) % capacity; // Circular increment
+        arr[rear] = item;
+        size++;
+    }
+
+    // Remove an element from the queue
+    public int dequeue() {
+        if (isEmpty()) {
+            System.out.println("Queue is empty!");
+            return -1; // Indicates the queue is empty
+        }
+        int item = arr[front];
+        front = (front + 1) % capacity; // Circular increment
+        size--;
+        return item;
+    }
+
+    // Peek the front element of the queue
+    public int peek() {
+        if (isEmpty()) {
+            System.out.println("Queue is empty!");
+            return -1; // Indicates the queue is empty
+        }
+        return arr[front];
+    }
+
+    // Check if the queue is empty
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    // Check if the queue is full
+    public boolean isFull() {
+        return size == capacity;
+    }
+
+    // Return the current size of the queue
+    public int getSize() {
+        return size;
+    }
+}
+Time Complexities of Operations
+enqueue(int item):
+
+Time Complexity: 
+
+O(1)
+The operation involves calculating the next rear index and inserting the element.
+dequeue():
+
+Time Complexity: 
+
+O(1)
+The operation involves retrieving the front element and updating the front index.
+peek():
+
+Time Complexity: 
+O(1)
+The operation only accesses the front element of the queue.
+isEmpty():
+
+Time Complexity: 
+
+O(1)
+Simply checks the size variable.
+isFull():
+
+Time Complexity: 
+
+O(1)
+Simply compares the size with the capacity.
+getSize():
+
+Time Complexity: 
+
+O(1)
+Simply returns the size variable.
+
+
+Implement queue using linked list - 
+
+Enqueue at tail and dequeue at head
+
+class QueueNode {
+    int data;
+    QueueNode next;
+
+    public QueueNode(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+class LinkedListQueue {
+    private QueueNode front, rear;
+
+    public LinkedListQueue() {
+        this.front = this.rear = null;
+    }
+
+    // Add an element to the queue
+    public void enqueue(int item) {
+        QueueNode newNode = new QueueNode(item);
+
+        // If the queue is empty, both front and rear are the new node
+        if (rear == null) {
+            front = rear = newNode;
+            return;
+        }
+
+        // Add the new node at the end of the queue and update rear
+        rear.next = newNode;
+        rear = newNode;
+    }
+
+    // Remove an element from the queue
+    public int dequeue() {
+        if (isEmpty()) {
+            System.out.println("Queue is empty!");
+            return -1; // Indicates the queue is empty
+        }
+
+        int item = front.data;
+        front = front.next;
+
+        // If the queue becomes empty, set rear to null
+        if (front == null) {
+            rear = null;
+        }
+        return item;
+    }
+
+    // Peek the front element of the queue
+    public int peek() {
+        if (isEmpty()) {
+            System.out.println("Queue is empty!");
+            return -1; // Indicates the queue is empty
+        }
+        return front.data;
+    }
+
+    // Check if the queue is empty
+    public boolean isEmpty() {
+        return front == null;
+    }
+}
+Time Complexities of Operations
+enqueue(int item):
+
+Time Complexity: 
+
+O(1)
+Adding a new node at the end of the linked list is done in constant time.
+dequeue():
+
+Time Complexity: 
+
+O(1)
+Removing the front node is done in constant time.
+peek():
+
+Time Complexity: 
+
+O(1)
+Accessing the front node is done in constant time.
+isEmpty():
+
+Time Complexity: 
+
+O(1)
+Simply checks if the front node is null.
+
+
+Q - Implement queue using stacks - Directi
+
+we can only use the push, pop, top, peek, isEmpty, size functions of the stack.
+
+so we can not simulate two ends of the queue using only one stack so we will have to use the two stacks.
+
+
+import java.util.Stack;
+
+class QueueUsingStacks {
+    private Stack<Integer> stack1;
+    private Stack<Integer> stack2;
+
+    public QueueUsingStacks() {
+        stack1 = new Stack<>(); // Stack for enqueue operations
+        stack2 = new Stack<>(); // Stack for dequeue operations
+    }
+
+    // Enqueue an element into the queue
+    public void enqueue(int item) {
+        stack1.push(item);
+    }
+
+    // Dequeue an element from the queue
+    public int dequeue() {
+        if (stack2.isEmpty()) {
+            if (stack1.isEmpty()) {
+                System.out.println("Queue is empty!");
+                return -1; // Indicates the queue is empty
+            }
+            // Transfer all elements from stack1 to stack2
+            while (!stack1.isEmpty()) {
+                stack2.push(stack1.pop());
+            }
+        }
+        return stack2.pop();
+    }
+
+    // Peek at the front element of the queue
+    public int peek() {
+        if (stack2.isEmpty()) {
+            if (stack1.isEmpty()) {
+                System.out.println("Queue is empty!");
+                return -1; // Indicates the queue is empty
+            }
+            // Transfer all elements from stack1 to stack2
+            while (!stack1.isEmpty()) {
+                stack2.push(stack1.pop());
+            }
+        }
+        return stack2.peek();
+    }
+
+    // Check if the queue is empty
+    public boolean isEmpty() {
+        return stack1.isEmpty() && stack2.isEmpty();
+    }
+}
+Explanation of Operations
+Enqueue Operation (enqueue):
+Mechanism:
+Simply push the new element onto stack1.
+Steps:
+Add the element to stack1.
+No additional action is required.
+Time Complexity: 
+
+O(1), as the push operation in a stack is constant time.
+Dequeue Operation (dequeue):
+Mechanism:
+If stack2 is empty:
+Pop all elements from stack1 and push them onto stack2. This reverses the order of elements.
+Pop the top element from stack2 (which corresponds to the front of the queue). If stack2 is not empty:
+Simply pop the top element from stack2.
+Steps:
+Case 1: Both stacks are empty: The queue is empty.
+Case 2: stack2 is empty but stack1 is not: Transfer elements from stack1 to stack2.
+Case 3: stack2 is not empty: Pop the top element from stack2.
+Time Complexity:
+Amortized Time Complexity: 
+
+O(1) per operation over a sequence of 
+𝑛
+n operations.
+Worst-case Time Complexity: 
+
+O(n), when all elements need to be transferred from stack1 to stack2.
+Peek Operation (peek):
+Mechanism:
+Similar to dequeue, except the top element of stack2 is returned instead of popped. If stack2 is empty, transfer elements from stack1 to stack2.
+Steps:
+If stack2 is empty, transfer all elements from stack1 to stack2.
+Return the top element of stack2.
+Time Complexity:
+Amortized Time Complexity: 
+
+O(1) per operation over a sequence of 
+𝑛
+n operations.
+Worst-case Time Complexity: 
+
+O(n), during the transfer.
+Check if the Queue is Empty (isEmpty):
+Mechanism:
+Check if both stack1 and stack2 are empty.
+Time Complexity: 
+
+O(1), as it involves only a few comparisons.
+Detailed Time Complexity of Dequeue
+Amortized Analysis:
+When dequeue is called:
+If stack2 is empty, all elements from stack1 are moved to stack2. This happens only once for each element during its lifecycle in the queue.
+After transfer, all subsequent dequeues for these elements are 
+
+O(1).
+Therefore, the amortized time complexity for dequeue over 
+𝑛
+n operations is 
+
+O(1), even though a single dequeue may take 
+
+O(n) in the worst case.
+
+
+
+Deque - notes remaining
+
+in python - deque
+in java - array deque
+
+
+Q. sliding window maximum - 
+
+find max of every subarray of size k.
+
+BF - 
+  for every subarray of size k , iterate and find max in each.
+  
+  TC - O(n * k )
+  
+Optimization - 
+
+observation - we need the datastructure which will follow the LIFO and FIFO approach.
+
+Idea - maintain the monotonic decreasing deque. 
+
+  to find max --> A[d.front()]
+  
+  and remove any indexes from the deque which are out of window.
+  
+  and also remove the elements which are less than the current element in the deque.
+
+
+Pseudo code - 
+
+deque deque;
+
+for( i from 0 to N-1) {
+
+val = A[i];
+
+while( !deque.isEmpty() && A[deque.rear] <= val) {
+deque.removeRear();
+
+
+// if front is out of window then remove it also.
+
+if( deque.isEmpty() && i-k >= deque.front()) {
+
+deque.removeFront();
+}
+
+deque.addRear(i);
+
+
+if( i >= k-1) {
+print(A[deque.front()]);
+}
+
+}
+
+do dry run on your own to understand it better.
+
+https://www.scaler.com/academy/mentee-dashboard/class/297761/session?joinSession=1
+
+02:18:00
+
+above time stamp for dry run.
+
+TC - O(N)
+SC - O(N)
+
+
+
+Q - At techTrade INC, a trading team focuses on day-trading technology stocks. They employ a strategy that involves selling stocks at short term peaks to maximize the profits. The team uses an algorithm to determine the best time to sell stocks based on minute-tominute price data.
+
+stock prices array A.
+consider the minute by minute stock prices of a tech company, TechCorp, over a 10 minute interval:
+
+A = [ 220, 215, 230, 225, 240, 235, 230, 245, 250, 240 ]
+
+
+this can be solved by using above approach.
+
+
+
+  
+--------------
+
+HLD 1 - 
+
+ipv4 and ipv6 - 
+subnetting - 
+DHCP -
+intranet - 
+NAT - 
+network hops - 
+public ip
+private ip
+static ip
+
+public and static ip addresses are required for the server.
+
+DHS cahing at the browser, router, local DNS. explain how this tree structure works.
+
+What if the ip address changed then how it is updated at all these DNS.
+
+
+----------------
+
+---------------------------
+
+Microservices - 
+
+In monolith the application is built as a single unit.
+
+Such applications comprises of client side interface, server side application and a database.
+
+Normally a monolith application have one large code base it lack modularity.
+
+
+A monolithic application is an architecture where all components of the application (frontend, backend, database, business logic, etc.) are packaged and deployed as a single unit. This is in contrast to microservices, where the application is divided into smaller, independently deployable services.
+
+monolith layers - 
+
+Client -> Presentation layer -> Controller layer -> Business layer -> Repository layer -> Database.
+
+disadvantes of monollith apllication - 
+difficult to manage.
+can not introduce new technology easily.
+a single bug in teh app can bring down the whole application down.
+difficult to scale
+continuous deployment is very difficult, just to update the one component we need to deploy the whole application.
+
+what is microservice - 
+While monolith application works as a single component, a microservice architecture breaks it down to independent standalone small applications, each serving one particular requirement. ex one microservice for handling all vaccination center operations, one for handling all the user base.
+
+within this microservice architecture, the entire functionality is split in independent deployable module which communicate with each other through API's ( REST ful web services)
+
+The API which is accessed through the internet is called as the web service.
+
+advantages - 
+
+All services are independant of each other. There fore testing and deployment is easy as compared to monolith application.
+
+if there is bug in one microservice it has an ompact only on a particular service and does not affetct the entire applicatoin. Even if your vaccination center service is down , u still have your user service running to onboard the users.
+
+its easy to build the complex apps.
+It will give flexibility to choose technologies and framework for each microservices independently.
+
+ 
+How to start converting the monolith to microservices - 
+
+identify all possible standalone functionalities.
+then create stand alone projects for these microservices.
+use messaging or rest api to interact with each other.
+
+we also need load balancer, eureka for service discovery, API gateways and other stuff to create the microservice architecture.
+
+
+Each one of the microservice can have seperate database.
+
+Eureka -
+
+In microservice architecture, Eureka is primarily used as a Service Discovery Server. It is a part of the Spring Cloud Netflix ecosystem and facilitates service registration and discovery, making it easier for microservices to dynamically find and communicate with each other without needing hardcoded IP addresses or endpoints.
+
+Key Uses of Eureka in Microservice Architecture
+1. Service Registry
+Eureka acts as a centralized registry where all microservices in the system register themselves.
+Each service provides its name, instance ID, and address (IP/port) to Eureka upon startup.
+This registry keeps track of the instances of each service and their availability.
+2. Dynamic Service Discovery
+Services can query Eureka to discover other services by their names.
+This eliminates the need to hardcode service locations (IP addresses and ports) in the application, allowing dynamic and flexible communication.
+3. Load Balancing
+Eureka works seamlessly with Ribbon (a client-side load balancer) to distribute requests among multiple instances of a service.
+When a service has multiple instances, Eureka provides Ribbon with a list of available instances, enabling efficient load balancing.
+4. Fault Tolerance
+If a service goes down, Eureka removes it from the registry after a timeout.
+Eureka clients periodically refresh their registry information, ensuring they are aware of the current set of available services.
+5. Decoupling Services
+By using Eureka, services are loosely coupled, as they do not need to know about the exact location of other services beforehand.
+This promotes scalability and easier deployment in dynamic environments like Kubernetes or cloud platforms.
+6. High Availability
+Eureka can be deployed in a cluster mode where multiple Eureka servers replicate data among themselves to ensure availability and fault tolerance of the registry.
+How Eureka Works
+Service Registration:
+
+A microservice registers itself with the Eureka server by sending its details (e.g., name, IP, port) using the Eureka client library.
+The Eureka server maintains a registry of all active services.
+Heartbeat Mechanism:
+
+Registered services periodically send heartbeats to the Eureka server to indicate they are alive.
+If a service fails to send a heartbeat within a configured timeout, Eureka marks the service as unavailable and removes it from the registry.
+Service Discovery:
+
+A microservice that needs to communicate with another service queries the Eureka server to get a list of available instances of the required service.
+The Eureka client caches this information locally to reduce dependency on the server.
+Example
+1. Eureka Server Configuration:
+yaml
+Copy code
+# application.yml
+server:
+  port: 8761
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+2. Service Registration (Eureka Client):
+yaml
+Copy code
+# application.yml
+spring:
+  application:
+    name: service-name
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+3. Service Discovery:
+java
+Copy code
+@LoadBalanced
+@Bean
+public RestTemplate restTemplate() {
+    return new RestTemplate();
+}
+
+// Example usage
+@Autowired
+private RestTemplate restTemplate;
+
+public String callAnotherService() {
+    String url = "http://other-service/endpoint";
+    return restTemplate.getForObject(url, String.class);
+}
+Benefits of Using Eureka
+Dynamic Scalability: Services can be added or removed dynamically without reconfiguration.
+Cloud Native: Ideal for dynamic cloud environments where IPs/ports frequently change.
+Improved Fault Tolerance: Automatically removes unhealthy services from the registry.
+Simplified Inter-Service Communication: Enables services to find each other easily by their logical names.
+Alternatives to Eureka
+Consul
+Zookeeper
+Kubernetes Service Discovery
+While Eureka is widely used in Spring-based microservices, other tools may be preferred based on the technology stack and environment. For instance, Kubernetes has built-in service discovery and load balancing, making Eureka less necessary in Kubernetes-based setups.
+
+Eureka operates using two primary components: the Discovery Server and the Discovery Client. Here's an explanation of each component and how they are configured in a microservice architecture.
+
+1. Discovery Server
+The Discovery Server acts as a Service Registry where all microservices register themselves and discover other services. This is the central hub for dynamic service management.
+
+Responsibilities:
+Maintains a registry of all active services.
+Accepts registration requests from services.
+Provides service instance details upon request by clients.
+Monitors service health via periodic heartbeats.
+Configuration of Discovery Server:
+In a Spring Boot application, you can set up a Eureka Discovery Server as follows:
+
+Add Dependencies: Add the Eureka server dependency in the pom.xml or build.gradle.
+
+Maven:
+
+xml
+Copy code
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+Annotate Main Application: Use the @EnableEurekaServer annotation to make it a Eureka server.
+
+java
+Copy code
+@SpringBootApplication
+@EnableEurekaServer
+public class EurekaServerApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaServerApplication.class, args);
+    }
+}
+Configure application.yml: Set up the server properties.
+
+yaml
+Copy code
+server:
+  port: 8761 # Port for Eureka Server
+
+eureka:
+  client:
+    register-with-eureka: false  # This server won't register with itself
+    fetch-registry: false        # This server won't fetch registry info
+  instance:
+    hostname: localhost          # Hostname of the server
+
+spring:
+  application:
+    name: discovery-server       # Logical name of the server
+Run the Server: Launch the application, and the Eureka dashboard will be available at http://localhost:8761.
+
+2. Discovery Client
+A Discovery Client is a microservice that interacts with the Discovery Server to:
+
+Register itself with the server.
+Discover other registered services.
+Responsibilities:
+Sends its details (name, IP, port) to the Discovery Server for registration.
+Periodically sends heartbeats to indicate it's healthy.
+Queries the Discovery Server to obtain addresses of other services.
+Configuration of Discovery Client:
+Add Dependencies: Include the Eureka client dependency.
+
+Maven:
+
+xml
+Copy code
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+Annotate Main Application: Use the @EnableEurekaClient annotation or rely on auto-configuration (default for Spring Cloud).
+
+java
+Copy code
+@SpringBootApplication
+@EnableEurekaClient
+public class ServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ServiceApplication.class, args);
+    }
+}
+Configure application.yml: Set up the client to register with the Discovery Server.
+
+yaml
+Copy code
+server:
+  port: 8081 # Port for the service
+
+spring:
+  application:
+    name: service-name # Logical name for the service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/ # Discovery server URL
+Access Other Services: Use a logical service name to access other services registered in Eureka.
+
+java
+Copy code
+@RestController
+public class TestController {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @GetMapping("/call-other-service")
+    public String callOtherService() {
+        return restTemplate.getForObject("http://other-service/api", String.class);
+    }
+}
+
+@Bean
+@LoadBalanced  // Enables load balancing using Eureka
+public RestTemplate restTemplate() {
+    return new RestTemplate();
+}
+How It Works Together
+Service Registration:
+
+Each client registers itself with the Discovery Server upon startup.
+For example, a service named payment-service registers its IP and port in Eureka.
+Heartbeat Mechanism:
+
+Clients send heartbeats periodically to indicate they are alive.
+If a client stops sending heartbeats, the Discovery Server removes it from the registry after a timeout.
+Service Discovery:
+
+A service (e.g., order-service) queries Eureka for the address of another service (e.g., payment-service).
+Eureka responds with a list of available instances, and the client can choose one (usually via load balancing).
+Configuration Summary
+Discovery Server
+Provides a central registry for all services.
+Does not register itself or fetch a registry.
+Discovery Client
+Registers itself with the Discovery Server.
+Queries the server for addresses of other services.
+Additional Features
+High Availability: Eureka servers can be set up in a cluster for redundancy.
+Ribbon Integration: Clients can use Ribbon for client-side load balancing.
+Self-Preservation Mode: If too many clients go offline abruptly, Eureka assumes a network partition and retains the registry state to avoid disruption.
+
+
+Eureka server can also acts as a eureka client so we need to configure the behaviour on eureka server.
+
+
+
+--------------------------
+
+
+
+Searching 1 - Binary Search on Array
+
+
+mid = (l+r)/2.
+
+if the value of l and r is 10^9 then it will overflow.
+
+use below to avoid the overflow -
+
+mid = l + ( (r-l) / 2 );
+
+
+Q - Given a sorted arr[N]. find the first occurrence of k.
+
+there are duplicate elements in an array.
+
+l=0;
+r=n-1;
+
+ans = -1;
+
+while( l <= r) {
+
+mid = (l+r)/2;
+
+if( A[mid] == k){
+
+ans = mid;
+right = mid -1; // go left
+}
+else if( A[mid] < k) {
+left = mid +1;
+}
+else {
+right = mid -1;
+}
+
+}
+
+return ans;
+
+Q - find the last occurrence of the k in an array.
+
+solve
+
+
+Q - Every element occus twice except for 1. find that unique element. 
+
+Duplicates are adjacent to each other and array isn't necessary sorted.
+
+solution - 
+
+BF - 
+
+XOR all  - TC - O(n), SC - O(1)
+
+optimized - 
+
+optimizing beyond O(n) means we will have to think in terms of the binary search.
+
+arr = [8, 8, 5, 5, 9, 9, 6, 2, 2, 4, 4]
+
+observation - 
+
+First occurence of the element is present at even index before unique element.
+
+First occurence of the element is present at odd index after unique element.
+
+dry run -
+
+l =0
+r = 10
+mid =5
+first occurrence (fo)= 4
+fo %2 == 0 -> yes then our unique element will be on right so, go right
+
+l =6
+r = 10
+mid =8
+first occurrence (fo)= 7
+fo %2 == 0 -> no then our unique element will be on left so, go left.
+
+l =
+r =7
+mid =6
+first occurrence (fo)= 6
+
+AS we can see there is no element which is equal to the element at index 6, on right and left side of the index 6.
+
+so from this we can say that element at index 6 is is our ans.
+
+code - 
+
+l =0
+r = N-1
+
+while( l <= r) {
+
+mid = (l+r)/2;
+
+
+if( A[mid] != A[mid-1] && A[mid] != A[mid+1] ) {
+
+return A[mid];
+}
+
+fo = mid;
+
+if( A[mid] == A[mid -1]){
+	fo = mid -1;
+	}
+	
+if( fo % 2 == 0){
+// even - go right 
+	l=mid+1;
+	}
+	else {
+	r = mid -1;
+   }
+}
+
+return -1;
+
+
+handling array index out of bounds exception - 
+
+just return some fixed and decided value when we are getting the index which is out of bounds.
+
+below function will solve the issue.
+
+int safeGet( A[], index) {
+
+int N = A.length;
+
+if( 0 <= index && index < N) {
+return A[index];
+}
+
+return some_value_which_you_think_will_work;
+
+return Integer.MAX_VALUE; // or MIN_VALUE
+
+}
+
+
+replace all the A[mid] calls with the safeGet( A, mid) method calls, and make sure to return correct value in case of index is out of bounds from safeGet.
+
+TC - O(logn)
+SC O(1)
+
+To apply binary search - 
+
+identify the search space.
+Can mid be potentially our ans.
+identify which half to discard.
+
+Q - Given an increasing-descreasing array with distinct elements. Find the max element.
+
+ arr = [1, 2, 3, 6, 4, 3, 2, 1]
+ 
+ BF - find the max of the array itself.
+ 
+ TC - O(n)
+ SC - O(1)
+ 
+ optimization - 
+ 
+ the max element value will be greater than its both neighbours.
+ 
+ if ( A[mid-1] < A[mid] < A[mid+1] ) then go to the right side for finding the max element.
+ 
+ if( A[mid -1] > A[mid] > A[mid+1] )  then go to the left side for finding the max element.
+ 
+ 
+ Edge cases - when max element is the last elmeent in the array or when first element is the max element in the array.
+ 
+ 
+ code - 
+ 
+ l=0;
+ r = N-1;
+ 
+ while( l <= r) {
+ 
+ mid = (l+r)>>1;
+ 
+ 
+ if(safeGet(A, mid) > safeGet(A, mid -1) && safeGet( A, mid) > safeGet( A, mid +1) {
+ 
+ return A[mid];
+ 
+ }
+ 
+ 
+ if(safeGet(A, mid-1) < safeGet(A, mid) && safeGet(A, mid) < safeGet(A, mid+1)){
+ 
+ l = mid+1;
+ }
+ else {
+ r = mid -1;
+ }
+ 
+ }
+ 
+ 
+ return -1;
+ 
+ public int safeGet(int[] A, int mid){
+ 
+ if( mid < 0 || mid >= A.length )
+ 	return Integer.MIN_VALUE;
+ 
+ return A[mid];
+ }
+ 
+ in this we are finding the max element so we are returning Integer.MIN_VALUE from the safeget function.
+ 
+ TC - O(log n)
+ SC - O(1)
+ 
+ 
+ Q - Given arr[N], find any one local minima.
+ 
+ local minima - An element which is less than or equal to it's adjacent elements.
+ 
+ arr = 3, 6, 1, 0, 9, 15, 8
+ 
+ here local minimas are 3, 0, 8
+ 
+ we can return any one of the above values.
+ 
+ BF - find min of the array - 
+ 
+ TC - O(N)
+ SC - O(1)
+ 
+ idea - 
+ 
+ if ( A[mid-1] > A[mid] < A[mid+1] ) then we got the ans.
+ 
+  if( A[mid-1] > A[mid] > A[mid-1]) 
+  then go right
+  
+  if( A[mid-1] < A[mid] <  A[mid+1] ) then go left
+  
+  if( A[mid-1] < A[mid] < A[mid+1])
+  then go anywhere.
+  
+  code -
+
+	l=0; r = n-1;
+	
+	while( l <= r ) {
+	mid = (l+r) >> 2;
+	
+if( safeGet(A, mid) < safeGet(A, mid-1) && safeGet(A, mid) < safeGet(A, mid+1) )
+  return safeGet(A, mid);   
+
+
+if( safeGet(A, mid) > safeGet(A, mid-1) && safeGet(A, mid) < safeGet(A, mid+1) )
+	r = mid -1;   
+
+else {
+
+	l = mid +1;   
+}
+
+
+
+
+  
+  public int safeGet( int[] A, int mid){
+  
+  if(mid < 0 || mid >= A.length) {
+  return Integer.MAX_VALUE;
+  }
+  
+  return A[mid];
+  }
+  
+  in above safeGet we want to find the minimum element so we are returning MAX_VALUE.
+  
+  
+  
+  
+
+Searching 2 : Binary Search Problems - 
+
+ 
+
+
+Focus on identifing the  pattern.
+
+problem solving framework - 
+
+start the 25 minutes timer.
+
+read the problem carefully.
+
+understand the probblem and identify the inputs and outputs.
+Think of a brute force approach to solve the problem.
+
+optimize the brute force approach to reduce time complexity.
+
+in this if you were wble to solve the problem in 25 minuts then mpve tp next question.
+
+if could not solve the question then bookmark that question for revision on sunday.
+
+and take hints progressively and if u could able to solve the question then ask yourself what concept if i knew would have helped me solve this question on my own without any help and note it down and move on to the next question.
+
+if you could not able to solve the question with the help of hints then watch video solution or read the blog solving this question.
+
+and solve the question and make sure to revise the question on sunday.
+
+
+Q - Search an element in sorted and rotated array.
+
+ [8, 10, 15, 2, 4]
+ 
+ target = 4
+ 
+ 
+ BF - linear search - 
+ 
+ TC - O(n)
+ SC - O(1)
+ 
+ optimization -
+  
+ idea - 
+ in this some part of the array will be in ascending order and some part of the array in descending order.
+ 
+Binary search - 
+
+ in this the ans can be on the right and can be on left side of the mid element.
+ 
+  if the target element is present in left area then go to left area.
+  
+  if the target element is present in right area then go to the right area.
+  
+  if the target is present in the current area then do the binary search.
+  
+  
+  int getArea( int val, A[]){
+  
+  if( val >= A[0]  return 1;
+  
+  return 2;
+  }
+  
+  l=0
+  r=n-1
+
+targetArea = getArea(k, A);
+
+  
+  while( l <= r) {
+
+  mid = (l+r) >> 1;
+  
+midArea = getAread(A[mid]);
+
+if( A[mid] == k) return mid;
+
+// case 1 
+
+if( midArea 	 == 1 && targetArea == 2) {
+l = mid+1;
+}
+
+// case 2 
+
+else if( midArea == 2 && targetArea == 1) {
+r = mid-1;
+}else {
+
+// normal binary search
+
+if( A[mid] < k ) {
+l = mid+1;
+}
+else {
+	r = mid -1;
+}
+}
+
+// when A is sorted and not rotated then we will always end up in case 3.
+
+ TC - O(logn)
+ SC - O(1)
+ 
+ Q - find the floor of sqrt(N)
+    
+ N = 10, ans = 3
+ N = 16, ans = 4
+ N = 29 ans = 5
+ 
+ 
+ idead  - math.sqrt()
+ 
+ TC - O(log(n))
+ SC - O(1)
+ 
+ idea - 
+ 
+ for this the search space will be from 1 to n.
+ 
+ ans =0;
+ 
+ for( int i =1; i <= n ; i++){
+ 
+ if( i * i <= n){
+ ans = i;
+ }
+ }
+ 
+ print ans;   
+
+
+idea 3 -> 
+
+for( int i =1; i*i <= n; i++){
+
+if( i*i <= n) ans =i;
+}
+
+TC - O(sqrt(n))
+SC - O(1)
+
+idea 4 ->
+
+Binary search on the ans -
+
+l = 1 ; r= n;
+ans = 0;
+
+ while( l <= r) {
+ 
+ mid = (l+r) >> 1;
+ 
+ if( mid * mid <= n) {
+ // go right 
+	ans = mid; // store ans 
+	l = mid+1;
+	} else {
+	r = mid -1;
+  }
+}
+
+print ans;
+
+TC - O(log n)
+SC-O(1)
+
+
+------------------------------------------
+
+
+Typing cerficate
+AI Certificate
+Excel certificate
+
+Outside country certifications
+
+
+About - skills, 8 to 10 lines, looking ofr job outside 
+
+make connections outside india
+IELTS
+
+
+
+-------------------------------------
+
+
+CAP Theorem & Master Slave 
+
+
+Shards which are mutually exclusive + collectively exhaustive.
+
+Above statement means each shards will store the different data sets and  if we combine all the shards then we will get the data of the entire database.
+
+ 
+ Consistent hashing is used to store and retrieve the data in shards.
+ 
+ 
+Slaves are also called as read replicas.
+
+data is written in the master and data is read from the slave in master and slave architecture.
+
+
+
+in case of the asynchronous updates in the master and slave - 
+While promoting the slave to the master in case of master failure the timestamp of the latest data updation on the master and time stamp of the latest data updation in the slaves is checked, if it mateches or closer then that slave will be promoted as a master.
+
+
+Leader election algorithms for master and slave architecture.
+
+Financial application - Immediate consistency is required.
+Facebook, Instagram, Youtube - It requires the eventual consistency.
+
+
+ CAP - Consistency, Availability, Partition tolerence.
+ 
+Consistency - Every time when we make a read request, ideally we should get the latest data or information.
+
+Availibility - if we send a query, the system must be available to send the response back.
+
+Partition Tolerance -  
+
+A system is called as partition tolerant if any event of network partition can be handled by the system.
+
+In single machine there is no need of the Partition tolerence then in that case We will try to achieve the Consistency and Availability.
+
+In financial applications we need to achieve the consistency and availability.
+
+
+In Distributed system partition
+tolerence will always will be there, so in this case we will try to achieve the consistency or availability with partition tolerence.
+
+
+----------------------------
+
+System Design - FB news feed 
+
+in news feed we get the posts which are only few days older.
+
+but in profile we get the all the posts of the user irrespective of the timeline.
+
+Users data - 
+
+id
+name
+email
+password
+phone no
+location
+relationship status
+
+
+User_Friends - 
+
+user_id
+friend_id
+
+Posts - 
+id
+user_id
+text
+timestamp
+img_vdo_path
+
+shard the users data based on the user id.
+
+data will be stored in the stateful database.
+
+and the friends list will also be stored on the same database in which user data is stored. in this the friends list of the user is stored on the same database in which the user data is stored which is stateful.
+
+and we will shard the posts data based on user_id, by doing this the data will be fetched from the same table wihich increases the performance of the query or endpoint.
+
+
+so all the data we will be sharding based on the user id.
+
+we will need the load balancer with the consistent hashing.
+
+In this the app servers are also stateful, so before the app servers we need the API gateway and load balancer and consistent hashing algorithm.
+
+and before the database we need the loadbalancer with consistent hashing.
+
+so in this architecture when we fetch the posts of one user, we will fetch the data from the one database server in paginated format, and when user fetches first 20 posts then it will fetch the next 20 posts and store them in the application server to cache the next 20 posts, so it will reduce the latency to fetch next 20 posts.
+
+Newsfeed - 
+
+In this the posts of all friends are shown in decreasing order of the timestamp.
+
+in this first frieds of the user are taken then all the recent posts of the friends are are taken and then this list is sorted in decreasing order of the timestamp, so that we will get the latest posts in the top.
+
+But in above approach is not optimised and it can also lead to network congestion.
+
+if one database is receiving the lot of requests for the data then it will go down, in above case this will happen.
+
+So to solve this problem, we can store the friends list of the  user in the app server cache and then store the posts created by all those friends in the last 24 hours in the global cache.
+
+TTL for this global cache will be 24 hours.
+
+Scale Estimations - 
+
+
+Guess + Estinmation = Guestimations.
+
+Total account on facebook - 2 billion
+
+we can assume that the 25% of the people are the Daily Active Users.
+
+ DAU - 500 million
+ 
+ out of these only 5% of the people posts on the facebook.
+ 
+ so this count will be 25 million.
+ 
+ we can take an average each user makes 4 posts a day.
+ 
+ 25 * 4 = 100 million posts.
+ 
+ Content size will be - 
+ 
+ Text - 500 char = 500 bytes
+ media -
+ 
+ Meta data -
+ post id= 8 bytes
+ user id = 8 bytes
+ Location = 16 bytes
+ tag = 
+ url = of media = 100 bytes
+ like these take average of 200 bytes.
+ 
+ so total size of one post will be 700 bytes.
+ 
+ so to store the 100 million posts facebook will need 100 * 700 = 70 GB of space.
+ 
+ so facebook will need 70 GB per day memory space and cache space per day to store the posts data, which is not a big deal for facebook.
+ 
+ to cache the posts of last 30 days it will need the 30 * 70 = 2100 GB space in cache.
+ 
+ 
+------------------------------
+
+System Design - SQL vs NoSQL.
+
+Availability - means the feature will not be available for some time, not the entire application.
+
+PACELC - This an extension of CAP theorem.
+
+
+ To achieve the strong consistency then latency will be high.
+ 
+ whatsapp chooses the consistency.
+ 
+ The PACELC theorem is an extension of the CAP theorem that adds more nuance to understanding the trade-offs in distributed systems. Introduced by Daniel J. Abadi, it addresses a limitation of the CAP theorem: CAP focuses only on what happens during a network partition, but it does not account for trade-offs that occur when the system is running normally, i.e., without partitions.
+
+PACELC stands for:
+
+P: Partition Tolerance
+A: Availability
+C: Consistency
+E: Else
+L: Latency
+C: Consistency
+PACELC Explained
+Partition Scenario (PAC):
+
+During a network partition, a distributed system must choose between:
+Consistency (C): Ensuring all nodes have the same up-to-date data.
+Availability (A): Ensuring the system can respond to all requests.
+Normal Scenario (ELC):
+
+When there is no partition, the system must choose between:
+Latency (L): Responding quickly to requests.
+Consistency (C): Ensuring all nodes provide the most recent data.
+In essence:
+
+CAP focuses on the trade-off during network partitions.
+PACELC expands this to include the trade-off between latency and consistency in the absence of partitions.
+Key Scenarios in PACELC
+Partitioned State (PAC):
+
+The system behaves like the CAP theorem: it must choose between availability and consistency.
+Non-Partitioned State (ELC):
+
+The system decides whether to prioritize:
+Low latency: Responding quickly to user requests, possibly with stale data.
+Strong consistency: Ensuring all nodes return the most recent data, even if it delays responses.
+Examples of PACELC in Practice
+AP/EL Systems (Availability + Low Latency):
+During partitions: The system prioritizes availability over consistency.
+Without partitions: The system prioritizes low latency over strong consistency.
+Examples: DynamoDB, Cassandra (eventual consistency models).
+CP/EC Systems (Consistency + Strong Consistency):
+During partitions: The system prioritizes consistency over availability.
+Without partitions: The system prioritizes strong consistency over latency.
+Examples: Google Spanner, HBase.
+AP/EC Systems (Availability + Strong Consistency):
+During partitions: The system prioritizes availability over consistency.
+Without partitions: The system prioritizes strong consistency over latency.
+Examples: MongoDB (configured for eventual consistency with strong consistency in normal operations).
+CP/EL Systems (Consistency + Low Latency):
+During partitions: The system prioritizes consistency over availability.
+Without partitions: The system prioritizes low latency over strong consistency.
+Examples: Systems that aim for fast responses but can sacrifice strong consistency when possible.
+Differences Between CAP and PACELC
+Aspect	CAP Theorem	PACELC Theorem
+Scope	Focuses on network partitions only.	Considers both partitioned and non-partitioned states.
+Key Trade-Offs	Consistency vs. Availability.	Consistency vs. Availability during partitions; Latency vs. Consistency otherwise.
+Insight Provided	Highlights limitations of distributed systems during partitions.	Offers a broader perspective, including trade-offs under normal conditions.
+PACELC Trade-Offs Table
+Scenario	Partitioned State (PAC)	Non-Partitioned State (ELC)
+AP/EL Systems	Prioritize availability	Prioritize low latency.
+CP/EC Systems	Prioritize consistency	Prioritize strong consistency.
+AP/EC Systems	Prioritize availability	Prioritize strong consistency.
+CP/EL Systems	Prioritize consistency	Prioritize low latency.
+How to Use PACELC in System Design
+Choosing AP/EL (Availability + Low Latency):
+When to Use:
+Use in applications where uptime and responsiveness are more critical than data accuracy.
+Examples: Social media, messaging apps.
+Choosing CP/EC (Consistency + Strong Consistency):
+When to Use:
+Use in applications where accuracy is crucial, such as financial systems or transaction-based systems.
+Examples: Banking systems, distributed ledgers.
+Choosing AP/EC (Availability + Strong Consistency):
+When to Use:
+Use in systems where availability is important, but consistency needs to be guaranteed eventually.
+Examples: E-commerce platforms with eventual order confirmation.
+Choosing CP/EL (Consistency + Low Latency):
+When to Use:
+Use in applications where fast responses and consistent views are required.
+Examples: Cache-coordinated databases.
+Conclusion
+The PACELC theorem extends the CAP theorem by acknowledging the trade-offs that distributed systems face both during partitions and normal operations. It provides a richer framework for understanding and designing distributed systems by balancing partition tolerance, availability, latency, and consistency based on the specific needs of an application.
+
+
+SQL databases - are the databases which supports the Structured query language.
+
+in this data is organised in the tables.
+Table is the collections of the rows or tuples.
+
+RDBMS.
+
+in this there are relations between the tables, which has cardinality for these relations, for which there will be the mapping tables in needed.
+
+Properties of the SQL database - 
+
+Normalization - no data redundancy.
+
+redundancy can lead to in-consistency in data.
+
+Redudnacy - storing same data in in different tables again and again.
+
+ACID - This is the guarantees provided by SQL databases.
+
+Atomicity - In case of transaction failure, roll back the transaction. Each transaction is automic in nature.
+
+Consistency - All the validations or constraints of the data must be fullfill, means data types format will stay consistent.
+
+
+Isolation - Transaction should be isolated.
+
+Durability - No data loss from the database. 
+
+SQL - 
+RDBMS
+data is stored in the tables.
+follows ACID properties.
+
+SQL databases were designed on the a basic assumption of single machine support, not distributed.
+
+In distributed database environment we can not guarantee ACID properties.
+
+The balance data of the banks is stored on the one single machine to follow the ACID properties and achieve the consistency.
+
+SQL databases are very popular for fixed schema.
+
+
+SQL vs NoSQL databases - 
+
+SQL - Imagined to be vertically scalled ( We can still horizontally scale SQL databases but ACID properties might get compromise in that case).
+It follows ACID.
+
+Fixed Schema.
+Follows normalization - normalization can impact the read performance not write performance.
+
+
+NoSQL - these are imagined to be horizontally scaled. This supports sharding out of the box.
+Sharding keys should be defined to make sure that the most frequently accessed query becomes intra shard not inter shard.
+
+It follows BASE.
+BASE - Basically Available & Eventually Consistent - This is usually followed, sometimes it also offer  more availability and eventual consistency, we can also have system which is high consistent.
+
+Schema is not fixed.
+Follows Denormalization - copy the data somewhere to optimize the inter shard query.
+
+ 
+ 
+ SQL databases were imagined to be single machine or vertically scaled systems to provide strong ACID gurantees & idea of normalization.
+ 
+ but if our data is distributed across multiple machinese then some of our queries might become inter-shard queries, to optimise these queries we might have to add redundant data multiple machines ( de-normalization).
+ 
+ 
+even if we do sharding to improve the performance of the query, still there will be some queries which will be inter shard, so to improve these queries we can pre process the data and store it in the cache.
+
+ RAM are 10 to 20 times faster than HDD.
+ 
+ 
+ 
+NoSQL - 
+
+Key value pair database - 
+REDIS, Memcached, AWS dynabo db.
+
+cache = Radis + RAM
+database = Radis + HDD.
+
+In this there is no fixed schema.
+We can store any types of key and any type of value in this type of database.
+
+these are sharded on the kay.
+
+Generally these are used for caching.
+
+
+Document database -
+Mongo DB, Couch DB, Elastic search.
+
+It is enhanced version of the key value dadtabase.
+This has document id, whcih stores the XML or json values.
+
+in this the queries are optimized by indexing the values of the document fields like category, price, or name in case of product category.
+
+Document based databases are intelligent version of key value pair database. It allows us to create indexes on the selected fields of the document to opimise certain type of queries.
+
+
+Column family database - 
+
+
+
+Graph database -
+
+
+CPU can not read the data from the HDD, because of the speed difference they have. so OS will fetch the data from the HDD and then push it to the RAM and then CPU will access this data from the RAM at very high speed.
+
+SQL - Structured data, fixed schema
+
+Data is stored in block like starting from the first row then next to this second row will be stored and like that all the rows are stored in memory.
+
+and when we try to access the data from the database, first it will fetch entire block data and then read whatever is required and then discard the remaining data.
+
+while doing indexing 
+
+NoSQL - unstructured / semi structured data, No fixed schema.
+
+NoSQL database does not store the data in the sequential manner.
+
+Every NoSQL uses the Write ahead log to store the data.
+
+Write ahead log - it is a append only file and it is stored on the disk. Mainly we will perform read and write operations on the disk.
+
+whenever we will get the write or update request we will just append the data in the WAL file.
+
+so write operation TC will be constant.
+
+when we delete the value then that value will be replaced by undefined value in the WAL.
+
+and to read - as data is stored on the HDD and we can not access the data on this in bottom to top approach we have to access it in the forward direction.
+
+so the read will be O(n) operation in NoSQL.
+
+we need to optimize this. 
+
+in SQL data is stored in the Balanced binary search tree, so the Read and write TC will be log(n).
+
+so to store the data in NoSQL - 
+
+approach 1) If we only used WAL then TC for read - O(n) and write - O(1).
+
+Approach 2) We can maintain WAL file in HDD and use hashmap stored in the RAM. in this hashmap we will maintain the key and HDD address of the value. 
+
+So TC will be Read - Get the address from the HashMap and Read from the address in WAL - O(1) and write - append WAL and update hashmap - O(1)
+
+but we might not be able to store this huge data inside the map inside the RAM and we will have to reinitilzee the hashmap in case of the machine gets restarted.
+
+for binary search we need sorted as well as equal size data, so we can not use that here.
+
+Approach 4) WAL + Tree  map 
+
+Tc wil be write - log(n), Read - log(n) 
+and also the space complexity is increased.
+
+write the background script which will run after every one hour, take the complete data from TreeMap, create a file and reset the Treemap
+
+and start filling the new data values into the reseted tree map.
+
+ and we will store the actual values in the tree map instead of the address of the values. 
+ 
+the old data will be available in the file which  was created by the script. 
+
+each time script runs it will create new file to store the Treemap data.
+
+in this 
+
+write - Write in WAL file O(1), Add in TreeMap log(n).
+
+Read - first try check if data is present in the treemap, then if not present then read the data from files created by script from newest file to the oldest file.
+
+These files will also contain the sorted data but the data size is not uniform, so we can not use the binary search on this.
+
+TC - O(log n) ( to read from the traamap) + no_of_files * N ( no of entries in the file).
+
+as no of files will be kind of constant.
+
+in below 24 is just an example considering script runs after each 1 hour.
+
+TC - 24 * N ( in worst case).
+
+in the worst case scenario we might need to read the data from the WAL file if not found in the files.
+
+ 
+after certain time period all the files created by the script will be merged in one file.
+
+For this there will be one more background script to merge the all the files into one file.
+
+
+in this TC will be - 
+
+Write -
+Write in WAL.
+Write in TreeMap.
+
+O(log(n))
+
+Read - 
+Read treemap. - log(n)
+iterate all the Files. - O(n) 
+
+The overall TC will be - n.
+
+Note - Somehow if we are able to search in o(log(n)) TC within every file.
+
+but the data is sorted but it is unstructured, we can not use binary search directly.
+
+we can divide the data in the file into logical blocks of equal size like 64 or 128.
+
+Along with each file we also maintain a metadata which contains the address of first element of each block. 
+
+now blocks are of equal size and sorted we can appply binary search on all these blocks.
+
+and inside the block apply linear search and find the element we want.
+
+in this approach TC will be - 
+
+Write - log(n)
+Read - 
+Tree Map - O(log(n))
+Iterate each file using binary search - O(log(n))
+
+
+And while merging the files, if there is duplicate data in two files then we will take only the data from latest file and skip the data from the old file.
+
+And merging the files will happen in the background that's why it is not considered in TC calculation.
+
+The name of this approach is LSM trees.
+
+Extract notes from below document - 
+
+https://docs.google.com/document/d/1qVUOgfGeFeB8Xh8Zay-NbCjgDUjPVlYaN7_y8S2BTtE/edit?tab=t.0
+
+
+----------------------
+
+
+
+
+Searching 3 : Binary Search on Answer -
+
+Q. Painters partition problem - 1 
+
+Given N boards with length of each board
+1) A painter takes 1 unit of time to paint 1 unit of length.
+2) A board can only be painted by 1 painter.
+3) A painter can only paint boards placed next to each other ( i.e. continuous segment).
+
+Find min no of painters required to paint all the boards in T unit of time. If its not possible return infinity.
+
+
+
+
+
+Q. Painters partition problem - 2 
+
+Given N boards with length of each board
+1) A painter takes 1 unit of time to paint 1 unit of length.
+2) A board can only be painted by 1 painter.
+3) A painter can only paint boards placed next to each other ( i.e. continuous segment).
+
+Find minimum time to paint all boards if  painters are available.
+
+
+Q. Email Response Handler - 
+
+Situation - Imagine you are tasked with developing a system for evenly distributinh the workload among the team of email response handlers in a customer service department. Each mail is assigned a complexity score which represents the estimated time and effort required to address it. The complexity scores are represented as an array, where each element corresponds to a single email.
+
+Task -
+
+The goal is to divide the array into k contiguous blocks ( where K is the number of email handlers). Such that the maximum sum of the complexity scores in any block is minimized. This approach aims to ensure that no single email handler is over whelmed with high complexity emails while others have a lighter load.
+
+
+
+Q. Farmer has built a bar with N stalls.
+A[i] - location of ith stall in sorted order.
+M - Number of cows the farmer has
+
+Cows are aggressive towards eath other. So, farmer wants to maximise the minimum distance between any pair of cows.
+
+Find max possible minimum distance.
+
+
+--------------------------------------
+
+
+ 
+ -----------------------
+ 
+ System Design - case study 2 Typeahead 
+ 
+ in this the suggestions starting from the prefix are fetched from the server and shown to the user.
+ 
+ 
+ 4 steps to design any HLD system - 
+ 
+ 1) MVP - minimum  viable product - suggest the most important features and leave the add on features.
+ 
+ 2) Scale estimation ( Back of the Envelop calculation ) -  
+ 	
+ in this we will try to identify the no of users, queries per second, storage requirements, is sharding required, no of read queries and write queries ( Read heavy or write heavy or both heavy) 
+ 
+ 
+ if no of write are atleast more  than 50 to 100 times of no of write operations then it can be considered as write heavy system.
+ 
+ 3) Design Tradeofffs-  
+ In this we have to decide High Consistency and High Availability, leatency, SQL , no SQL, Stateful, stateless, caching or not, global cache or local cache etc.  we need to make sure for these things.
+ 
+ 4) Design Deep dive - 
+ 
+ decide apis ( 3 to 4 main apis), HLD ( Diagram) , and data flow and draw the diagram
+ 
+ 
+ Typeahead - 
+ 
+ This sytem is the system which suggests the next words based on the characters we have written in the search bar.
+ 
+ MVP -   
+ 
+ Search prefix and then get the suggestions.
+ Maximum 10 suggestions should be returned.
+ Minimum three characters are required to get the suggestions.
+ 
+ Relevant suggestions - based on the recent searches.
+ 
+ Scale Estimation , Back of the Envelop calculation - 
+ 
+  No of users - 3 billion
+  
+  Daily active user - These are the 5 to 10 % of the total users.
+  
+  but google is the essential so for this we will consider 20 % of the total no of users.
+  
+Average no of searches per  user per day -  20 (Average)
+  
+  No of search queries per day  = Average no of searches per day per user * DAU = 20 * 1 Billion = 20 billion.
+  
+  
+  So when we type the keywords in the search then we wiil be reading the data from the server, byut when i actually search the keyword then system has to update the searching count of that word in the system then it will become the write query.
+  
+  so no of write queries per day will be = 20 Billion.
+  
+  write queries per second (QPS) = total_on_of_queries_per_day / total_no_of_seconds = 
+  
+  20 Billion / 86400 
+  
+  to make this calculation simple lests assume there are 1 lacks of seconds.
+  
+  20 * 10^9 / 10^5 = 2 8* 10^5 = 200k qps.
+  
+Read queries per second - 
+
+average no of getSuggestoins call per search query as we will keep typing the word = 5.
+
+ so the total no of read queries per second = 5 * 200k = 1 million
+ 
+
+The difference between the read and writes in the system should be more than 50 to 100 times, to consider it that heavy system.
+
+in this system there is not much difference between read and write operation counts so this is the both heavy means read and write heavy system.
+
+
+Now peak qps = 2 * Average qps.
+
+two times of the average qps. 
+
+Storage Requirement - 
+
+Write qps = 200k
+Read qps = 1 million
+
+while write operation we will be increamenting the frequency of the word.
+
+
+Few words we will search will be already there is the system and few new words will not be there in the system.
+
+if a word is already present in the system then we just go and update the count of the words, if word is not present in the system then we will hage to add that word in the system with count 1.
+
+and we will store these values in the form of key and value. 
+
+<Search_String_Query, Long>
+
+long will take 8 Bytes space.
+and the average space taken by the search query will be 70 to 80 Bytes.
+
+so to store the data of one word  we will need 100 Bytes of the space.
+
+on google there 10 to 15 % of total no of queries will be new or searched for the first time on the google every day.
+
+New queries per day = 10 % * 20 Billion =  2  Billion
+
+so per day we will need 2 Billion * 100 Bytes new space which will be equal to 200GB space per day.
+
+so for entire year = 200 GB * 365 = 80 TB of the data.
+
+so for 10 years we will need the 0.8 peta bytes of the space.
+
+for one year space 80 TB, we will need  the multiple machines to store this data and this can be implemented using the consistent hashing.
+
+
+Design trade offs -
+
+
+For this system we need the High availablility and eventual consistency and ultra low latency.
+
+
+Desing deep dive - 
+
+APIS - GetSuggestions ( prefix, limit), updateFrequency( query)
+
+
+In this we will need to store the data in the trie as we will be checking the prefix of the word and then decide which word or query to return.
+
+so for this case trie is the best data structure.
+
+In trie data is stored in the format of the tree and in each node we will store one character of the query.
+
+for "Microsoft" - in first node store M and then its child node store i and then child node of i store c and then in the child node of the c store r like this we will store the entire query.
+
+But to get the top 5 words from this trie will be huge operation, so we can store a map on each node in which we will store the top five words whcih are starting f
+rom that prefix.
+
+
+in this modification we do not have to iterate the entire trie to get the top 5 words.
+
+but this also will lead to the massive no of maps and will increase the space complexity.
+
+
+Instead of the trie we can store the words in the map but there also we will store the repetative characters in the map which will lead to the space wastage.
+
+in map we will store the search query and frequency of that query.
+
+in this write query will become o(1)
+
+but read queries will become O(n) which is huge considering the data google receives.
+
+to optimize the query we can take the top five words of the prefix and store it in the seperate hashmap <prefix, top_five_wrods_with_count>  on the cache like redis and update this map whenever there is an update in the frequency of the query.
+
+Trie was hard to shard but redis supports shardinng out of the box.
+
+
+ Both the maps we will store in the redis database.
+ 
+ Write - go to hashmap 1 check if the query word is present in the already present, if present update the frequency, if no insert the query with frequency 1 in hashmap 1.
+ 
+and then 
+
+for example we are searching a word "Microsoft", 
+
+then we will fetch all the prefix words for below and check the count of frequency of each word and then update if the word in all those prefix location in hashmap 2 where the frequency of the current wiord is greater than the word in the hashmap 2.
+
+Mic
+Micr 
+Micro
+Micros
+Microso
+Microsof
+Microsoft
+
+
+so we will get  the prefix values of all above and then update the words in hashmap 2 if its frequency is less than the words whose frequency we have updated in the hash map 1.
+
+In whise we are okay with the eventual consistency so, we can update this words count in the batches instead of writing every single write operation in the database, Till that point we will keep the records updated in the global cache and update it in the database after every time interval.
+
+Read - in this we will read the data from the hashmap 2 in constant time.
+
+Time Decay - The popularity of the keywords will keep on changing and it will be removed from the suggestions. This concept is called as Time Decay.
+This decay rate is dynamic depend on the culture and other billion things.
+
+ ----------------------------------------
+ 
+ 
+ To improve the abosrpptions of the vitamins and minerals -
+ 
+ Eat raw vegatables before lunch to increase vitamins absorptions.
+ 
+ Orange juice, lemon on the food, Jaggery ( low quantity), 
+ 
+ 
+ To improve the absorption of the Vitamin D - take all  below recommendations with the high fat s like ghee, olive oil, Sunflower oil, Coconut oil, Dark chocolate, Seeds.
+ 
+ also consider taking supplements with warm milk as milk has fats.
+also take the supplement in the morning as it affects the melatonin ( sleeps harmone).
+
+To improve the absorption of B12 - 
+
+  
+ 
+ D - Milk ( + milk fortified with vitamin D) , cheese, curd, Mushrooms exposed to sunlight( keep in sunlight for 30 mins and then do not cook on hard flame), Cesame seed ( Black or brown), white soya bean ( soya milk fortified with vitamin D,  Walnut, Corn, Ragi, Bel ( bel che zadache fal), Amaranth leaves,    
+ and most important - for dark skin 60 mins sunlight.
+ 
+ B12 - Banana, Garlic, Milk, cheese, Curd, Fermented foods like Idli, dosa, pickles. 
+ 
+ 
+ --------------------------------
+ 
+ Skin health - Eat non processed and minimal processed foods like vegetables, Grains, rice oat meals, pasta, cheese, butter, olive oil etc.low imflamatory diet
+ 
+ Follow dr, Andrea Suarez for this matter.
+ 
+ Eat oranges, starwberries, vitamin A from oranges, sweet potatos, Berry, Avoid sugar food, ea fibreous food like fruit , vegetables, Grains, low sugar fermented foods.
+ 
+ Make sure to have a body which is less imflamatory. 
+ 
+ Sleep better, do not drink alcohol, Drink plenty of water and drink electrolytes, Meditation, Non Sleep deep rest.
+ 
+ Reduce imflemation in the body.
+ 
+   
+----------------------------------
+
+Diet - 
+
+
+There are three types of carbohydrates - Sugar, Fiber, resistent starch.
+
+When diettician talks about the low carbohydrate diet it means reduce the fucking sugar not Fiber and starch.
+
+peoples who have healthy body are eating the high fiber and starch.
+
+Fiber is only found in plants.
+Eat more fiber. Eat 50 Grams fiber per day ( 25 grams is the scientific recommendation).
+
+To include a fiber in diet - eat a fruit before your meal. 
+
+To eat the 50 grams of fiber we need to eat whole grains ( ex- millets) and pulses meal.
+
+the outer cover of the millets or whole grains has the tendency to absorb the flavours and make the dish less testy for this we can add more spices ( not recommended).
+
+When we eat whole grain, lentils, pulses and food which is closer to the nature we will not gain weight (Fat).
+
+Do not avoid grains and pulses.
+
+Do not eat ultra processed food, This food increases the fat in the body.
+
+Eat three servings of Whole grains, lentils per day - in each serving we will get 6 to 7 grams of the fiber.
+
+One serving should contain 1 to 2 chapati.
+
+1 Gram of carbohydrate = 4 calories.
+
+So in one gram of carbohydrate will have below amount of sugar  -
+
+Pure Sugar - 1 gm carbohydrate = 	1 gram of sugar.
+Fruits and diary products - 
+
+Banana - 1 gm of carbohydrate = 0.5 gm of sugar.
+Milk - 1 gm of carbohydrate = 0.5 to 0.8 gm of sugar.
+
+Whole grains or vegetables -  1 gm of carbohydrate = 0.1 grams of sugar.
+
+Excess proteins and excess carbs are converted to the Fat, but fiber can not be converted to the fat so if we each the whole grains and lentils we will not gain fat as much as we will eat processed food which contains the sugar.
+
+To get the resistance starch - root vegetables, pulses and lentils, beat root, carrot, sweet potato, cheak peas and kidney beans, masur dals and tur dals.
+
+Jaggery is also the table sugar just avoid it.
+
+eat at least food from 5 different plants per day like bajra, wheat, seeds, lentils, pulses from different plants.
+
+Roshni sanghvi suggests 10 plant points per day.
+
+26:26 - https://www.youtube.com/watch?v=hI2TZW9H5iA
+
+-----------------------------
+
+To send to kindle again - 
+
+Array - 
+
+-------------------------------
+
+ Arrays - Carry forward and subarrays - 
+ 
+ 
+ AG pair - 
+ 
+ Brute force - 
+ 
+ int count_ag (String s){
+
+cnt =0;
+
+for i -> 0 to n-1 { 
+
+for j -> 0 to n-1 {
+if (i<j && s[i] =='a' && s[j]=='g'){
+cnt++;
+}
+}
+}
+return cnt;
+}
+
+
+Optimize above solution - 
+
+ int count_ag (String s){
+
+cnt =0;
+
+for i -> 0 to n-1 { 
+
+if(s[i] =='a') {
+
+for j -> i+1 to n-1 {
+if (s[j]=='g'){
+cnt++;
+}
+}
+}
+
+}
+return cnt;
+}
+
+
+both above solutions are same in TC - O(n^2) and Space - O(1)
+
+optimised - Use prefix sum, in which store the count of g till that point.
+
+and then for each check the count of 'g present next to 'a'.
+
+Try to optimize on time, always.
+
+
+Optimised - Carry forward the count of 'g' from right to left and when we get the 'a' then add that count of 'g' in ans. and at the end return ans.
+
+
+ or
+ 
+ we can iterate from left to right and count no of 'a' encountered and when 'g' is encountered add count of a to the final ans.
+ 
+ at the end return the ans.
+ 
+ ans=0
+ cnta=0;
+ 
+ for( int i=0 to n-1) {
+ if ( s[i] =='a' ) cnta++;
+ if( s[i] =='g') ans += cnta;
+ }
+ 
+ return ans;
+ s
+ Note - Prefix sum is helpful when we have to ans any random queries and carry forward technique is helpful when we have to ans only for the current index.
+ 
+ Subarrays - it is the continuous part of the array.
+ 
+
+total no of subarrays  = n * ( n+1)/2.
+ 
+ 
+ Given an int array A, print all possible subarrays of the array.
+ 
+ how many subarrays will be there ? = n * (n +1)/2.
+ 
+ to print each subarray will be O(n).
+ 
+ 
+ to print all the subarrays TC will be = n * (n+1) * n /2 = O(n^3)
+ 
+ 
+ 
+ code - 
+ 
+ for( s from 0 to n-1 ) {
+ 
+ for ( e from s to n-1 ) {
+ 
+ for( i from s to e ) {
+ 	print(A[i]);
+ 	}
+     }
+ }
+ 	
+ Given an array A[], return the length of smallest subarray which contains both max and min element of the array.
+ 
+BF - First find min element and find max element.
+Iterate over all possible subarrays and check if they contain min and max element in them.
+
+code - 
+
+min= A[0];
+max = A[0];
+
+for( i from 0 to n-1 ) {
+
+min = min(min,A[i]);
+max = max( max, A[i]);
+}
+
+
+minLength = A.length;
+
+for( s from 0 to n-1 ) {
+
+for( e from 0 to n-1 ) {
+
+minFound = false;
+maxFound = flase;
+
+for( i from s to e ) {
+
+  if( A[i] == min) minFound = true;
+  if ( A[i] == max ) maxFound = true;
+  }
+  
+  if( minFound && maxFound ) {
+  minLength = min( minLength, e-s+!);
+  }
+  
+  }
+  
+  }
+  
+  TC - O(n^3)
+  
+  
+  Observation - the ans array will always start and end with min or max element.
+  
+      
+ 
+-------------------------------------
+
+
+System Design : Case study - Messanger -
+
+  Facebook messanger - 
+  
+  in this user sends message to the server then server stores this message in the database and then it sends that message to the recevier of the message.
+  
+  Steps to build HLD - 
+  
+  Decide the MVP.
+  Back of the envelop calculation - scale estimation.
+  Trade offs - consistency vs Availability, latency.
+API design - 
+HLD Deep Dive -
+
+
+
+MVP of Facebook messanger -  
+
+suggest 5 features to the interviewer.
+
+Send or receive a message. Message can be image, file, audio, video, text.
+
+Messages should be delivered in almost real time - Ultra low latency.
+
+( as signup and login is not the core functionality of the messanger we will skip it, it is core functionality of the authentication service).
+
+Message history.
+
+Multiple conversations - one user chatting to the multiple people.
+
+one to one conversation and Group conversation.
+
+Delete Message.
+
+
+
+Scale estimation -
+
+No of users on facebook - 3 Billion.
+
+Daily active users - DAU - 20% of total users = 1 Billion ( approax - easy for calculation )
+
+Average messages per user per day - 20.
+
+Total messages per day = 20 * 1 Billion = 20 Billion messages.
+
+
+Read and write QPS - as write and read queries will be almost same ( difference only 5 to 10 times) so this system is both read and write system.
+
+
+Write QPS -
+
+ 20 Billion / 86400 Seconds = 20 * 10^4 = 200K QPS.
+
+Read QPS - it is almost same as write QPS.
+
+Peak QPS - this will be 2 to 4 times the average QPS.
+
+Storage Calculations - 
+
+
+20 Billion messages per day.
+
+Message will have 
+message id - 8 Bytes
+Time stamp - 8 Bytes
+Sender id - 8 Bytes
+Conversation id ( receiver) - 8 Bytes
+content - content can be text, audio, video, image, file. - 100 Bytes 
+
+metadata - 50 Bytes
+
+so total size will be 182 Bytes. 
+
+200 Bytes per message approximately.
+
+so daily we will need 20 Billion * 200 Bytes space = 4 TB of data per day. 
+
+
+for 10 years = 4 TB * 365 *10 = 16 Peta Bytes of data.
+
+in one machine we can store 4 to 8 TB of data.
+
+
+Tradeoffs - 
+	
+	this system should be consistent than available.
+	
+	So our system will be high consistent and eventual available and ultra low latency. 
+
+
+APIs - 
+
+sendMessage(sender_id, conversation_id, message, message_id)
+
+getConversations( user_id, limit, offset) - limit and offset for pagination.
+
+getMessages( conversation_id, user_id) - This api will be paginated.
+
+Polling - fetching messsages from the server continuously so that we will receive the messages.
+
+in this receiver will make a call to the server and check if there is any new message.
+
+Client keeps on making a call to the backend to check if there is any new message for them.
+
+This leads to lot of calls to the server and this can also leads to the network congestion.
+
+Long polling - Client or receiver will not make a call every second
+
+
+Pull model - in this messages are pulled from the server by sending the periodic requests.
+
+Push Model - In this message are pushed by the server when there is new message.
+
+
+Polling and Long Polling in Messaging Applications
+Polling and long polling are two common methods used to enable real-time communication between a client (e.g., a messaging app) and a server. Let’s break them down in detail:
+
+1. Polling
+Polling is a technique where the client periodically sends requests to the server to check if there are any new updates or messages.
+
+How Polling Works
+The client sends an HTTP request to the server at regular intervals (e.g., every 5 seconds).
+The server checks if there are new messages or updates for the client.
+If there are new messages, the server sends them in the response.
+If there are no new messages, the server sends an empty response.
+The client waits for the interval to complete and then sends another request.
+This cycle continues until the user is actively using the application.
+Example (Polling)
+Client: “Hey server, do I have new messages?”
+Server: “Nope, not yet.”
+Client: (after 5 seconds) “Hey server, do I have new messages now?”
+Server: “Yes, here’s your new message!”
+Advantages of Polling
+Simple to Implement: Easy to set up on both the client and server sides.
+Widely Supported: Works with any HTTP server and doesn’t require advanced configuration.
+Disadvantages of Polling
+Inefficient: Most requests return empty responses, wasting network bandwidth and server resources.
+Higher Latency: Updates are delayed until the next polling interval. For example, if the polling interval is 5 seconds, there can be up to a 5-second delay in receiving new messages.
+Scalability Issues: If many clients are polling the server frequently, it can overload the server.
+2. Long Polling
+Long polling is an improved version of polling that reduces inefficiencies by keeping the connection open until the server has new data to send.
+
+How Long Polling Works
+The client sends an HTTP request to the server and waits for a response.
+The server does not immediately respond. Instead, it keeps the connection open until:
+A new message or update is available, or
+A timeout period is reached (e.g., 30 seconds).
+When the server has a new message, it sends the response to the client.
+The client processes the message and immediately sends a new request to the server to wait for the next update.
+This process continues as long as the user is active.
+Example (Long Polling)
+Client: “Hey server, do I have new messages? I’ll wait for your reply.”
+Server: (waits until it has a new message) “Yes, here’s your new message!”
+Client: “Got it! Do I have more messages?”
+Server: (waits again)
+Advantages of Long Polling
+Efficient Use of Resources: Reduces the number of empty responses, as the server only responds when there is new data.
+Low Latency: Messages are delivered as soon as they become available, with minimal delay.
+Easy to Implement: Simpler than advanced alternatives like WebSockets.
+Disadvantages of Long Polling
+Connection Overhead: Each long-polling request is a separate HTTP connection, which can be resource-intensive if there are many users.
+Scalability Challenges: Keeping many connections open simultaneously can strain the server.
+Timeouts and Reconnections: If the connection times out (e.g., after 30 seconds), the client must reconnect, which adds overhead.
+
+
+When to Use Polling vs. Long Polling in Messaging Applications
+Polling:
+
+Suitable for small-scale applications with fewer users or where real-time updates are not critical.
+Example: A notification system that updates every few minutes.
+Long Polling:
+
+Better for applications where near real-time updates are required but WebSockets are not feasible.
+Example: Messaging apps where users expect updates as soon as possible.
+Why Long Polling is Still Not Ideal for Real-Time Applications
+While long polling improves efficiency compared to polling, it still has limitations in terms of scalability and performance. For true real-time communication, modern applications often use WebSockets or Server-Sent Events (SSE):
+
+WebSockets: Create a persistent, bi-directional connection between the client and server. Perfect for high-performance chat apps.
+SSE: A lightweight, uni-directional alternative for real-time updates from the server to the client.
+Summary
+Polling sends frequent requests regardless of whether there’s new data, leading to inefficiencies.
+Long Polling holds the request open until new data is available, reducing unnecessary requests and improving latency.
+For modern messaging apps with high user demand, transitioning to WebSockets is often the best long-term solution.
+
+
+WebSocket - 
+
+But in this it will lead to the billions of active connections on the server which is very compute intensive.
+
+WebSockets: Real-Time Communication
+WebSockets are a modern, advanced technology that enables full-duplex (two-way) communication between a client (e.g., browser, mobile app) and a server over a single, persistent connection. This makes WebSockets highly efficient and ideal for real-time applications like messaging apps, gaming, financial dashboards, and live collaboration tools.
+
+How WebSockets Work
+Initial Handshake (Upgrade Protocol):
+
+The communication starts with a standard HTTP request from the client to the server.
+The client requests to "upgrade" the connection from HTTP to WebSocket using the Upgrade header.
+If the server supports WebSockets, it responds with a status code 101 Switching Protocols, confirming the connection upgrade.
+Persistent Connection:
+
+Once upgraded, the connection remains open, allowing bi-directional data transfer without the overhead of creating a new HTTP request for each message.
+Data Exchange:
+
+Both the client and server can send messages to each other at any time, without the need for the client to make repeated requests.
+Messages are exchanged in a lightweight, binary, or text-based format.
+Connection Termination:
+
+The connection remains open until either the client or server explicitly closes it or if a network issue occurs.
+Key Features of WebSockets
+Full-Duplex Communication:
+
+Both the client and server can send and receive data simultaneously over the same connection.
+Low Latency:
+
+No need for repeated HTTP requests, so messages are delivered almost instantly.
+Persistent Connection:
+
+The connection remains open, reducing the overhead of establishing multiple connections.
+Lightweight:
+
+WebSocket frames are smaller compared to HTTP headers, making it ideal for high-performance, real-time applications.
+Efficient Resource Usage:
+
+Fewer connections and less data overhead mean reduced strain on the server and network.
+WebSocket Handshake Example
+Step 1: Client Request (Upgrade to WebSocket):
+
+http
+Copy code
+GET /chat HTTP/1.1
+Host: example.com
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+Sec-WebSocket-Version: 13
+Step 2: Server Response (Switch Protocols):
+
+http
+Copy code
+HTTP/1.1 101 Switching Protocols
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+After this handshake, the WebSocket connection is established, and both parties can send and receive messages.
+
+Advantages of WebSockets
+Real-Time Communication:
+
+Suitable for applications where instant updates are required, such as messaging, stock trading, or multiplayer games.
+Reduced Overhead:
+
+Unlike HTTP requests, WebSocket messages have minimal overhead, improving performance for frequent updates.
+Scalable:
+
+WebSockets are more efficient for handling large numbers of clients simultaneously compared to polling or long polling.
+Cross-Platform:
+
+WebSockets work across different platforms, programming languages, and devices.
+Disadvantages of WebSockets
+Complexity:
+
+WebSockets are more complex to implement and manage compared to HTTP-based solutions.
+Firewall Issues:
+
+Some firewalls or proxies may block WebSocket traffic, as it does not follow traditional HTTP rules.
+Resource Consumption:
+
+A large number of open WebSocket connections can consume significant server resources if not managed properly.
+WebSocket Use Case: Messaging Application
+Here’s how WebSockets work in a messaging application:
+
+1. Connection Establishment:
+When a user opens the app, the client establishes a WebSocket connection with the server.
+2. Real-Time Messaging:
+When User A sends a message, it is sent via the WebSocket connection to the server.
+The server processes the message and pushes it to the intended recipient (User B) over their WebSocket connection.
+3. Event Notifications:
+WebSockets can also be used to send real-time notifications, such as "User is typing…" or "User is online."
+4. Bi-Directional Updates:
+The server can push other updates (e.g., group message notifications, system messages) to the client without waiting for the client to request them.
+
+When to Use WebSockets
+WebSockets are ideal for applications requiring real-time updates, such as:
+
+Messaging Applications (e.g., WhatsApp, Slack).
+Live Chat Support.
+Online Gaming.
+Stock Market Updates.
+Collaborative Tools (e.g., Google Docs, Trello).
+Live Streaming (e.g., sports scores, video streams).
+Conclusion
+WebSockets offer a highly efficient and scalable solution for real-time, bi-directional communication. They are a significant improvement over traditional polling and long polling methods, particularly in scenarios where low latency and high-frequency updates are required. If you're building a messaging app or any real-time system, WebSockets are the go-to solution.
+
+Blog - https://blog.whatsapp.com/1-million-is-so-2011
+
+
+Message send mechanism - 
+
+This is a common scenario in messaging systems where message delivery guarantees need to be ensured, particularly in unreliable networks. Let's break this down step by step, addressing the key issues:
+
+1. How Message Sending and Acknowledgement Work
+In a typical messaging system, the process of sending and acknowledging messages works like this:
+
+Steps for Message Delivery
+Client Sends a Message:
+
+The client sends a message (or request) to the server.
+This is typically done over a transport layer protocol like TCP, WebSockets, or HTTP.
+Server Receives the Message:
+
+The server processes the message and stores it (in memory or in a persistent store like a database or queue).
+After processing, the server sends an acknowledgement (ACK) back to the client to confirm that the message was received.
+Client Receives the Acknowledgement:
+
+Once the client gets the ACK, it marks the message as delivered and does not retry sending it.
+2. Problems in Message Delivery
+Case 1: Message Does Not Reach the Server
+This could happen due to network issues or server unavailability.
+The client will wait for an acknowledgement within a timeout period. If no ACK is received:
+Retry Mechanism: The client retries sending the message until it is acknowledged or the maximum retry limit is reached.
+Case 2: Message is Received by the Server, but ACK is Not Received by the Client
+The server processes the message and sends an ACK, but the ACK is lost due to a network issue.
+The client, not receiving the ACK, assumes the message was not delivered and retries sending the same message.
+This results in duplicate messages being sent to the server.
+3. How Duplicate Messages are Handled
+Deduplication Mechanism
+To handle duplicate messages, messaging systems implement a deduplication mechanism based on unique identifiers. Here's how it works:
+
+Unique Message ID:
+
+Each message sent by the client has a unique ID (e.g., messageId).
+The server stores the messageId of every message it processes.
+Check for Duplicate Messages:
+
+When a new message is received, the server checks if the messageId is already present in its system (in a cache or database).
+If it finds a match, it ignores the duplicate message and does not process it again.
+If it doesn’t find the messageId, it processes the message and stores its ID.
+Send Acknowledgement:
+
+After processing a message, the server always sends an ACK, regardless of whether the message was new or a duplicate.
+4. Handling Network Failures and Retries
+Messaging systems are designed to tolerate unreliable networks by implementing at-least-once delivery guarantees with deduplication mechanisms.
+
+Scenario 1: Lost Message
+The client retries sending the message until an ACK is received.
+The server processes the message only once (deduplication ensures this).
+Scenario 2: Lost Acknowledgement
+The client retries sending the message because it assumes the first message was not received.
+The server identifies the duplicate message and skips re-processing it.
+5. Example: Messaging Workflow with Deduplication
+Step 1: Message Sent
+Client sends a message with messageId: 123.
+Step 2: Server Processes Message
+Server receives the message, processes it, and stores messageId: 123 in a cache or database.
+Step 3: ACK Lost
+Server sends an ACK to the client, but the ACK is lost due to a network failure.
+Step 4: Client Retries
+Client retries sending the message with messageId: 123.
+Step 5: Server Deduplication
+Server checks its records and finds that messageId: 123 has already been processed.
+Server skips re-processing and simply sends a new ACK to the client.
+6. Strategies for Message Delivery Guarantees
+At-Least-Once Delivery
+The message is delivered at least once, but duplicates may occur.
+Deduplication is required to avoid processing duplicate messages.
+At-Most-Once Delivery
+The message is delivered at most once. If the ACK is lost, the client will not retry.
+Suitable for scenarios where duplicates cannot be tolerated but occasional message loss is acceptable.
+Exactly-Once Delivery
+Each message is delivered exactly once, without duplicates.
+This is achieved by combining deduplication and transactional mechanisms (e.g., two-phase commits).
+Cost: Higher complexity and overhead compared to other delivery guarantees.
+7. Tools and Protocols Supporting Reliable Messaging
+Messaging Protocols
+HTTP/REST:
+
+Requires client-side retry logic and unique identifiers for deduplication.
+AMQP (Advanced Message Queuing Protocol):
+
+Used in RabbitMQ. Supports delivery guarantees, deduplication, and ACKs.
+Kafka:
+
+Implements unique offsets for deduplication.
+Supports exactly-once semantics with transactional producers.
+MQTT (Message Queuing Telemetry Transport):
+
+Lightweight protocol with QoS levels for different delivery guarantees.
+WebSockets:
+
+WebSocket-based messaging systems typically handle retries and deduplication manually at the application level.
+
+Real-World Examples
+WhatsApp/Signal:
+
+Messages are assigned unique IDs.
+Duplicate messages are ignored on the server side.
+Payment Systems:
+
+Ensure that duplicate payment requests do not result in multiple deductions.
+Use unique transaction IDs and database transactions.
+Message Queues (RabbitMQ, Kafka):
+
+Use offsets or message IDs to handle duplicates and ensure delivery guarantees.
+Conclusion
+Lost Requests: Client retries the request until an acknowledgement is received.
+Lost Acknowledgements: Deduplication ensures the server processes the message only once, even if the client resends it.
+Implementing unique identifiers for messages and maintaining a deduplication log is critical for ensuring reliable messaging systems.
+
+
+Message id will be generated by using below mechanism - 
+
+
+
+ Message id = timestamp + userId + deviceInfo or browser info.
+ 
+here device info will be browser id or device id or session id etc.
+
+and time stamp  will be the timestamp of the last typed character.
+
+
+Idempotency - 
+
+ In the context of messaging systems (or any system handling retries and duplicates), idempotency ensures that repeating the same operation multiple times produces the same result as performing it once. This property is critical when handling scenarios like retries, duplicate messages, or lost acknowledgments.
+
+
+Sharding - 
+
+How to choose the sharding key -
+
+we will try to optimize getMessage , getConversation, sendMessage api.
+
+
+Conversation id - If we shard based on conversation id then 
+
+getMessage(conversation_id)  - only one server will get the request.
+
+getConversations(user_id) - for this we will have to visit all the servers to get the data.
+
+sendMessage( user_id, conversation_id, ...)  - only one server will get the request.
+
+ User id - 
+
+If we shard based on user id then 
+
+all the conversation of a particular user will be stored in a single machine.
+
+
+and we will have two databases - 
+
+1 - where all the messages will be stored where the sharding key is going to be the conversation id.
+
+2 - in this database all the conversations will be stored and its sharding key will be user id.
+   
+    
+getMessage(conversation_id)  - for this we will have to go the message database and only one machine to get the data.
+
+getConversations(user_id) -  Conversations data base and only one machine.
+
+sendMessage( user_id, conversation_id, ...)  -  we will have to go to Messages database and only one machine we need to access.
+
+and in the conversations database we will have to go through 2 machines to update the latest message in the conversation, one to update the senders message and one to update the receviers messages.
+
+but this will be heavy for group chats because we will have to visit lot of machine to update the latest message. for one to one conversations this will work.
+
+Our design should be such that the time complexity should not increase with scale.
+
+Messanger design notes link - https://docs.google.com/document/d/1FE10Pu4nd6sz89RHq82rkcO2fdNoOZA0jQgO8pLgsOc/edit?tab=t.0
+
+-----------------------
+
+System Design - Zookeeper + Kafka 
+
+Problem statement - 
+
+
+Order placement on amazon - 
+When we place the order on the amazon then amazon must be taking lot of actions once an order gets confirmed.
+
+1) Update inventory in inventory service.
+2) Seller service to inform the seller.
+3) Notification service to send the notification.
+4) Invoice service to generate the invoice.
+5) Delivery service to pick up the parcel and deliver it to the user.
+
+Once the order is placed then there is no dependency on the customer, all above tasks are performed by amazon internally in parallel by using asynchronous manner.
+
+
+The order service will send the conformation to the user that the order has been placed but it is not conformed yet. 
+
+if we perform above operations in the one by one ( Synchronous) format then in this case if there is load on the order service, we  will have to scale up the order service and also due to massive load we will also have to scale the Inventory service and all other services in the line.
+
+And in case of Asynchronous manner Order service will push the event inside the event queue. Event will have different parameters like type of the event, Order id, item id etc.
+
+then other above services will read the event from the queue and then perform the operation. ex Inventory service will read the event and update the inventory, like this all other services will get the event from queue and perform operations accordingly.
+
+In this way even if there is a load on the order service it will scale and push the more no of events to the queue and other services will tconsume the events based on their speed and there is no need to scale other services.
+
+ and if average waiting time complete one event is increasing then we will scale other services based on the need.
+ 
+  
+In this mechanism the service which produces the events is called as Publisher or producer and the service which consumes the events is called as Consumers or Subscribers.
+
+Kafka, Rabbit MQ, Active MQ, SQS are the examples of the queues.
+
+Kafka can be used whereever there is asynchronous communication.    
+
+
+These message queues are persistent message queues, and store the data in hard disk like database.
+
+Each event will have a timeout, once the timeout reaches for the event it will remove that event from the queue and put it in the  DLQ ( Dead letter queue).
+
+if some service was not availabel to read the events from the queue before timeout then it can read those events from the DLQ.
+
+and DLQ also has the timeout.
+
+
+when service will come up then it will read the events from the queue and also from the DLQ to clear the backlog.
+
+Kafka maintains offset  for every consumer to keep the track of events read by that consumer.
+
+Kafka stores events in hard disk it is not in memory.
+
+Video upload on youtube - 
+
+when video is uploaded on the youtube then it checks for copyright, convert video into multiple resolutions, check for community guidelines, generate captions all these things are checked asynchronously by using kafka or similar queue. Once video is uploaded it will trigger all of these services by using kafka.
+
+ to increase the consumption speed of the consumer we need to increase the computational power of the service.
+ 
+
+Consumer Groups - Kafka makes sure only one consumer from a consumer group will be able to read a msg from the queue.
+As there will be multiple machine in the one service, to avoid one event being  read by multiple machines of the same service, kafka uses consumer groups.
+
+
+ 
+Internal architecture of kafka - 
+
+inside kafka there will be sharding because events will be too high in numbers.
+
+Topic is the type of event we can store in the kafka.
+
+ in one kafka queue there can be many different topics.
+ 
+ each event will be stored in that particular topic only.
+ 
+ suscriber or consumer will have to subscribe to the particular topic.
+ 
+ example - 
+ 
+ there can be different topics like order placed, order canceled, sign up etc.  and seller service will subscribe to order placed and order canceled topics and notification service will subscribe to Sign up event.
+
+
+There will be kafka cluster because we can not store huge data on a single machine. and inside there will be multiple machines inside one cluster.
+To each machine in kafka cluster we call broker.
+
+
+we can not store all the events of one topic in one single broker, then we will store all these  events in different partitions.
+
+Partition means dividing the events in one topic into multiple parts, so that it can be stored in different brokers.
+
+
+like this we will store the big topics into smaller partitions on different brokers.
+
+and one broker can store the partitions of different topics on the same machine ( Broker).
+
+and also one broker can store the different partitions of the same topic.
+
+
+in this structure when we push the event into the kafka, then on which partition it will be stored is decided by the sharding key.
+
+Each broker will have replica by using master, slave architecture so that it will not go down.
+
+doing partitioning will also reduce the load on one broker to process the event.
+
+Zookeeper and Kafka notes - https://docs.google.com/document/d/1nXeJJC-8tLNUyna-QAI9SiISBZTv93-gmeKh5qPiR6Y/edit?tab=t.0
+
+Go thorugh Column No SQL database.
+
+Kafka is message queue, it is used when we need asynchronous commnunication.
+
+calling services one by one in one single service, this approach is called Synchronous communication.
+
+service will wait for the response from another service before move on to the next task.
+
+Total no of partitions can be more than the total no of brokers present in the kafka cluster.
+
+and replica of brokers can be less than or equal to the no of brokers.
+
+all these configurations can be added to the xml file while setting up the kafka.
+
+
+Sharding Vs partitioning - 
+
+Sharding and partitioning are often used interchangeably, but they differ conceptually and practically, especially in systems like Apache Kafka. Let’s break them down thoroughly in the context of Kafka.
+
+1. What is Partitioning in Kafka?
+Definition:
+In Kafka, partitioning refers to dividing a topic into multiple smaller, logical units called partitions. Each partition is a subset of the total data for that topic and is stored separately across Kafka brokers.
+
+Key Points:
+A Kafka topic is split into partitions, each of which is an ordered, immutable sequence of records.
+Producers can decide which partition a message goes to, often using a key and a partitioning strategy.
+Partitions enable parallelism and scalability by allowing multiple producers and consumers to read and write simultaneously.
+Partitions in Kafka are physical units of storage.
+Why Partitioning is Important in Kafka:
+Parallelism: Producers and consumers can work with multiple partitions in parallel, improving throughput.
+Scalability: Partitions allow Kafka topics to scale horizontally by distributing them across multiple brokers.
+Fault Tolerance: Kafka replicates partitions across brokers for durability, ensuring no data loss in case of a broker failure.
+How Partitioning Works:
+When producing a message, Kafka determines the partition for the message using:
+A key-based strategy (e.g., using a hash of the key to select a partition).
+A round-robin approach if no key is specified.
+Consumers typically read messages from partitions in parallel.
+2. What is Sharding?
+Definition:
+Sharding is a broader concept than partitioning and refers to the process of dividing a dataset or workload across multiple shards (physical or logical units) to improve scalability and performance.
+
+A shard is a subset of the total dataset, often independent of the others.
+Sharding is commonly used in databases (e.g., MongoDB, MySQL) and systems like Elasticsearch, but the term can apply to Kafka as well.
+How Sharding Relates to Kafka:
+In Kafka, partitions can be considered a form of sharding, as each partition represents a shard of the topic data.
+The concept of sharding applies at a higher level in Kafka, e.g., distributing topics or partitions across brokers in the cluster.
+
+
+Comparison: Partitioning vs. Sharding
+Aspect	Partitioning (in Kafka)	Sharding
+Scope	Specific to Kafka and used for dividing a topic into smaller units.	A general concept applicable to distributed systems (e.g., databases, search engines, or Kafka).
+Purpose	Improve parallelism, scalability, and fault tolerance within a Kafka topic.	Distribute data/workload across multiple machines to handle scalability and performance.
+Granularity	Operates within a Kafka topic. Each partition belongs to a single topic.	Operates at a higher level. Can involve entire topics, databases, or datasets split into multiple parts.
+Data Distribution	Messages are distributed to partitions based on a key, partitioning strategy, or round-robin.	Data is distributed across shards based on sharding keys or a distribution algorithm.
+Physical Representation	Partitions are stored as files on Kafka brokers.	Shards may represent independent datasets stored on separate servers or nodes.
+Fault Tolerance	Achieved via replication of partitions across brokers.	Achieved via redundancy mechanisms, such as multiple replicas of shards.
+Example in Kafka	A topic orders is divided into 10 partitions, distributed across 3 brokers.	A Kafka cluster with topics orders, payments, and invoices distributed across multiple brokers.
+
+
+
+
+How Kafka Implements Partitioning (with Example)
+Imagine a Kafka topic named orders with 5 partitions distributed across 3 brokers:
+
+Producer Behavior:
+
+Producer sends a message with a key (e.g., orderId).
+Kafka uses the key and a hash function to decide which partition to send the message to.
+Example: Hash(orderId) % 5 (number of partitions).
+If no key is provided, Kafka may use a round-robin strategy to distribute messages evenly.
+Consumer Behavior:
+
+Consumers read data from partitions.
+If there are 5 partitions and 2 consumers in a consumer group, partitions will be assigned like:
+Consumer 1 reads from partitions 0, 1, and 2.
+Consumer 2 reads from partitions 3 and 4.
+Partition Distribution:
+
+Kafka ensures that partitions are distributed across brokers to balance the load.
+Example:
+Partition 0 → Broker 1
+Partition 1 → Broker 2
+Partition 2 → Broker 3
+Partition 3 → Broker 1
+Partition 4 → Broker 2
+How Sharding Applies to Kafka (Higher-Level View)
+Sharding in Kafka often refers to distributing topics or partitions across brokers:
+
+Cluster with Multiple Topics:
+
+Imagine a Kafka cluster with 3 brokers and 10 topics (orders, payments, inventory, etc.).
+Kafka distributes the partitions of each topic (shards of the topic data) across the brokers.
+Example:
+Broker 1 stores partitions 0, 3, 6 of various topics.
+Broker 2 stores partitions 1, 4, 7.
+Broker 3 stores partitions 2, 5, 8.
+Sharding Keys:
+
+At the producer level, you can shard data by specifying a key (e.g., customer ID or order ID).
+This ensures all related data (e.g., for a customer) lands in the same partition.
+When to Use Partitioning/Sharding in Kafka
+Use partitioning to scale a single topic horizontally and increase throughput by distributing data across partitions.
+Use sharding when managing Kafka at a higher level, such as:
+Distributing multiple topics across brokers.
+Deciding how to distribute data in Kafka to handle load balancing across the cluster.
+Conclusion
+Partitioning in Kafka is a specific implementation of data division within a topic. It is a core feature that ensures scalability, parallelism, and fault tolerance.
+Sharding is a more general concept that applies to data distribution across systems. In Kafka, partitioning can be considered a form of sharding when applied within topics, while sharding applies more broadly to the cluster as a whole.
+
+Partitioning vs Sharding in Kafka
+
+Scope
+
+Partitioning: Specific to Kafka and used for dividing a topic into smaller units.
+Sharding: A general concept applicable to distributed systems (e.g., databases, search engines, or Kafka).
+Purpose
+
+Partitioning: Improves parallelism, scalability, and fault tolerance within a Kafka topic.
+Sharding: Distributes data/workload across multiple machines to handle scalability and performance.
+Granularity
+
+Partitioning: Operates within a Kafka topic. Each partition belongs to a single topic.
+Sharding: Operates at a higher level. Can involve entire topics, databases, or datasets split into multiple parts.
+Data Distribution
+
+Partitioning: Messages are distributed to partitions based on a key, partitioning strategy, or round-robin.
+Sharding: Data is distributed across shards based on sharding keys or a distribution algorithm.
+Physical Representation
+
+Partitioning: Partitions are stored as files on Kafka brokers.
+Sharding: Shards may represent independent datasets stored on separate servers or nodes.
+Fault Tolerance
+
+Partitioning: Achieved via replication of partitions across brokers.
+Sharding: Achieved via redundancy mechanisms, such as multiple replicas of shards.
+Example in Kafka
+
+Partitioning: A topic orders is divided into 10 partitions, distributed across 3 brokers.
+Sharding: A Kafka cluster with topics orders, payments, and invoices distributed across multiple brokers.
+
+ 
+  Apache Kafka does not use a traditional Master-Slave architecture in its design. Instead, Kafka employs a distributed and replicated architecture that achieves fault tolerance, high availability, and scalability through leader-follower replication for its partitions.
+
+However, the concepts of "Master-Slave" can be loosely related to Kafka's Leader-Follower architecture, which we will explore step by step.
+
+Kafka's Leader-Follower Architecture (Related to Master-Slave)
+Kafka implements replication for partitions to ensure fault tolerance. Each partition in a Kafka topic has one leader and one or more followers. Here's how it works:
+
+Leader Partition (Master):
+
+The leader is responsible for handling read and write requests from producers and consumers for that partition.
+Each partition in Kafka elects a leader, which resides on one of the brokers.
+The leader acts as the "master" for that partition.
+Follower Partition (Slave):
+
+Followers replicate the data from the leader.
+Followers stay in sync with the leader by fetching the latest records.
+If the leader fails, one of the followers is elected as the new leader to ensure availability.
+Followers cannot handle read or write requests; they are passive unless promoted to leader.
+How Kafka Implements Leader-Follower (Master-Slave) Architecture
+Partition and Replication:
+
+A Kafka topic is divided into partitions.
+Each partition is replicated across multiple brokers (based on the replication factor).
+For example, if a topic has 3 partitions and a replication factor of 2, each partition will have 1 leader and 1 follower (replica).
+Broker Roles (Master-Slave Concept):
+
+Each broker can act as a leader for some partitions and as a follower for others.
+There is no single "master" broker for the entire cluster, as Kafka avoids single points of failure.
+The partition leader dynamically switches between brokers in case of failure.
+Producer and Consumer Behavior:
+
+Producers always send data to the leader partition for a topic.
+Consumers always read data from the leader partition.
+Followers are used only for replication, not for serving requests.
+Replication Process:
+
+The leader partition writes the incoming data to its local log.
+Followers pull data from the leader and write it to their logs.
+Kafka ensures in-sync replicas (ISR), where followers keep up-to-date with the leader.
+Followers lagging behind the leader are removed from the ISR until they catch up.
+Leader Election:
+
+If the broker hosting the leader partition fails, one of the in-sync followers is promoted to the new leader.
+The Kafka Controller (a role within the Kafka cluster) manages this leader election process.
+Implementation Steps for Master-Slave (Leader-Follower) in Kafka
+1. Replication Configuration:
+Set the replication.factor for a topic when creating it.
+bash
+Copy code
+kafka-topics --create \
+  --topic my-topic \
+  --partitions 3 \
+  --replication-factor 2 \
+  --bootstrap-server localhost:9092
+Here:
+3 partitions will be created.
+Each partition will have 1 leader and 1 follower (total of 2 replicas per partition).
+2. Partition Assignment:
+Kafka distributes partitions across brokers.
+Example: With 3 partitions and 3 brokers, the assignments might look like this:
+Partition 0: Leader on Broker 1, Follower on Broker 2
+Partition 1: Leader on Broker 2, Follower on Broker 3
+Partition 2: Leader on Broker 3, Follower on Broker 1
+3. Data Flow (Master-Slave Interaction):
+Producer writes to the leader of a partition.
+The leader writes data to its local log and propagates it to the followers.
+Consumers read from the leader of a partition.
+4. Leader Election:
+If Broker 1 fails, Kafka elects a new leader for Partition 0 from the in-sync replicas.
+This ensures that the partition remains available and operational.
+5. Monitoring Replication:
+Use Kafka tools to monitor the state of leaders and replicas.
+bash
+Copy code
+kafka-topics --describe --topic my-topic --bootstrap-server localhost:9092
+Advantages of Kafka's Leader-Follower (Master-Slave) Architecture
+High Availability:
+
+If a leader (master) fails, a follower (slave) takes over as the leader.
+This eliminates single points of failure.
+Scalability:
+
+Kafka distributes leaders and followers across brokers, balancing the load.
+Fault Tolerance:
+
+Replication ensures no data loss, even if a broker goes down.
+Parallelism:
+
+Producers and consumers interact with multiple partitions and brokers in parallel, improving throughput.
+Key Differences Between Traditional Master-Slave and Kafka's Implementation
+Dynamic Leadership:
+
+In Kafka, the leader (master) is dynamic and can change due to failures.
+Traditional master-slave systems often have a static master node.
+No Single Master Node:
+
+Kafka avoids a central master node; instead, it distributes leadership across partitions.
+Traditional systems often rely on a single master controlling the slaves.
+Decentralized Design:
+
+Kafka brokers can act as leaders and followers simultaneously for different partitions.
+This ensures better resource utilization and avoids bottlenecks.
+Example Scenario
+Cluster Setup: 3 brokers, 3 partitions, replication factor = 2.
+
+Partition Assignments:
+
+Partition 0: Leader → Broker 1, Follower → Broker 2
+Partition 1: Leader → Broker 2, Follower → Broker 3
+Partition 2: Leader → Broker 3, Follower → Broker 1
+Data Flow:
+
+Producer sends data for Partition 0 to Broker 1 (leader).
+Broker 1 replicates data to Broker 2 (follower).
+Consumer reads data for Partition 0 from Broker 1 (leader).
+Failure Handling:
+
+If Broker 1 goes down, Kafka elects Broker 2 as the new leader for Partition 0.
+Broker 3 continues to replicate data as the new follower.
+Summary
+Kafka uses a Leader-Follower architecture instead of a strict Master-Slave model.
+Leaders handle all client interactions (reads and writes).
+Followers replicate data and provide fault tolerance.
+Leadership is dynamic and managed by Kafka's controller.
+
+
+ Zookeeper - is the central manager to manage the kafka cluster and it is not kafka specific, whereever we have shards and master slave architecture we can use the zookeeper to manage it.
+ 
+ 
+
+Apache ZooKeeper is an open-source, centralized service for maintaining configuration information, naming, providing distributed synchronization, and managing group services. In the context of Apache Kafka, ZooKeeper is an essential component used to coordinate and manage the distributed nature of Kafka clusters.
+
+Role of ZooKeeper in Kafka
+ZooKeeper plays a critical role in managing the Kafka cluster's metadata and ensuring coordination among brokers. Here's how ZooKeeper is used with Kafka:
+
+1. Cluster Management
+ZooKeeper keeps track of all brokers in a Kafka cluster.
+When a broker starts, it registers itself with ZooKeeper, making the cluster aware of its presence.
+If a broker fails, ZooKeeper detects this failure and notifies Kafka.
+2. Leader Election
+For each topic partition, Kafka assigns a leader broker responsible for all reads and writes to that partition.
+ZooKeeper manages the leader election process to ensure a single leader per partition.
+If the leader broker fails, ZooKeeper initiates a new leader election for the affected partitions.
+3. Topic and Partition Metadata
+ZooKeeper stores metadata about topics, partitions, and their configuration (e.g., replication factor).
+Producers and consumers can query ZooKeeper indirectly (via brokers) to understand the cluster's structure.
+4. Configuration Management
+ZooKeeper stores Kafka's configuration settings, such as broker IDs, topic information, and quotas.
+Dynamic reconfiguration of Kafka often involves ZooKeeper updates.
+5. Distributed Synchronization
+ZooKeeper provides a mechanism for distributed synchronization, ensuring consistent decisions across Kafka brokers.
+For example, when a broker joins or leaves, ZooKeeper coordinates the necessary rebalancing tasks.
+6. Offset Storage (Deprecated)
+Before Kafka version 0.9.0, ZooKeeper was used to store consumer offsets.
+Since version 0.9.0, Kafka stores offsets in an internal topic (__consumer_offsets), making offset management more efficient and scalable.
+How Kafka Uses ZooKeeper
+Broker Registration
+
+When a broker starts, it creates an ephemeral node in ZooKeeper to register itself.
+If the broker disconnects or fails, the ephemeral node is deleted, alerting the cluster of the broker's unavailability.
+Leader and ISR Management
+
+Kafka uses ZooKeeper to elect leaders for partitions and maintain the "In-Sync Replicas" (ISR) list.
+The ISR list ensures that replicas are up-to-date with the partition leader.
+Topic Creation and Metadata Storage
+
+ZooKeeper holds information about topics, such as the number of partitions, replication factors, and configuration.
+Controller Election
+
+One Kafka broker is elected as the controller for the cluster using ZooKeeper.
+The controller is responsible for managing the cluster, including leader election and rebalancing.
+Limitations of Using ZooKeeper
+Single Point of Failure: ZooKeeper itself must be highly available, requiring a quorum-based setup (3 or 5 nodes).
+Complexity: Managing ZooKeeper adds operational overhead.
+Performance Bottleneck: Heavy reliance on ZooKeeper can become a bottleneck as the Kafka cluster scales.
+Kafka Without ZooKeeper
+Kafka has moved towards a ZooKeeper-less architecture with the introduction of Kafka Raft Metadata Mode (KRaft).
+KRaft replaces ZooKeeper with a built-in consensus protocol, simplifying Kafka's architecture and improving scalability and fault tolerance.
+
+
+Issues with zookeeper -
+
+It introduces the additional network hop and increases the network latency.
+
+Single point of failure.
+
+How to decide the master - 
+
+Zookeeper maintains the file which contains contains the  topic and partition and ip address of the master. this file is called as the Ephimeral files and these files are temporary , and the master is decided by using the leader election algorithm.
+
+when master goas down then it is the task of zookeepr to inform the slaves or listeners that the leader election is going to happen, so that slaves will try to become the master.
+
+ 
+the data of the ephimeral file is cached on the application server and whenever there is change in the masters data in the file, zookeeper will inform to the application server about the recent changes and app server will update the cache.
+
+
+Leader election is also used in the database.
+
+How to avoid single point of failure - 
+
+To avoid the single point of failure in case of zookeeper, it will also have the master slave architecture for zookeeper also.
+
+and when master of the zookeeper goas down then in that case the algorithm called RAFT is used to select the new master to run the zookeeper. 
+
+
+Earlier kafka used to use the Zookeeper now it has migrated to use the KRAFT.
+
+we can use the zookeeper when ever managing the master slave architecture.
+
+Go through the RAFT algorithm in short to get the idea.	
+
+
+------------------------
+
+Sliding window and contribution technique 
+
+
+Q. Given int array, find the sum of all possible subarrays.
+
+
+BF - 
+
+total =0;
+
+for( s from 0 to n-1 {
+
+for e from s to n-1 {
+
+subSum=0;
+
+for( i from s to e {
+subSum += A[i];
+}
+
+total += subSum;
+
+}
+
+}
+
+TC - O(n^3)
+SC - O(1)
+
+
+Optimization -
+
+Sum over a range always think about the prefix sum.
+
+we can take the prefix sum of an array and find the sum of the range s to e from it.
+
+TC - O(n^2)
+SC - O(n)
+
+
+Optimization 2 - 
+
+Calculate and use it again and again is carry forward techinque.
+ 
+total =0;
+
+for( s from 0 to n-1 {
+
+subSumm =0;
+
+for e from s to n-1 {
+subSum += A[e];
+total += subSum;
+   }
+}
+
+print(total)
+
+TC - O(n^2)
+SC - O(1)
+
+Optimizatin 3 - 
+
+using Contribution technique - 
+
+no of Choices of start index  = s
+no of Choices of end index = e
+
+for any start index, we can pick any end index, therefore total no of subarrays will be s * e.
+
+No of subarrays containing A[i] = (i+1) * (n-i).
+
+contribution of A[i] = A[i] * subarrays containing A[i].
+
+
+code - 
+
+
+total =0;
+
+for( i from 0 to n-1 ) {
+
+// no of subarrays containing A[i]
+
+long cntSubs = (i+!) * (n-i);
+
+total += A[i] * cntSubs;
+}
+
+print(total);
+
+
+TC - O(n)
+SC - O(1)
+
+
+Q. Total no of subarrays of length k and k <= N.
+
+ Total no of subarrays of length K = N-k+1.
+ 
+
+Q. Given A[], print start and end indices of subarrays of length k.
+
+
+N=8, K=3
+0  1 2 3 4 5 6  7
+11 2 9 6 3 1 10 4
+
+output -
+0 2
+1 3
+2 4
+3 5
+4 6
+5 7
+
+
+code - 
+
+L=0;
+R=k-1;
+
+
+while( R < N) {
+
+print(L + "->" + R);
+
+L += 1;
+R +=1;
+
+}
+
+
+TC - O(N-k+1) = O(N-k)
+SC - O(1)
+
+Q. Given an int array. find max subarray sum of subarray of length =k.
+
+BF - 
+
+L=0;
+R = k-1;
+
+maxAns = -infinity;
+
+while( R < N) {
+
+sum=0;
+
+for( i from L to R ) {
+	subSum += A[i];
+	}
+	
+maxAns = max ( maxAns, subSum);
+
+L += 1;
+R +=1;
+
+}
+
+
+print( maxAns);
+
+inner loop will run exactly k times so TC will be O( (N-k+1) * k ).
+
+for worse cases analysis -
+
+k =1 -> (N-1+1) * 1 = N
+k = N -> (N-N+1) * N = N
+K = N/2 ->  ( N-N/2+1) * N/2 = N^2 /4 +N = O(N^2).
+
+
+Optimize - 
+
+as we are taking the sum from L to R then we can use prefix sum.
+
+and take sum in constant time.
+
+TC - O(N + N -k +1) = O(N)
+SC - O(N)
+
+for worse cases analysis -
+
+k =1 -> (N+N-1+1)  = N
+k = N -> (N+N-N+1)  = N
+K = N/2 ->  (N+ N-N/2+1) = N /4 +N = O(N).
+
+
+Observations - 
+
+when move to next subarray then there is an element which is incoming and one element which is outgoing.
+
+when fixed length like k array is fixed then use the sliding window.
+
+and solve this question by using the sliding window technique.
+
+Practice simillar questions again and again. 
+
+I do not fear a man who knows 10000 different kicks, I fear a man who has practiced one kick 10000 times.
+
+While solving the question write brute force in seperate function and optimised in other function so that it will be better to practice.
+
+
+----------------------------------
+
+Arrays : 2D metrices
+
+Q. Given  a 2d metrix print all the anti diagonals from right to left.
+
+in total there will N + M-1 diagonals in N * M matrix.
+
+ 
+ code - 
+ 
+ // iterrate over the first row 
+ 
+ for( j from  0 to m-1 ) {
+ 
+ r =0, c=j;
+ 
+ while( r < N && c >= 0) {
+ 
+ print( A[r][c] +" );
+ r += 1;
+ c -= 1;
+ }
+ print("\n");
+ 
+ }
+
+
+ for( i from  1 to n-1 ) {
+ 
+ r =i, c=m-1;
+ 
+ while( r < N && c >= 0) {
+ 
+ print( A[r][c] +" );
+ r += 1;
+ c -= 1;
+ }
+ print("\n");
+ 
+ }
+ 
+ 
+ TC - Every cell in the above matrix is iterated only once so time complexity will be O(N*M).
+ 
+ Q. Take the transpose of the matrix.
+
+TC - O(N^2).
+
+Q. Rotate the metrix by 90 degrees.
+
+TC - O(N^2).
+
+-------------------------------
+
+DSA - Memory Management 
+
+LIFO - Last in first out.
+
+Call stack stores the function calls in LIFO manner.
+
+How Java Code Runs
+When you run a Java program, the following steps occur:
+
+Compilation:
+The Java code (.java file) is compiled into bytecode (.class file) by the Java Compiler (javac).
+
+Execution by JVM:
+The Java Virtual Machine (JVM) interprets or compiles the bytecode into machine code (platform-specific code) for execution. This includes:
+
+Class Loading: Loads the required classes.
+Bytecode Verification: Ensures the bytecode adheres to Java’s rules.
+Execution: Executes the program instructions.
+Memory Management:
+JVM divides memory into several areas:
+
+Heap: Stores objects.
+Stack: Manages method calls, local variables, and intermediate computations.
+Call Stack and Function Execution
+The call stack is a part of the JVM memory where method execution details are stored and managed in a Last-In-First-Out (LIFO) manner. Here's how it works:
+
+Method Call:
+Each time a method is called, a stack frame (block of memory) is pushed onto the call stack. This frame contains:
+
+Local variables.
+Return address (where execution resumes after the method ends).
+Method Execution:
+The method executes and may call other methods, which in turn add their own stack frames.
+
+Method Return:
+Once a method completes, its stack frame is popped off the stack, and control returns to the caller method.
+
+Example Code
+java
+Copy
+Edit
+public class CallStackExample {
+    public static void main(String[] args) {
+        System.out.println("Starting program...");
+        int result = addNumbers(5, 3);
+        System.out.println("Result: " + result);
+    }
+
+    public static int addNumbers(int a, int b) {
+        System.out.println("In addNumbers method.");
+        int sum = multiplyNumbers(a + b, 2);
+        return sum;
+    }
+
+    public static int multiplyNumbers(int x, int y) {
+        System.out.println("In multiplyNumbers method.");
+        return x * y;
+    }
+}
+Step-by-Step Execution
+Initial Call Stack:
+The program begins with the main method.
+
+main Method Execution:
+A stack frame is created for main.
+Inside main, addNumbers(5, 3) is called.
+Call Stack After Calling addNumbers:
+addNumbers Method Execution:
+A stack frame is created for addNumbers.
+Inside addNumbers, multiplyNumbers(8, 2) is called (8 = 5 + 3).
+Call Stack After Calling multiplyNumbers:
+multiplyNumbers Method Execution:
+A stack frame is created for multiplyNumbers.
+The result of multiplyNumbers (16 = 8 * 2) is computed and returned to addNumbers.
+Call Stack After Returning from multiplyNumbers:
+Return to addNumbers:
+The multiplyNumbers stack frame is popped.
+addNumbers returns the result (16) to main.
+Final Call Stack After Returning to main:
+Return to main:
+The addNumbers stack frame is popped.
+main prints the result and completes execution.
+Call Stack Visualization
+Stack (Top to Bottom)	Action
+multiplyNumbers(8, 2)	Executes multiplyNumbers.
+addNumbers(5, 3)	Calls multiplyNumbers.
+main	Calls addNumbers.
+(Empty Stack)	Program finishes after main completes.
+LIFO Behavior
+Last-In: The most recently called method (multiplyNumbers) is at the top of the stack.
+First-Out: When multiplyNumbers completes, its stack frame is popped before returning to addNumbers.
+Key Points
+LIFO Execution:
+Methods are executed in a last-in-first-out order.
+Stack Frame:
+Each method call gets its own stack frame with local variables and return addresses.
+Control Flow:
+The flow resumes from where the last method call returned.
+
+
+Reference Variable in Java
+A reference variable in Java is a variable that stores the memory address (reference) of an object in the heap. Instead of storing the actual object, it acts as a pointer to the object.
+
+Types of memory -
+
+Stack - Any primitive data types, reference variables are stored here.
+
+Heap - The data pointed by the reference variable is stored in heap. eg array, arraylist, Hashmap etc.
+
+
+
+Heap in Java
+The heap is a portion of memory in the JVM used to store objects and class instances. It is shared by all threads and is managed by the JVM's garbage collector.
+
+How Heap Works
+Objects and Class Instances:
+
+When you create an object using new, it is stored in the heap memory.
+java
+Copy
+Edit
+String str = new String("Hello"); // The String object is stored in the heap.
+Reference Variables:
+
+Reference variables pointing to the objects are stored in the stack memory, which holds the address of the object in the heap.
+Garbage Collection:
+
+Objects in the heap are eligible for garbage collection when there are no reference variables pointing to them.
+Heap vs. Stack
+Aspect	Heap	Stack
+Storage	Objects and class instances	Local variables, method calls
+Access Speed	Slower	Faster
+Lifespan	Until garbage collected	Until the method finishes
+Managed By	JVM	Thread
+Pass by Value vs. Pass by Reference in Java
+Java is strictly pass by value, even when dealing with objects. This can be confusing because reference variables hold the address of an object, but the address itself is passed by value.
+
+Pass by Value
+When a variable is passed to a method, a copy of the variable's value is sent, not the original variable.
+
+Example with Primitives:
+
+java
+Copy
+Edit
+public class Example {
+    public static void main(String[] args) {
+        int a = 5;
+        modifyPrimitive(a);
+        System.out.println(a); // Output: 5
+    }
+
+    public static void modifyPrimitive(int num) {
+        num = 10; // Only modifies the local copy, not the original.
+    }
+}
+Pass by Value for Objects
+When you pass an object, the reference to the object (address) is copied. The original object can be modified via this reference, but reassigning the reference does not affect the original reference.
+
+Example with Objects:
+
+java
+Copy
+Edit
+class Person {
+    String name;
+}
+
+public class Example {
+    public static void main(String[] args) {
+        Person person = new Person();
+        person.name = "Alice";
+        modifyObject(person);
+        System.out.println(person.name); // Output: Bob
+    }
+
+    public static void modifyObject(Person p) {
+        p.name = "Bob"; // Modifies the object referred to by the reference.
+    }
+}
+However, if the reference itself is reassigned, the original reference is unaffected:
+
+java
+Copy
+Edit
+public static void modifyReference(Person p) {
+    p = new Person(); // This only changes the local copy of the reference.
+    p.name = "Charlie";
+}
+How Matrices Are Stored in Memory in Java
+In Java, matrices (2D arrays) are stored as arrays of arrays. Each row is a reference to a one-dimensional array.
+
+Example
+
+int[][] matrix = {
+    {1, 2, 3},
+    {4, 5, 6},
+    {7, 8, 9}
+};
+Memory Layout
+Heap Memory: Stores the matrix structure and individual rows as separate objects.
+Stack Memory: Holds the reference matrix pointing to the array in the heap.
+Access
+To access an element, Java uses the row index and column index:
+
+matrix[1][2] refers to the second row, third column (6).
+Jagged Arrays
+Java allows non-rectangular arrays:
+
+java
+Copy
+Edit
+int[][] jaggedMatrix = {
+    {1, 2, 3},
+    {4, 5},
+    {6}
+};
+Here, each row can have a different size.
+
+Key Takeaways
+Heap Memory:
+
+Stores objects, arrays, and class instances.
+Managed by the garbage collector.
+Pass by Value:
+
+Java passes a copy of the variable, not the actual variable.
+For objects, the reference (memory address) is copied.
+Matrix Storage:
+
+Matrices are stored as arrays of arrays in the heap.
+Each row is a separate array object.
+
+---------------------------------------
+
+DSA - Sorting Basics 
+
+sorting -  arranging the data in a perticular order based on a parameter.
+
+why sorting - Organizing the data, analyzing the data, easy to search.
+
+always sort using in built functions.
+
+Q. Minimize the cost to empty the array 
+
+given int[n], minimize the cost to empty given array where cost of removing an element is equal to the sum of elements left in the array.
+
+approach - we should remove the largest element first to reduce the cost.
+
+sort the array in ascending order.
+
+Now first array element will contribute only once and second array element will contribute only twice in the cost calsculation like wise it will go till the last element of an array.
+
+code - 
+
+
+// sort the array in descending array
+
+cost =0;
+
+
+for( i  from 0 to N-1 ) {
+
+contri = (i+1) * A[i];
+
+cost += contri;
+}
+
+return cost;
+
+TC - n log n.
+SC - O(1)
+
+Heap sort - TC - nlogn and SC - O(1)
+Merge sort - TC - O( nlogn), SC - O(n)
+Quick sort - TC - O(nlogn), SC - O(logn)
+
+
+Q. count noble integer [ distinct elements only] -
+
+Given an int[n] of distinct elements. find the count of noble integers. A[i] is noble if count of elements smaller than A[i] is equal to A[i].
+
+[1, -5, 3, 5, -10, 4]
+
+ans = 3.
+
+BF - 
+
+noble =0;
+
+for( i from 0 to n-1) {
+
+cnt =0;
+
+for( j from 0 to n-1 ) {
+
+if( A[j] < A[i] ) {
+cnt += 1;
+}
+
+if ( cnt == A[i] ) {
+noble += 1;} 
+}
+
+return noble;
+
+Optimization - 
+
+sort the array in ascending order, so that index will be equal no of smaller elements than A[i].
+
+
+code -
+
+sort the array in ascending order.
+
+noble=0;
+
+for( i from 0 to n-1) {
+
+if( i==A[i] ) noble += 1;
+
+}
+
+return noble.
+
+TC - nlogn + n = O(nlogn).
+SC - O(1).
+
+
+Q. count noble integer [ Elements can be duplicate ] -
+
+Given an int[n] of distinct elements. find the count of noble integers. A[i] is noble if count of elements smaller than A[i] is equal to A[i].
+
+[-10, 1, 1, 3, 10]
+
+ans = 3.
+
+
+observation - 
+
+if previous value is not equal to current value then no of smaller will be equal to index of an element
+
+code -
+
+sort the array in ascending order.
+
+noble=0;
+smaller = -1;
+
+pval = -infinity.
+
+for( i from 0 to n-1) {
+
+val = A[i];
+
+if( pval != val ) { smaller = i}
+
+if ( val == smaller) { noble += 1 }
+
+pval = val;
+
+}
+
+return noble.
+
+TC - nlogn + n = O(nlogn).
+SC - O(1).
+
+Selection sort - 
+
+Selection sort can be used to find kth minimum or maximum value, advantage being you do not need to sort complete array.
+
+Selection Sort is a simple sorting algorithm. It works by dividing the array into two parts: the sorted part and the unsorted part. The sorted part is built from left to right, and the algorithm selects the smallest element from the unsorted part and swaps it with the first unsorted element.
+
+Steps for Selection Sort
+Start with the first element as the current minimum.
+Traverse the remaining unsorted part of the array to find the smallest element.
+Swap the smallest element with the first unsorted element.
+Move the boundary of the sorted part one step to the right.
+Repeat the process for the next unsorted element until the array is fully sorted.
+Java Code for Selection Sort
+java
+Copy
+Edit
+public class SelectionSort {
+    public static void selectionSort(int[] arr) {
+        int n = arr.length;
+        for (int i = 0; i < n - 1; i++) {
+            int minIndex = i; // Assume the first element is the minimum
+            for (int j = i + 1; j < n; j++) {
+                if (arr[j] < arr[minIndex]) {
+                    minIndex = j; // Update the index of the minimum element
+                }
+            }
+            // Swap the minimum element with the first unsorted element
+            int temp = arr[minIndex];
+            arr[minIndex] = arr[i];
+            arr[i] = temp;
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {64, 25, 12, 22, 11};
+        System.out.println("Original Array:");
+        for (int num : arr) {
+            System.out.print(num + " ");
+        }
+        System.out.println();
+
+        selectionSort(arr);
+
+        System.out.println("Sorted Array:");
+        for (int num : arr) {
+            System.out.print(num + " ");
+        }
+    }
+}
+Dry Run
+Input Array: {64, 25, 12, 22, 11}
+Iteration 1:
+
+Start with i = 0 and minIndex = 0.
+Compare elements:
+25 < 64: Update minIndex = 1.
+12 < 25: Update minIndex = 2.
+22 < 12: No change.
+11 < 12: Update minIndex = 4.
+Swap arr[minIndex] with arr[0] → {11, 25, 12, 22, 64}.
+Iteration 2:
+
+Start with i = 1 and minIndex = 1.
+Compare elements:
+12 < 25: Update minIndex = 2.
+22 < 12: No change.
+64 < 12: No change.
+Swap arr[minIndex] with arr[1] → {11, 12, 25, 22, 64}.
+Iteration 3:
+
+Start with i = 2 and minIndex = 2.
+Compare elements:
+22 < 25: Update minIndex = 3.
+64 < 22: No change.
+Swap arr[minIndex] with arr[2] → {11, 12, 22, 25, 64}.
+Iteration 4:
+
+Start with i = 3 and minIndex = 3.
+Compare elements:
+64 < 25: No change.
+No swap needed → {11, 12, 22, 25, 64}.
+Final Output: {11, 12, 22, 25, 64}.
+
+Scenarios Where Selection Sort is Used
+Small datasets: It is simple and easy to implement for small arrays.
+Learning purposes: Ideal for teaching sorting algorithms due to its simplicity.
+Low memory usage: Since it is an in-place algorithm, it requires minimal additional space.
+Time Complexity
+Best Case: 
+𝑂
+(
+𝑛
+2
+)
+O(n 
+2
+ )
+Even if the array is already sorted, the algorithm still makes comparisons for every element.
+Average Case: 
+𝑂
+(
+𝑛
+2
+)
+O(n 
+2
+ )
+Worst Case: 
+𝑂
+(
+𝑛
+2
+)
+O(n 
+2
+ )
+When the array is sorted in reverse order, it still performs the same number of comparisons.
+Explanation:
+
+For each element 
+𝑖
+i, the inner loop runs 
+𝑛
+−
+𝑖
+−
+1
+n−i−1 times.
+Total comparisons: 
+𝑛
++
+(
+𝑛
+−
+1
+)
++
+(
+𝑛
+−
+2
+)
++
+.
+.
+.
++
+1
+=
+𝑛
+(
+𝑛
+−
+1
+)
+2
+n+(n−1)+(n−2)+...+1= 
+2
+n(n−1)
+​
+ , which is 
+𝑂
+(
+𝑛
+2
+)
+O(n 
+2
+ ).
+Space Complexity
+𝑂
+(
+1
+)
+O(1): Selection sort is an in-place algorithm, meaning it does not require any extra space for sorting.
+
+Insertion sort - 
+
+Best case TC -  If all elements are already sorted O(N)
+
+Worst case TC - O(N^2)
+
+
+Insertion Sort is a simple and intuitive sorting algorithm that builds the sorted array one element at a time. It works similarly to how we arrange playing cards in our hand. For each element, it finds the correct position in the sorted part of the array and inserts it there.
+
+Steps for Insertion Sort
+Assume the first element is already sorted.
+Start from the second element (i = 1) and compare it with the elements before it.
+Shift the elements in the sorted part of the array to the right until you find the correct position for the current element.
+Insert the current element into its correct position.
+Repeat the process for all elements in the array.
+Java Code for Insertion Sort
+java
+Copy
+Edit
+public class InsertionSort {
+    public static void insertionSort(int[] arr) {
+        int n = arr.length;
+        for (int i = 1; i < n; i++) {
+            int key = arr[i]; // Current element to be inserted
+            int j = i - 1;
+            
+            // Move elements of arr[0..i-1] that are greater than key
+            // to one position ahead of their current position
+            while (j >= 0 && arr[j] > key) {
+                arr[j + 1] = arr[j];
+                j = j - 1;
+            }
+            arr[j + 1] = key; // Insert the key in its correct position
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {12, 11, 13, 5, 6};
+        System.out.println("Original Array:");
+        for (int num : arr) {
+            System.out.print(num + " ");
+        }
+        System.out.println();
+
+        insertionSort(arr);
+
+        System.out.println("Sorted Array:");
+        for (int num : arr) {
+            System.out.print(num + " ");
+        }
+    }
+}
+Dry Run
+Input Array: {12, 11, 13, 5, 6}
+Iteration 1:
+
+Current element (key) = 11, compare with 12.
+11 < 12: Shift 12 to the right → {12, 12, 13, 5, 6}.
+Insert 11 at position 0 → {11, 12, 13, 5, 6}.
+Iteration 2:
+
+Current element (key) = 13, compare with 12.
+13 > 12: No shifting required.
+Array remains → {11, 12, 13, 5, 6}.
+Iteration 3:
+
+Current element (key) = 5, compare with 13, 12, 11.
+5 < 13: Shift 13 to the right → {11, 12, 13, 13, 6}.
+5 < 12: Shift 12 to the right → {11, 12, 12, 13, 6}.
+5 < 11: Shift 11 to the right → {11, 11, 12, 13, 6}.
+Insert 5 at position 0 → {5, 11, 12, 13, 6}.
+Iteration 4:
+
+Current element (key) = 6, compare with 13, 12, 11.
+6 < 13: Shift 13 to the right → {5, 11, 12, 13, 13}.
+6 < 12: Shift 12 to the right → {5, 11, 12, 12, 13}.
+6 < 11: Shift 11 to the right → {5, 11, 11, 12, 13}.
+Insert 6 at position 1 → {5, 6, 11, 12, 13}.
+Final Output: {5, 6, 11, 12, 13}.
+
+Scenarios Where Insertion Sort is Used
+Nearly Sorted Arrays: Performs very well when the array is already or almost sorted.
+Small Datasets: It has low overhead and is easy to implement for small inputs.
+Online Sorting: Used in situations where data arrives sequentially and needs to be sorted as it arrives.
+Time Complexity
+Best Case: 
+𝑂
+(
+𝑛
+)
+O(n)
+When the array is already sorted, the inner loop doesn't execute, and the algorithm simply iterates through the array once.
+Worst Case: 
+𝑂
+(
+𝑛
+2
+)
+O(n 
+2
+ )
+When the array is sorted in reverse order, each element has to be compared with all the previous elements.
+Average Case: 
+𝑂
+(
+𝑛
+2
+)
+O(n 
+2
+ )
+For random inputs, each element may have to be compared with half of the previous elements.
+Explanation:
+
+The outer loop runs 
+𝑛
+−
+1
+n−1 times.
+The inner loop (shifting) runs 
+𝑂
+(
+𝑖
+)
+O(i) times for the 
+𝑖
+i-th iteration.
+Total comparisons: 
+1
++
+2
++
+3
++
+.
+.
+.
++
+(
+𝑛
+−
+1
+)
+=
+𝑛
+(
+𝑛
+−
+1
+)
+2
+1+2+3+...+(n−1)= 
+2
+n(n−1)
+​
+ , which is 
+𝑂
+(
+𝑛
+2
+)
+O(n 
+2
+ ).
+Space Complexity
+Space Complexity: 
+𝑂
+(
+1
+)
+O(1)
+In-place sorting algorithm. No additional memory is required.
+
+
+----------------------------------
+
+DSA : Bit Manipulation 
+
+
+How Negative Numbers Are Represented in the Binary Number System
+Negative numbers in binary are most commonly represented using the Two's Complement method. This method is widely used because it simplifies arithmetic operations (like addition and subtraction) and eliminates the need to handle separate sign bits explicitly.
+
+Steps to Represent Negative Numbers Using Two's Complement
+Start with the Positive Binary Representation:
+Convert the absolute value of the number into binary.
+Invert the Bits (One's Complement):
+Change all 0s to 1s and all 1s to 0s.
+Add 1 to the Result:
+Add 1 to the inverted binary number to get the two's complement.
+This representation allows the Most Significant Bit (MSB) to act as the sign bit:
+
+MSB = 0: The number is positive.
+MSB = 1: The number is negative.
+Example of Two's Complement
+Let's represent 
+−
+5
+−5 in 8-bit binary:
+
+Positive Representation:
+5
+5 in binary = 00000101.
+Invert the Bits (One's Complement):
+11111010.
+Add 1:
+11111010 + 1 = 11111011.
+Thus, 
+−
+5
+−5 in two's complement (8 bits) is 11111011.
+
+Key Properties of Two's Complement
+Adding a positive number and its two's complement always results in 0.
+Example: 
+5
++
+(
+−
+5
+)
+=
+0
+5+(−5)=0.
+Range of numbers in two's complement for 
+𝑛
+n-bit representation:
+−
+2
+𝑛
+−
+1
+−2 
+n−1
+  to 
+2
+𝑛
+−
+1
+−
+1
+2 
+n−1
+ −1.
+Range of Numbers for Different Bit Widths
+2 Bits:
+
+Range: 
+−
+2
+2
+−
+1
+−2 
+2−1
+  to 
+2
+2
+−
+1
+−
+1
+2 
+2−1
+ −1
+−
+2
+−2 to 
+1
+1
+Binary:
+00 = 0
+01 = 1
+10 = -2 (two's complement)
+11 = -1 (two's complement)
+3 Bits:
+
+Range: 
+−
+2
+3
+−
+1
+−2 
+3−1
+  to 
+2
+3
+−
+1
+−
+1
+2 
+3−1
+ −1
+−
+4
+−4 to 
+3
+3
+Binary:
+000 = 0
+001 = 1
+010 = 2
+011 = 3
+100 = -4 (two's complement)
+101 = -3 (two's complement)
+110 = -2 (two's complement)
+111 = -1 (two's complement)
+4 Bits:
+
+Range: 
+−
+2
+4
+−
+1
+−2 
+4−1
+  to 
+2
+4
+−
+1
+−
+1
+2 
+4−1
+ −1
+−
+8
+−8 to 
+7
+7
+8 Bits:
+
+Range: 
+−
+2
+8
+−
+1
+−2 
+8−1
+  to 
+2
+8
+−
+1
+−
+1
+2 
+8−1
+ −1
+−
+128
+−128 to 
+127
+127
+32 Bits:
+
+Range: 
+−
+2
+32
+−
+1
+−2 
+32−1
+  to 
+2
+32
+−
+1
+−
+1
+2 
+32−1
+ −1
+−
+2
+,
+147
+,
+483
+,
+648
+−2,147,483,648 to 
+2
+,
+147
+,
+483
+,
+647
+2,147,483,647
+
+
+Importance of constraints - 
+
+
+int a =10^5;
+int b = 10^6;
+
+int c = a * b;
+
+int c = a * b; // this will give gatbage value
+
+long c = (long) ( a * b) // garbage
+
+long c = (long) a * b; // this will give correct value.
+
+
+
+importance of constraints - 
+
+long c = (long) a * (long) b; // this will give correct value.
+
+int can only store the value which is till 2 * 10^9.
+
+-------------------------------------
+
+
+DSA : Strings 
+
+ String is sequence of characters.
+ 
+ "Hello" - String
+ 'a', 'v' - characters
+ 
+  To denote characters we use equivalent int ascii values.
+  
+  Ascii of A = 65, Z = 90, a = 97, z = 122, 0 = 48, 9=57
+  
+ 
+ char ch = (char) 65
+ 
+ char ch = (char) ('a' +1)
+ print(ch) // b
+
+int x ='a'
+print(x) // 97 
+
+Switch case - 
+
+
+Q. Convert lowercase to uppercase and uppercase to lowercase.
+
+S = "Hello"
+ans = "hELLO"
+
+
+How to figure out if a charcter is lowecae ? 
+
+range of lowercase = 'a' to 'z'
+
+if( 'a' <= ch && ch <= 'z'){
+// do operation
+}
+
+how to convert lowercase to uppercase - 
+
+to convert lowercase to uppercase substract  32 from the uppercase character.
+
+and to convert uppercase to lowercase add 32 to the lowercase characters.
+
+code - 
+
+String s ; // given 
+
+
+
+for( i from 0 to n-1 ) {
+
+	if( 'a' <= S[i] && s[i] <= 'z' ) {
+	s[i]= s[i] -32;
+}else {
+	s[i] = s[i] +32;
+	}
+	
+	}
+	
+TC - O(n)
+SC - O(1)
+	
+We can not change the same string in java and python, as strings are immutable.
+
+
+
+String s ; // given 
+String res="";
+
+for( i from 0 to n-1 ) {
+
+	if( 'a' <= S[i] && s[i] <= 'z' ) {
+	res += (char) s[i] -32;
+}else {
+	res += (char)s[i] +32;
+	
+	}
+	
+	}
+	
+TC - O(n)
+SC - O(1)
+
+Q. Given String s convert it into array of characters --
+
+
+// string to char array.
+char[] arr = s.toCharArray();
+
+// char array to string
+String str = new String(arr);
+
+
+ Sub Strings - it a part of the string.
+ 
+ Entire string can be a substring.
+Empty string is also substring.
+
+It is same as subarray.
+
+total no of substring can be formed by the string is = n * (n +1) /2.
+
+Q. Check for palindrome 
+
+MOM
+DAD
+MADAM
+EYE
+Shubham - No
+
+BF - 
+
+Reverse the string and then compare it with given string if equal then it is palindrome.
+
+
+TC - O(n)
+SC - O(n)
+
+
+Two pointers - 
+
+start two pointer from left and right and compare the characters at that position.
+
+code - 
+
+l=0;
+r=n-1;
+
+
+while( l < r) {
+
+if ( s[i] != s[r]) {
+return false;
+}
+l++;
+r--;
+}
+
+return true;
+
+
+Q, How to find if a sub string is a palindrome ? 
+Start and end will be given .
+
+s = aamadamcc
+
+
+code -
+
+l = start
+r = end
+
+while( l < r) {
+
+if ( s[i] != s[r]) {
+return false;
+}
+l++;
+r--;
+}
+
+return true;
+
+
+Q. Given a string s find the length of the longest odd length palindromic subsubstring.
+
+ex abcbcbxb output = 5
+
+anamadam output = 5
+
+BF - 
+
+for all substrings check if its palindrome or not. 
+
+code -
+
+to uniquely identify the substring we need start and end point of the sub string.
+
+
+mlength =0;
+
+
+for( l from 0 to n0-1) {
+
+for( r from l to n-1 ) {
+
+length = r-l+1;
+
+if( length %2 ==0 ) {
+	continue;
+	}
+	
+if( checkPalindrome( s, l, r) {
+mlength = max ( mlength, length);
+}
+
+}
+
+}
+
+TC - O(n^3)
+SC - O(1)
+
+
+Observation - 
+
+for all odd length palindrome we meet at single character.
+
+Expand around the center.
+
+which index to choose as centre of odd length palindrome?
+
+we can choose all indexes as centre.
+
+start from index 0 and expand on both sides and find if it can be the center of the substring by ggoing in both direction and comparing the characters.
+
+code - 
+
+
+int findOddPalindrome( String s ) {
+
+length =0;
+ans = minus infinity;
+
+for( c from 0 to n-1) {
+
+	l = c;
+	r=c;
+	
+	while( l >= 0 && r <= n-1 && s[l] == s[r] ) {
+	
+	l--;
+	r++;
+	}
+	
+	
+	length = r-l-1;
+	
+	ans = max (ans, length);
+	}
+	
+	}
+	
+}
+
+
+worst case TC - aaaaaaaaaaaaa
+TC - O(n^2)
+SC - O(1)
+
+Best case TC - asdasdfasdf
+TC - O(N)
+SC - O(1)
+
+Q. find the even length longest palindromeic substring.
+
+
+Q. find the  longest palindromeic substring.
+
+Immutability - 
+
+In english there are limited no of meaning ful words.
+
+so java will store all the string in string pool and return its reference to the variable.
+
+---------------------------------------
+
+DSA : Interview problems 
+
+Analyzing constraints 
+
+N	TC	Iterations	Result
+10^5	N^2	10^10		Not possible
+10^3	N^2	10^6		Possible
+20	2^N	10^6 approx	Possible
+10^6	N	10^6		Possible.
+
+
+Q. Given a binary array of 0s and 1's. find the max no of consecutive 1's that can be obtained by updating atmost one 0 to 1.
+
+arr = 1 1 0 1 1 0 1 
+ans =5
+
+arr = 1 1 1 1 1 1
+ans =6
+
+approach - 
+
+expand around zero to figure out consecutive sequence of 1 on left and right.
+
+code -
+
+
+// handle all once 
+
+ones =0
+
+for( i from 0 to n-1) {
+
+if (A[i] == 1) ones +=1;
+}
+
+if( ones == n ) return n;
+
+// now our input array contains atleast one zero.
+
+for( i from 0 to n-1) {
+
+if ( A[i] == 0){
+
+// consecutive ones on left
+
+l=0;
+
+for( j from i-1 to 0 ) {
+
+if A[i] == 1 ) l+=1;
+else break;
+
+}
+
+r =0;
+
+for ( j from i+1 to n-1) {
+if ( A[i] == 1) r +=1;
+else break;
+}
+
+ans = max(ans, l+1+r);
+
+}
+
+}
+
+return ans;
+}
+
+
+TC - in this one element is visited atmost twice from the inner loops and once from the outer loops.
+
+TC - O(3n) = O(n)
+SC - O(1)
+
+Q. Given a binary array of 0s and 1's. find the max no of consecutive 1's that can be obtained by swapping  atmost one 0 to 1.
+
+ this is same as previous question, in this whenever we get the greater ans than the no of ones in the array then reduce ans by 1 and if ans is less than or equal to ones then simply return ans.
+ 
+  
+code -
+
+
+// handle all once 
+
+ones =0
+
+for( i from 0 to n-1) {
+
+if (A[i] == 1) ones +=1;
+}
+
+if( ones == n ) return n;
+
+// now our input array contains atleast one zero.
+
+for( i from 0 to n-1) {
+
+if ( A[i] == 0){
+
+// consecutive ones on left
+
+l=0;
+
+for( j from i-1 to 0 ) {
+
+if A[i] == 1 ) l+=1;
+else break;
+
+}
+
+r =0;
+
+for ( j from i+1 to n-1) {
+if ( A[i] == 1) r +=1;
+else break;
+}
+
+ans = max(ans, l+1+r);
+
+}
+
+}
+  
+  if ( ans > ones ) return ans -1;
+  
+return ans;
+}
+
+TC - O(n)
+SC - O(1)
+
+Q. given a 2d metrix, make all the elements in both row, column 0 if any cell in that row or column is equal to 0.
+
+Approach - 
+
+iterate through the matrix, if A[r][c] == 0 then update the entire row =0 and also update the entire column to 0.
+
+this will not work as in next iteration we will find lot of zeros which were updated in last iteration.
+
+Approach 2 - 
+
+
+iterate through the matrix, if A[r][c] == 0 then update that element value equal to -1.
+ 
+ 
+ 
+iterate through the matrix, if A[r][c] == -1 then update the entire row =0 and also update the entire column to 0.
+
+
+Approach 3 -
+
+store the row and column nos where there is zero, somewhere outside and then iterate the matrix and update element to zero when we come across to the row and column which is stored outside.
+
+Code - 
+
+
+Set cols;
+set rows;
+
+R = no of rows
+C = no of cols
+
+for( r from 0 to R-1 ) {
+
+for( c from 0 to C - 1) {
+
+if ( A[r][c] == 0) {
+
+	rows.add(r);
+	cols.add(c);
+}
+
+}
+	
+}
+
+
+
+for( r from 0 to R-1 ) {
+
+for( c from 0 to C - 1) {
+
+// either r is present in rows set or c is present in cols set then execute below
+
+if (  ){
+
+	A[r][c] =0;
+	}
+	}
+	}
+	
+
+TC - R * C 
+SC - R + C
+
+
+----------------------------------
+
+
+
+Telegram login - 8830449186 - Shyam Gandhi.
+
+Sadhguru - dhananjayjadhav2151@gmail.com
+
+Yogi Varunanand - 918830449186 - dhananjayjadhav2151@gmail.com - Dhananjay
+
+Substack - dhananjayjadhav2151@gmail.com - OTP login.
+
+e pik pahani app.
+Proton mail app.
+
+------------------------------
+
+Black clover
+Solo levelling, 
+Haiku
+Naruto
+
+-----------------------------------------
+
+
+System Design - Elastic search 
+
+
+Elastic search is used to implement the full text search.
+
+
+1) Attribute based searching - 
+
+select * from users where username LIKE '%shahid%'
+
+because of indexing this query will be feasible.
+
+2) Full text search - 
+
+select * from posts where content 
+LIKE '%joined amazon%'
+
+and it is not advisable to create an index on the content which has huge characters.
+
+and we also want to search based on only few characters, for this we will have to search character by character.
+
+
+If we have lot of documents and want to search something in these documents.
+
+Brute force approach to full text searching is to iterate all the documents and check if the keyword is present or not.
+
+Elastic Search - it is document based database which very similar to the mongo DB and it uses the inverted index to perform the documnet based seraching.
+
+ 
+Elastic search will never be the primary database, it will always be secondary database.
+
+ Inverted Index in Elasticsearch
+An inverted index is the core data structure used in Elasticsearch for full-text search. It is a fundamental concept borrowed from information retrieval systems and is designed to make text search fast and efficient.
+
+What is an Inverted Index?
+An inverted index is like a "lookup table" that maps terms (words) to the documents (or records) that contain those terms. Instead of storing each document's content and scanning them one by one during a search, Elasticsearch creates an index of terms and their associated documents.
+
+For example:
+
+Suppose we have three documents:
+
+"The quick brown fox"
+"The lazy dog"
+"The fox jumps over the lazy dog"
+An inverted index for these documents would look like this:
+
+Term    -> Document IDs
+brown   -> 1
+dog     -> 2, 3
+fox     -> 1, 3
+jumps   -> 3
+lazy    -> 2, 3
+over    -> 3
+quick   -> 1
+the     -> 1, 2, 3
+
+How Elasticsearch Builds an Inverted Index
+Tokenization: The input text is broken into tokens (words or phrases) using an analyzer.
+Normalization: Each token is processed (e.g., converted to lowercase, stripped of punctuation, etc.).
+Indexing: Each token is stored in the inverted index, along with the document ID and positional information (optional).
+Structure of an Inverted Index
+Terms: Unique words or tokens in the dataset.
+Postings List: A list of document IDs where the term appears. Additional details like the term frequency, positions, and offsets may also be stored for advanced features like phrase matching.
+Use Cases of Inverted Index in Elasticsearch
+1. Full-Text Search
+Scenario: Searching for documents that contain the word "Elasticsearch".
+How it works: Elasticsearch looks up the term "Elasticsearch" in the inverted index and retrieves all documents containing the term, instead of scanning every document.
+2. Phrase and Proximity Search
+Scenario: Searching for the phrase "quick brown fox".
+How it works: The inverted index stores positional information for terms. Elasticsearch uses this information to determine whether the words appear together and in the correct order.
+3. Autocomplete and Suggestions
+Scenario: A search bar that suggests terms as the user types.
+How it works: Elasticsearch can use n-gram or edge n-gram tokenizers to break terms into smaller fragments, enabling fast suggestions.
+4. Faceted Search
+Scenario: Displaying the count of documents for categories (e.g., products by brand or price range).
+How it works: Elasticsearch uses inverted indexes to quickly aggregate data and provide facets.
+5. Log and Event Analysis
+Scenario: Searching through logs for error messages or specific patterns.
+How it works: The inverted index allows rapid searches through text-heavy log files.
+6. Handling Multilingual Text
+Scenario: Indexing and searching content in multiple languages.
+How it works: Custom analyzers tokenize and normalize text based on language-specific rules.
+Why Inverted Index is Efficient
+Quick Lookup: The mapping of terms to document IDs eliminates the need to scan entire documents.
+Space Optimization: Terms are stored once in the dictionary, reducing redundancy.
+Advanced Querying: Positional data enables complex queries like phrase matching, proximity search, and ranking.
+Example in Elasticsearch
+Consider you index the following documents into an Elasticsearch index named articles:
+
+Document 1
+json
+Copy code
+{
+  "title": "Elasticsearch Basics",
+  "content": "Elasticsearch is a distributed, RESTful search engine."
+}
+Document 2
+json
+Copy code
+{
+  "title": "Full-Text Search",
+  "content": "Elasticsearch uses an inverted index for text search."
+}
+Search Query
+json
+Copy code
+{
+  "query": {
+    "match": {
+      "content": "search engine"
+    }
+  }
+}
+How Elasticsearch Handles It
+Tokenizes the search terms search and engine.
+Looks up the terms in the inverted index.
+Returns the documents (with relevance scores) that contain these terms.
+Conclusion
+The inverted index is the backbone of Elasticsearch's fast and efficient search capabilities. It allows Elasticsearch to:
+
+Perform quick lookups.
+Handle complex queries like phrase and proximity searches.
+Scale horizontally for massive datasets.
+
+
+Additional Key Points About Inverted Index
+1. Analyzers in Elasticsearch
+Role: Before a document is stored in the inverted index, it goes through an analyzer.
+Components of an Analyzer:
+Tokenizer: Splits the text into tokens (words or phrases).
+Token Filters: Modify tokens (e.g., lowercase filter, stopword filter, stemming).
+Character Filters: Preprocess the text (e.g., removing HTML tags).
+Customization: Elasticsearch allows custom analyzers for specific use cases, such as handling synonyms, different languages, or case sensitivity.
+Interview Tip: Be prepared to explain how analyzers work and when to use a custom analyzer.
+
+2. Term Frequency and Document Frequency
+Term Frequency (TF): Measures how often a term appears in a document.
+Document Frequency (DF): Measures how many documents contain the term.
+Importance: TF and DF are used to calculate TF-IDF (Term Frequency-Inverse Document Frequency), which determines the relevance of a term to a document in search results.
+Interview Tip: Mention that Elasticsearch now uses BM25 (a ranking algorithm) instead of pure TF-IDF for scoring.
+
+3. Field Data Types and Inverted Index
+Not all fields are stored in an inverted index. For example:
+Text fields: Indexed for full-text search.
+Keyword fields: Not tokenized but indexed as is, used for exact matches.
+Numeric and date fields: Stored differently for range queries but can still leverage indexing for speed.
+Interview Tip: Explain how understanding field types can optimize indexing and query performance.
+
+4. Index Size Optimization
+Reducing Index Size:
+Use filters like stopwords to ignore common words (e.g., "the", "is").
+Combine synonyms at indexing time to reduce duplicate data.
+Limit the number of fields indexed.
+Compression: Elasticsearch compresses index data to save disk space.
+Interview Tip: Discuss how you would handle large datasets by optimizing the inverted index.
+
+5. Deletion and Updates in Inverted Index
+Deletes: Elasticsearch doesn't remove documents immediately. It marks them as "deleted" and cleans them up during a background process called merge.
+Updates: Elasticsearch doesn't update the document in place. Instead, it creates a new version and marks the old one as deleted.
+Interview Tip: Highlight this to explain how Elasticsearch handles document lifecycle and the impact on performance.
+
+6. Position and Offset Information
+Position: Tracks the position of a term in the document for phrase queries (e.g., "quick brown fox").
+Offsets: Store the start and end character positions of terms, used for highlighting matched terms in the search results.
+Interview Tip: Demonstrate understanding of how these features enable advanced querying like proximity searches or snippets in results.
+
+7. Shards and Replicas
+Elasticsearch splits data into shards. Each shard has its own inverted index.
+Replicas: Copies of shards for fault tolerance and load distribution.
+Queries are distributed across shards and aggregated.
+Interview Tip: Discuss how the inverted index interacts with shards and replicas to ensure scalability and high availability.
+
+8. Query Execution with Inverted Index
+Match Query: Tokenizes the search string and retrieves documents based on the inverted index.
+Term Query: Looks up exact matches (e.g., for keywords).
+Boolean Query: Combines multiple queries with logical operators like AND, OR, and NOT.
+Interview Tip: Be prepared to explain how different queries leverage the inverted index.
+
+9. Limitations of Inverted Index
+Not suitable for:
+Structured data: Like relational databases (but Elasticsearch can handle structured queries using filters).
+Binary data: Such as images or videos (stored as attachments but not indexed for content).
+Challenges in handling real-time updates due to the cost of reindexing.
+Interview Tip: Show awareness of when Elasticsearch might not be the best tool.
+
+Key Use Cases to Mention
+E-Commerce: Product search with filters for categories, brands, and price ranges.
+Log Analysis: Searching and analyzing text-heavy log data.
+Content Management: Powering search for large-scale websites or document repositories.
+Real-Time Analytics: Combining search and aggregation for dashboards.
+
+
+for Search system availibility is more important than consistency.
+
+we need to pre process all the documents to convert into inverted index, to make our searches optimize.
+
+Intergrating Elastic search in our system - 
+
+High-Level Elasticsearch Architecture
+Data Source Layer
+
+Description: The layer where your application's raw data resides.
+Examples: Databases (MySQL, PostgreSQL), APIs, log files, or event streams.
+Responsibilities:
+Serve as the primary source of truth for your data.
+Provide data to Elasticsearch for indexing.
+Data Ingestion Layer
+
+Description: A pipeline that processes and prepares data for Elasticsearch.
+Components:
+ETL (Extract, Transform, Load) Tools:
+Tools like Logstash, Apache Kafka, or custom scripts extract data, transform it into a suitable format, and load it into Elasticsearch.
+Preprocessors:
+Clean and normalize data (e.g., remove duplicates, standardize date formats).
+APIs:
+Custom APIs to push data directly into Elasticsearch.
+Responsibilities:
+Ensure data is formatted and enriched appropriately before indexing.
+Handle batch processing or real-time streaming of data.
+Elasticsearch Cluster
+
+Description: The core of the architecture where data is indexed, stored, and searched.
+Components:
+Nodes:
+Elasticsearch instances that work together in a cluster. There are several types:
+Master Nodes: Manage cluster-wide changes (e.g., adding/removing nodes).
+Data Nodes: Store and index the actual data.
+Ingest Nodes: Perform data transformation during indexing.
+Coordinating Nodes: Route search and indexing requests.
+Shards:
+Indexes are divided into smaller pieces (shards) for horizontal scalability.
+Shards can be primary or replicas for fault tolerance.
+Index:
+Logical structure that contains documents. Each document is indexed for efficient querying.
+Responsibilities:
+Store and manage indexed data.
+Perform distributed and scalable search operations.
+Ensure high availability and fault tolerance.
+Application Layer
+
+Description: Your application's backend, which interacts with Elasticsearch to perform search and data-related operations.
+Components:
+Search APIs:
+Use Elasticsearch RESTful APIs for operations like search, bulk, update, etc.
+Query Builders:
+Tools or libraries (e.g., Elasticsearch Java API, Python elasticsearch library) to construct queries programmatically.
+Responsibilities:
+Handle search queries from users.
+Fetch and process results from Elasticsearch.
+Integrate search results into the application's UI or APIs.
+User Interface (UI) Layer
+
+Description: The front-end or reporting tools where search results are presented to users.
+Examples:
+Search Boxes: Autocomplete or faceted search interfaces.
+Dashboards: Visualization tools like Kibana to display data analytics.
+Responsibilities:
+Provide an intuitive search and filtering experience.
+Display aggregated or detailed search results.
+Monitoring and Maintenance Layer
+
+Description: Tools and systems to monitor the health and performance of the Elasticsearch cluster.
+Examples:
+Elasticsearch Monitoring APIs:
+Monitor cluster health, shard allocation, and node status.
+Tools:
+Kibana, Elastic APM, or external tools like Prometheus and Grafana.
+Responsibilities:
+Detect and address cluster issues like node failures or performance bottlenecks.
+Optimize indexing and querying for better performance.
+Detailed Data Flow
+Data Ingestion:
+
+Raw data is extracted from the source (e.g., database or logs).
+The data is transformed (e.g., tokenized, cleaned) using tools like Logstash, Kafka, or custom scripts.
+Transformed data is sent to Elasticsearch for indexing via REST APIs.
+Data Storage and Indexing:
+
+Elasticsearch indexes the incoming data.
+Data is distributed across shards for scalability.
+Metadata and positional information are stored in the inverted index for efficient search.
+Search Queries:
+
+Users or applications send search requests to the application layer.
+The application translates user requests into Elasticsearch queries.
+Elasticsearch retrieves relevant documents using the inverted index and scoring mechanisms like BM25.
+Aggregations are performed if necessary (e.g., faceted search).
+Search Results:
+
+Elasticsearch returns results to the application.
+The application processes and formats the results for the UI.
+The UI displays search results to the user.
+Key Considerations
+Scalability:
+
+Use shards to horizontally scale as the data size grows.
+Use replicas to handle high query loads and ensure availability.
+Fault Tolerance:
+
+Ensure replicas are configured for data redundancy.
+Design the system to handle node failures gracefully.
+Performance Optimization:
+
+Use appropriate analyzers and mapping configurations for indexing.
+Optimize query performance by designing efficient queries and minimizing the use of expensive operations.
+Security:
+
+Secure Elasticsearch with features like API keys, IP whitelisting, and encryption.
+Use the Elastic Stack’s security features (if available).
+Integration:
+
+Design the ingestion pipeline to handle incremental updates and deletions.
+Integrate Elasticsearch with other tools like Kibana for visualization.
+Example Use Case: E-commerce Search
+Data Source: Product catalog stored in a relational database.
+Data Ingestion: Logstash fetches product data, transforms it (e.g., tokenizes product descriptions), and sends it to Elasticsearch.
+Elasticsearch Cluster: Stores indexed product data.
+Application Layer: Backend APIs use Elasticsearch to power search features like product suggestions, filters, and sorting.
+UI Layer: Displays search results and filters in a user-friendly manner on the e-commerce site.
+Monitoring: Kibana dashboards monitor cluster health and search performance.
+
+
+
+While injecting data in the elastic search we need to follow below steps to process the data -
+
+1) Remove stop words.
+2) Stemming or finding the root words - like for word "Running" root word will be "run".
+3) Generate tokens - in this the words will be joined to form the meaning ful phrases. if formed phrase has only one word then we can call it Unigrams, and if it has two words then we will call it Bigrams and for three words we will call it trigrams.
+
+4) store these words in the elastic search with their document id.
+
+Google uses the Term frequency and inverse document frequency statistical methods in NLP and information retrieval to measure how important a term is within a document relative to a collection of docuements.
+
+in Elastic search sharding should not be done based on the words.
+
+
+In original database the documents are stored and sharded based on the document id.
+
+if we search something on the elastic search then we will get the document ids in which our serach is present, which are present on the different machines, so we will have to fetch the documents from all the shards of the database.
+
+
+so to avoid this fetching the documents from different shards google does below -
+
+It will store the indexing of the word and documents in the same database in which the actual documents are present, in this way we will reduce the no of queries between different shards.
+
+and for each popular query it will pre process the results and store in on the cache. as we do not go to the second page of the google search results, it will only store first few results on the cache.
+
+Elastic search is also used for logging.
+
+---------------------------------
+
+System Design - Design S3 
+
+Design file storage -
+
+S3, HDFS, BLOB storage and object storage is the same thing and uses the file storage architecture internally.
+
+Images, Videos, media content, log files are stored on the s3 storage.
+
+and the url of above contents will be stored in the database mapped with the post id and user id in case of the facebook.
+
+file storage system is not optimized for search and other operations.
+
+and we do not consider this file storage system in back of the envelop calculation.
+
+ 
+Properties the file storage should have - 
+
+store big files.
+
+data should be durable and not lost.
+
+upload and download performance should be good - when connection breaks while uploading and downloading then it should start from the last point not from start.
+
+There are two ways to store the big files on the machine -
+
+1) Upload complete file in a single machine.
+2) Or Upload the file and distribute it across multiple machines.
+
+ To solve the problem of Single point of failure we will use replication method.
+ 
+ and sharding is used only when we need to distibute the data across multiple machines, when data is too much in size to store on single machine.
+ 
+ 
+ if we store the file as a single unit in single machine then pros and cons are below -
+ 
+ cons - 
+ 
+1) file size is limited by the machine size.
+2) Parallelism is not possible.
+
+Pros - 
+No need to maintain multiple entries for each chunk of the file.
+
+we do not have to collate the chunks at the time of downloading.
+
+or if we divide the file into multiple chunks and store them into multiple machines then pros and cons will be -
+
+Pros - 
+1) We can store the file of any size.
+2) Parallelism is possible.
+
+cons -
+
+Need to maintain multiple entries for each chunk of the file.
+
+we have to collate the chunks at the time of downloading.
+
+Chunk size should not be very small and it should not be very large as well.
+
+
+HDFS - Hadoop distributed file storage -
+
+in there are two types of machines -
+
+one stores the data of file in chunks and these are called as data nodes.
+
+and other stores the mapping of the chunks of the file, like file one chunks are stored on this machine, we need to also maintain the metadata of all the files and their chunks. this machines is called as Name node.
+
+
+
+Name node maintains which chunks of which file is present on which machines.
+
+and data nodes are sharded but there is no need to shard the named nodes as they have small metadata.
+
+ and if data in the named nodes is more than the capacity of the nodes then create multiple HDFS clustures instead of creating new name node. 
+ 
+ What is HDFS?
+HDFS (Hadoop Distributed File System) is a distributed file system designed for storing large datasets across a cluster of commodity hardware. It is a core component of Apache Hadoop and provides high throughput access to application data. HDFS is fault-tolerant, scalable, and designed to work efficiently with very large datasets.
+
+Key Features of HDFS:
+Distributed Storage: Data is distributed across multiple nodes in the cluster.
+Fault Tolerance: Provides data redundancy by replicating data blocks across different nodes.
+Scalability: Can scale horizontally by adding more nodes to the cluster.
+High Throughput: Optimized for high throughput of data access, rather than low latency.
+Write Once, Read Many (WORM): Files are typically written once and read many times.
+Large Block Size: HDFS uses large block sizes (default is 128MB or 256MB) to minimize the number of metadata entries.
+HDFS Internal Architecture
+HDFS consists of two main components:
+
+1. NameNode
+The NameNode is the master node responsible for managing the metadata of the file system.
+It maintains information about:
+The directory structure
+File permissions
+Locations of data blocks
+Stores metadata in memory for fast access.
+The metadata is also persisted to disk (e.g., fsimage and edit logs).
+2. DataNodes
+The DataNodes are the worker nodes responsible for storing the actual data blocks.
+Each DataNode manages storage attached to it and periodically reports back to the NameNode with:
+The list of data blocks it is storing.
+Health status (via heartbeats).
+3. Secondary NameNode (Checkpoint Node)
+Often misunderstood, the Secondary NameNode is not a backup NameNode.
+It periodically merges the fsimage and edit logs from the NameNode to create a new fsimage.
+Helps reduce the load on the NameNode and provides a consistent state.
+HDFS Block Storage
+Block Concept:
+Files in HDFS are split into fixed-size blocks (e.g., 128MB).
+Blocks are stored independently across different DataNodes.
+Replication:
+Each block is replicated (default replication factor: 3) to ensure fault tolerance.
+The NameNode decides which DataNodes will store replicas.
+HDFS Architecture and Data Flow
+1. File Write Operation
+A client interacts with the NameNode to request file creation.
+The NameNode checks permissions and provides the client with a list of DataNodes to write blocks.
+The client writes blocks directly to the chosen DataNodes in a pipeline (writes to the first, which writes to the second, and so on).
+2. File Read Operation
+The client requests the NameNode for the locations of the blocks of a file.
+The NameNode provides the block locations.
+The client reads the blocks directly from the DataNodes in parallel.
+3. Heartbeat and Block Reports
+DataNodes send periodic heartbeats to the NameNode to signal that they are alive.
+They also send block reports containing the list of blocks they are storing.
+4. Replication Management
+If a DataNode fails, the NameNode detects missing replicas and ensures new replicas are created on other DataNodes.
+Advantages of HDFS:
+Fault Tolerance: Automatic replication ensures data availability even if nodes fail.
+Cost-Effective: Runs on commodity hardware.
+Scalable: Can handle petabytes of data by simply adding more nodes.
+Data Locality: Computation can be moved to where the data resides, reducing network bandwidth usage.
+
+ 
+ 
+ Scenario: Uploading and Reading a File in HDFS
+Example File:
+File Name: example.txt
+File Size: 256MB
+Replication Factor: 3 (default)
+Block Size: 128MB (default)
+Step 1: Writing the File (example.txt)
+Client Requests File Creation:
+
+The user initiates an upload for example.txt via an HDFS client or a Hadoop application.
+The client sends a request to the NameNode to create the file in the HDFS namespace.
+NameNode Allocates Blocks:
+
+The NameNode checks if the file can be created (e.g., sufficient permissions, namespace availability).
+It splits the file into two blocks:
+Block 1: 128MB
+Block 2: 128MB
+For each block, the NameNode determines three DataNodes (based on the replication factor) to store the replicas.
+Client Writes Blocks to DataNodes:
+
+The client writes Block 1 to the first DataNode in the pipeline. This DataNode forwards the block to the second DataNode, and so on until all replicas are written.
+The same process occurs for Block 2.
+Example:
+Block 1:
+Replica 1: DataNode A
+Replica 2: DataNode B
+Replica 3: DataNode C
+Block 2:
+Replica 1: DataNode D
+Replica 2: DataNode E
+Replica 3: DataNode F
+Metadata Update:
+
+The DataNodes notify the NameNode after successfully storing the blocks.
+The NameNode updates its metadata to reflect:
+Block-to-DataNode mapping.
+Replication status.
+Step 2: Reading the File (example.txt)
+Client Requests File Access:
+
+The user requests to read example.txt.
+The client sends a request to the NameNode to retrieve the file's block locations.
+NameNode Provides Block Locations:
+
+The NameNode checks its metadata and provides the client with the locations of the replicas for each block.
+Example:
+Block 1: DataNode A, DataNode B, DataNode C
+Block 2: DataNode D, DataNode E, DataNode F
+Client Reads Blocks from DataNodes:
+
+The client directly contacts the DataNodes to fetch the blocks.
+Example:
+Block 1: The client might read from DataNode A.
+Block 2: The client might read from DataNode D.
+If a DataNode is unavailable (e.g., DataNode A is down), the client fetches the block from another replica (e.g., DataNode B).
+File Reconstruction:
+
+The client combines Block 1 and Block 2 to reconstruct example.txt.
+Fault Tolerance in Action
+DataNode Failure During Write:
+If a DataNode fails while writing Block 1:
+The client stops writing to the failed DataNode.
+The NameNode detects the failure and reallocates a new DataNode for replication.
+DataNode Failure During Read:
+If DataNode A is down when the client tries to read Block 1:
+The client retrieves Block 1 from another replica (e.g., DataNode B).
+The NameNode detects the missing replica and initiates replication on another healthy DataNode.
+How HDFS Components Interact in This Example
+NameNode Responsibilities:
+
+Handles client requests for file creation and read operations.
+Allocates blocks and selects DataNodes for storage.
+Maintains metadata for block-to-DataNode mapping.
+Monitors DataNodes through heartbeats.
+DataNode Responsibilities:
+
+Stores actual data blocks.
+Sends heartbeats and block reports to the NameNode.
+Notifies the NameNode of successful writes.
+Client Responsibilities:
+
+Communicates with the NameNode for metadata.
+Reads/writes data blocks directly to/from DataNodes.
+Combines blocks to reconstruct the file during reads.
+
+Replication Strategy in HDFS
+The replication strategy in HDFS is a carefully designed mechanism to ensure fault tolerance, data availability, and efficient data access in a distributed environment.
+
+Goals of Replication Strategy
+Fault Tolerance: Ensure data is not lost in case of node or hardware failures.
+High Availability: Maintain data accessibility even during network partitioning or node downtimes.
+Load Balancing: Distribute replicas across nodes to balance the workload.
+Rack Awareness: Optimize replication placement to minimize cross-rack traffic and improve fault isolation.
+Replication Factor
+The replication factor determines how many copies of a block are stored in the cluster.
+Default: 3
+Configurable per file.
+Replication Placement Strategy
+HDFS uses a rack-aware replication strategy to determine where replicas are stored.
+
+Steps in the Placement Strategy:
+First Replica:
+
+Placed on the same node where the client is running if the client is co-located in the cluster (data locality).
+Otherwise, placed on a randomly selected node in the cluster.
+Second Replica:
+
+Placed on a different node in a different rack from the first replica.
+This ensures fault tolerance at the rack level. If one rack fails, data is still available in another rack.
+Third Replica:
+
+Placed on a different node within the same rack as the second replica.
+This reduces cross-rack traffic during replication.
+Additional Replicas (if replication factor > 3):
+
+Placed randomly, but balanced across the cluster.
+Why Rack Awareness?
+Fault Isolation: Ensures that data remains accessible even if an entire rack goes down.
+Network Optimization: Placing most replicas within the same rack minimizes cross-rack communication, which is more expensive than intra-rack communication.
+Replication Monitoring and Balancing
+Heartbeat and Block Reports:
+
+DataNodes send periodic heartbeats and block reports to the NameNode to indicate they are operational and to report the blocks they store.
+Under-Replicated Blocks:
+
+If a block's replication falls below the desired factor (e.g., due to a DataNode failure), the NameNode schedules replication tasks to restore the replication factor.
+Over-Replicated Blocks:
+
+If a block is over-replicated (e.g., after a DataNode rejoins the cluster), the NameNode reduces the replication factor by deleting excess replicas.
+Balancing:
+
+The HDFS Balancer tool redistributes replicas across DataNodes to achieve balanced storage utilization.
+Example: Replication Strategy in Action
+File Details:
+File Name: example.txt
+File Size: 128MB
+Replication Factor: 3
+Cluster Setup:
+6 Nodes across 2 Racks:
+Rack 1: Node A, Node B, Node C
+Rack 2: Node D, Node E, Node F
+Replication Steps:
+Client Request:
+
+The client writes the file example.txt to HDFS.
+First Replica:
+
+Placed on Node A in Rack 1 (local to the client if possible).
+Second Replica:
+
+Placed on Node D in Rack 2 to ensure fault tolerance.
+Third Replica:
+
+Placed on Node B in Rack 1, minimizing cross-rack traffic.
+Final Placement:
+Block 1: Node A (Rack 1), Node D (Rack 2), Node B (Rack 1)
+Advantages of HDFS Replication Strategy
+Data Availability: Ensures that even if two nodes or one rack fails, data remains accessible.
+Fault Tolerance: With replication, no single point of failure can lead to data loss.
+Optimized Network Usage: Limits cross-rack traffic while maintaining fault tolerance.
+Load Balancing: Distributes replicas across nodes to avoid hotspots.
+Limitations
+Storage Overhead: Higher replication factors consume more storage.
+Latency: Writing and replicating blocks to multiple nodes can introduce slight delays.
+
+ Scenario: Uploading a File to HDFS
+We’re uploading a file named example.jpg (256MB) to HDFS through a system with an API Gateway and an Application Server.
+
+Components Involved
+Browser (Client): User uploads the file via a web interface.
+API Gateway: Acts as an entry point, validating requests and forwarding them to the backend.
+Application Server: Processes the incoming file and handles block formation from the input stream.
+HDFS Client (on the Application Server): Manages communication with HDFS for block placement and replication.
+HDFS Components:
+NameNode: Stores metadata, such as file paths, block locations, and replication info.
+DataNodes: Physically store the file blocks and replicate them.
+Detailed Explanation of the Flow
+1. File Upload via Browser
+The user uploads example.jpg via a file upload form in the browser.
+
+The browser sends an HTTP POST request to the API Gateway.
+The file data is streamed as an input stream to the backend for processing.
+2. API Gateway
+The API Gateway:
+Validates the incoming request (e.g., authentication, file size limits).
+Ensures the request is routed to the appropriate Application Server.
+The API Gateway doesn’t process the file data itself; it forwards the stream to the next component.
+
+3. Application Server
+Receiving the Input Stream
+The Application Server receives the input stream of the file.
+Instead of immediately sending the data to HDFS, the server:
+Temporarily buffers the data.
+Constructs blocks (128MB each) from the incoming stream.
+Block Formation
+The Application Server writes the file data into a local cache or memory buffer (e.g., using Java’s BufferedInputStream and ByteArrayOutputStream).
+Once the buffer size reaches the configured block size (128MB), the block is considered complete.
+4. HDFS Client Interaction
+Communicating with the NameNode
+The HDFS client (running on the Application Server) contacts the NameNode to request block allocation.
+The NameNode:
+Allocates storage for the block on three DataNodes (based on the replication factor).
+Returns the list of allocated DataNodes to the HDFS client.
+Streaming the Completed Block
+The Application Server sends the completed block to the first DataNode in the pipeline.
+
+The DataNode acknowledges receipt and forwards the block to the second DataNode.
+The second DataNode forwards it to the third DataNode.
+While the first block is being streamed, the Application Server continues processing the next part of the input stream to form the second block.
+
+5. DataNodes
+Storing Blocks
+Each DataNode stores its copy of the block locally on disk.
+The DataNodes periodically send heartbeats and block reports to the NameNode to confirm they are operational and storing the blocks.
+6. Completing the File Upload
+Finalizing Metadata
+After all blocks are successfully written and replicated, the HDFS client sends a file close request to the NameNode.
+The NameNode updates its metadata to include:
+The file’s name and path.
+Block IDs and their locations.
+User Confirmation
+The Application Server notifies the API Gateway of the successful upload, which informs the browser (user).
+How Blocks Are Managed and Stored in Detail
+Formation at Application Server
+The Application Server ensures efficient utilization of network resources by buffering the file data and sending it block by block.
+Example:
+File Size: 256MB
+Blocks Formed: 2
+Block 1: First 128MB
+Block 2: Remaining 128MB
+Pipeline Replication
+Block 1 (128MB) is sent to:
+DataNode A (Primary)
+DataNode B (Replica 1)
+DataNode C (Replica 2)
+Block 2 (128MB) follows the same process but with different DataNodes (e.g., D, E, F).
+Why This Flow is Efficient
+Block-Based Processing:
+
+Large files are broken into smaller, manageable blocks.
+Allows parallel processing across multiple DataNodes.
+Replication:
+
+Ensures fault tolerance by storing multiple copies of each block.
+Streamlined Communication:
+
+The API Gateway and Application Server decouple user interaction from backend processing, improving scalability and user experience.
+Reduced Latency:
+
+Data streaming and pipeline replication minimize delays.
+
+Scenario: Downloading a File from HDFS
+We’re downloading a file named example.jpg (256MB) stored in HDFS.
+
+Replication Factor: 3.
+Block Size: 128MB.
+The file is split into two blocks:
+Block 1: 128MB (stored on DataNodes A, B, and C).
+Block 2: 128MB (stored on DataNodes D, E, and F).
+Components Involved
+Browser (Client): The user initiates the download request.
+API Gateway: Acts as the entry point, validating and forwarding the request.
+Application Server: Processes the request, communicates with HDFS, and assembles the file from blocks.
+HDFS Client (on the Application Server): Handles communication with the HDFS NameNode and DataNodes.
+HDFS Components:
+NameNode: Provides metadata, such as block locations for the requested file.
+DataNodes: Store the actual file blocks.
+Flow for Downloading a File
+1. User Initiates Download Request
+The user clicks the "Download" button in their browser for the file example.jpg.
+The browser sends an HTTP GET request to the API Gateway.
+2. API Gateway
+The API Gateway:
+Validates the incoming request (e.g., authentication, file existence).
+Forwards the request to the Application Server responsible for HDFS interactions.
+3. Application Server
+Requesting Metadata from HDFS
+The Application Server’s HDFS Client communicates with the NameNode to get the metadata for the file example.jpg.
+The NameNode responds with the following details:
+Block IDs: Block_1 and Block_2.
+DataNode locations for each block:
+Block 1: DataNodes A, B, C.
+Block 2: DataNodes D, E, F.
+Selecting Optimal DataNodes
+The HDFS client selects the closest (or least loaded) DataNodes for each block. For example:
+Block 1: DataNode A.
+Block 2: DataNode D.
+Downloading Blocks
+The Application Server retrieves each block from the selected DataNodes.
+The blocks are streamed directly to the server in chunks.
+Reassembling the File
+As the blocks are received, the Application Server:
+Writes them to a local buffer or temporary storage.
+Reassembles the blocks into the complete file example.jpg.
+4. Returning the File to the User
+Streaming File to the API Gateway
+The Application Server streams the reassembled file to the API Gateway.
+Sending File to Browser
+The API Gateway streams the file to the browser over HTTP.
+File Download Complete
+The user’s browser prompts them to save the file locally.
+How HDFS Handles Data Retrieval in Detail
+Block Retrieval from DataNodes
+Parallel Fetching:
+
+The HDFS client downloads multiple blocks in parallel for efficiency.
+Each block is retrieved from its assigned DataNode.
+Fault Tolerance:
+
+If a DataNode (e.g., A for Block 1) is unavailable, the client retries with another replica (e.g., B or C).
+Chunk Streaming:
+
+Blocks are streamed in chunks to minimize memory usage.
+Data Flow Overview
+1. Browser to API Gateway
+The user sends an HTTP GET request to download the file.
+2. API Gateway to Application Server
+The API Gateway forwards the request to the backend for processing.
+3. Application Server to HDFS
+The Application Server retrieves file metadata from the NameNode.
+The blocks are fetched from DataNodes and reassembled into the file.
+4. Application Server to API Gateway
+The Application Server streams the file back to the API Gateway.
+5. API Gateway to Browser
+The API Gateway streams the file to the browser for download.
+Why This Flow is Efficient
+Parallel Block Fetching:
+
+Multiple blocks are retrieved simultaneously, reducing latency.
+Fault Tolerance:
+
+DataNode failures don’t affect file availability due to replication.
+Streaming:
+
+Blocks and chunks are streamed, ensuring minimal memory overhead.
+Seamless Integration:
+
+The API Gateway and Application Server abstract HDFS complexities from the user.
+
+
+HLD notes on github - 
+
+https://github.com/KingsGambitLab/Lecture_Notes/tree/master/Non-DSA%20Notes/HLD%20Notes
+
+
+---------------------------------------
+
+System Design - Microservices 1 
+
+
+

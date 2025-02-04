@@ -1,0 +1,571 @@
+Practice drill 1 -
+
+
+mkdir hello
+
+// creates directory called hello
+
+cd hello/
+
+// change current working directory to the hello.
+
+mkdir five
+
+// creates directory called five
+
+cd five/
+
+// change current working directory to the five
+
+mkdir six
+
+// create directory called six
+
+cd six
+
+// change the current working directory to the six
+
+touch c.txt
+
+// create file c.txt
+
+mkdir seven
+
+// create new directory called seven
+
+cd seven/
+
+// change the current working directory to the seven
+
+touch error.log
+
+// create new file called error.log
+
+cd
+
+// change the current working to the  home directory
+
+ls
+
+// lists all the files and directories in the current working directory.
+
+output - 
+dir1  hello  temp.txt
+
+cd hello/ 
+
+// change the current working directory to the hello
+
+mkdir one
+
+// create directory with the name one
+
+cd one
+
+// change the current working directory to the one
+
+touch a.txt
+
+// create new file called a.txt
+
+touch b.txt
+
+// create new file called b.txt
+
+mkdir two 
+
+// create new directory called two
+
+ls
+
+// lists all the files and directory in current working directory.
+
+output - 
+
+a.txt  b.txt  two
+
+cd two 
+
+// change the current working directory to the two
+
+touch d.txt
+
+// create new file called d.txt
+
+mkdir three
+
+// create new directory called three in current working directory
+
+cd three
+
+// change the current working directory to the three
+
+touch e.txt
+
+// create file e.txt 
+
+mkdir four
+
+// create directory called four
+
+touch access.log
+
+// create file called access.log
+
+
+Delete all the files having the .log extension - 
+
+
+cd
+
+// change current working directory to the home directory
+
+ls
+
+// list all the files and directories in CWD
+
+output - 
+dir1  hello  temp.txt
+
+cd hello/
+
+// change CWD to the hello
+
+
+find . -type f -name "*.log" -exec rm -f {} \;
+
+find . - it searches the file and directories in current working directory and all its subdirectories.
+
+-type f - specifying the file type to search. 
+
+-name "*.log"  - specifying the file name to search.
+
+-exec rm -f {} \; - this will execute the remove command to the file which is found. 
+
+write below text to the a.txt file - 
+
+Unix is a family of multitasking, multiuser computer operating systems that derive from the original AT&T Unix, development starting in the 1970s at the Bell Labs research center by Ken Thompson, Dennis Ritchie, and others
+
+cd
+
+// change the current working directory to the home
+
+ls
+
+// lists all the files and directories in the CWD
+
+output - 
+
+dir1  hello  temp.txt
+
+cd hello/
+
+// change the cwd to the hello
+
+cd one/
+
+// change the cwd to the one
+
+nano a.txt
+
+// open file called a.txt in nano editor
+
+wrote above line and then pressed ctrl + O to save the file and then exited by ctrl + x shortcut.
+
+cat a.txt
+
+// prints the content of the file called a.txt
+
+Unix is a family of multitasking, multiuser computer operating systems that derive from the original AT&T Unix, development starting in the 1970s at the Bell Labs research center by Ken Thompson, Dennis Ritchie, and others. This is part of the practice drill 1 of the CLI.
+
+
+3) Delete the directory named five
+
+cd
+
+// change cwd to home
+
+ls
+
+// lists all the fiels and directories in the cwd
+
+output - 
+dir1  hello  temp.txt
+
+cd hello/
+
+// change the cwd to hello
+
+ls
+
+// lists all the files and directoried present in the cwd
+
+outout - 
+
+five  one
+
+rm -d -r five
+
+// removing/deleting directory called five recursively
+
+ls
+
+// lists all the files and directories iin the CWD
+
+output - 
+one
+
+4) Rename the one directory to uno
+
+mv one uno
+
+// renames the directory one to uno
+
+ls
+
+// lists all the files and directories in CWD
+
+output  - 
+uno
+
+5) Move a.txt to the two directory -
+
+cd
+
+// change CWD to the home 
+
+ls
+
+// lists all the files and directories in cwd.
+
+output - 
+dir1  hello  temp.txt
+
+cd hello/ 
+
+// change the CWD to the hello
+
+cd ..
+
+// change cwd to the parent directory
+
+mv hello/uno/a.txt hello/uno/two/
+
+move file called a.txt to the /two directory
+
+ls 
+
+// lists all the files and directories in cwd
+
+output - 
+dir1  hello  temp.txt
+
+cd hello
+
+// change cwd to the hello
+
+ls
+
+// lists all the files and directories in the CWD
+
+output - 
+uno
+
+cd uno
+
+// change the cwd to the uno
+
+ls
+
+// lists all the fiels and directories in the cwd
+
+output - 
+b.txt  two
+
+cd two
+
+// change the CWD to the two
+
+ls
+
+// lists all the files and directories in CWD
+
+output - 
+
+a.txt  d.txt  three
+
+
+
+
+Practice drill 2 - 
+
+Download the contents of "Harry Potter and the Goblet of fire" using the command line from here.
+
+curl is downloading the content of the file and here -o flag is used to tell that file name should be same as that is there on the server.
+
+curl -O "https://raw.githubusercontent.com/bobdeng/owlreader/master/ERead/assets/books/Harry%20Potter%20and%20the%20Goblet%20of%20Fire.txt"
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 1113k  100 1113k    0     0   444k      0  0:00:02  0:00:02 --:--:--  444k
+
+ls lists out the files and directories in the cwd.
+
+ls
+
+output - 
+
+Harry%20Potter%20and%20the%20Goblet%20of%20Fire.txt  dir1  hello  temp.txt
+
+
+renaming the file to harry.txt
+
+mv Harry%20Potter%20and%20the%20Goblet%20of%20Fire.txt harry.txt
+
+ls lists out the files and directories in the cwd.
+
+ls
+
+output - 
+
+dir1  harry.txt  hello  temp.txt
+
+
+Print the first three lines in the book - 
+
+
+cat is reading the file content and head is only allowing first 3 lines of the content.
+
+cat harry.txt | head -n 3
+Harry Potter and the Goblet of Fire
+　　By J.K. Rowling
+
+
+Print the last 10 lines in the book - 
+
+
+cat is reading the file content and tail is only allowing last 10 lines of the content.
+
+
+cat harry.txt | tail -n 10
+
+　　and Goyle, who were still lying on the floor, covered in hex marks.
+　　Uncle Vernon was waiting beyond the barrier. Mrs. Weasley was close by him. She hugged Harry very tightly when she saw him and whispered in his ear, "I think Dumbledore will let you come to us later in the summer. Keep in touch, Harry."
+　　"See you. Harry," said Ron, clapping him on the back.
+　　"'Bye, Harry!" said Hermione, and she did something she had never done before, and kissed him on the cheek.
+　　"Harry - thanks," George muttered, while Fred nodded fervently at his side.
+　　Harry winked at them, turned to Uncle Vernon, and followed him silently from the station.
+　　There was no point worrying yet, he told himself, as he got into the back of the Dursleys' car.
+　　As Hagrid had said, what would come, would come ... and he would have to meet it when it did.
+您下载的文件来自http://txt.nokiacn.net糯米社区为你制作
+
+
+How many times do the following words occur in the book?
+Harry
+Ron
+Hermione
+Dumbledore
+
+ans - 
+
+Harry -> 
+
+
+cat is reading the file content and grep is filtering out the word and wc is counting the words.
+
+
+cat harry.txt | grep "Harry" | wc -l
+2591
+
+Ron -> 
+
+cat is reading the file content and grep is filtering out the word and wc is counting the words.
+
+cat harry.txt | grep "Ron" | wc -l
+947
+
+Hermione -> 
+
+
+cat is reading the file content and grep is filtering out the word and wc is counting the words.
+
+ cat harry.txt | grep "Hermione" | wc -l
+822
+
+Dumbledore  ->  
+
+cat is reading the file content and grep is filtering out the word and wc is counting the words.
+
+cat harry.txt | grep "Dumbledore" | wc -l
+
+output - 
+
+507
+
+
+How many unique words are present in the book?
+
+cat is used to the read the content of the file and show it on the terminal. 
+tr is replacing the space by newline character and sort is sorting the words. and uniq is finding the uniq new lines and wc is counting the words.
+
+cat harry.txt | tr '[:space:]' '[\n*]'  | sort | uniq | wc -l
+22504
+
+
+List your browser's process ids (pid) and parent process ids(ppid)
+
+ps lists out the processes.
+and grep is filtering out the proceses which are belong to the chrome.
+
+ps -eo pid,ppid,cmd | grep chrome
+
+Stop the browser application from the command line - 
+
+find the process id - 
+
+ps -eo pid,cmd | grep firefox
+   1246 firefox firefox
+
+Kill the process - 
+ kill 1246
+
+List the top 3 processes by CPU usage. - 
+
+
+ps -eo pid,%cpu,cmd --sort=-%cpu | head -n 4
+
+ps - lists all the processes, here we are taking pid, cpu usage, and the command which is used to open the processes this helps the ps to find the process by using the command which opened it. 
+
+--sort=-%cpu this is sorting the list of the processes in the reverse order according to the cpu usage. 
+
+head -n 4 - using pipeline to filter out the first 3 results. here 4 is given as first line is the header of the ps data.
+
+List the top 3 processes by memory usage. - 
+
+ps -eo pid,%mem,cmd --sort=-%mem | head -n 4
+
+ps -eo pid,%mem,cmd - printing the process information like pid, memory usage, and it is using the cmd command to find out the commands which has started the process.
+
+--sort=-%mem - this is sorting the data in reverse order by memory usage.
+
+head -n 4   - using pipe line to filter out the first 3 processes, as there is heading in the data so passsing the 4 lines in the command.
+
+Start a Python HTTP server on port 8000 - 
+
+python3 -m http.server 8000 
+
+python3 - isused to run the python 3.
+
+-m http.server - this tells to run the http.server module in python 3.
+
+8000 - this is port no on which server is listening the requests.
+
+
+Open another tab. Stop the process you started in the previous step - 
+
+first find out the process id - 
+
+ps -eo pid,cmd | grep "python3"
+
+then kill the process by below command - 
+
+kill 690
+
+Start a Python HTTP server on port 90 - 
+
+ports below are belong to the root user so we need to start the server by using sudo command.
+
+sudo python3 -m http.server 90
+[sudo] password for dj:
+Serving HTTP on 0.0.0.0 port 90 (http://0.0.0.0:90/) ...
+
+
+Display all active connections and the corresponding TCP / UDP ports.
+
+below command lists all the connections with their port nos.
+
+sudo allows to run the command as a root user.
+
+lsof - it lists the open files in the entire system. 
+
+-i It shows the network files.
+
+-P - it displays the port nos instead of the hostname
+
+-n - it do not allow to resolve the hostnames.
+
+
+sudo lsof -i -P -n
+
+
+Find the pid of the process that is listening on port 5432 - 
+
+dj@DESKTOP-637B7EE:~$ sudo lsof -i :5432
+COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+python3 2802 root    3u  IPv4  50593      0t0  TCP *:5432 (LISTEN)
+
+
+Install htop, vim and nginx - 
+
+ sudo apt install htop
+
+sudo is running the command as a root user.
+apt is used to install, remove or upgrade the software.
+
+install htop is asking to insatll the htop in the system.
+
+sudo apt install vim nginx
+
+install vim and nginx software.
+
+Uninstall nginx - 
+
+remove uninstalls the nginx from the system.
+
+sudo apt remove nginx
+
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package 'nginx' is not installed, so not removed
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+
+What's your local IP address? - 
+
+hostname -I
+
+output - 
+
+192.168.217.193
+
+Find the IP address of google.com - 
+
+nslookup google.com
+
+nslookup query to the DNS to resolve the ip address of the provided domain.
+
+otuout - 
+
+Server:         192.168.208.1
+Address:        192.168.208.1#53
+
+Non-authoritative answer:
+Name:   google.com
+Address: 142.251.42.78
+Name:   google.com
+Address: 2404:6800:4009:830::200e
+
+How to check if Internet is working using CLI? - 
+
+ping google.com
+
+ping will ping the google.com if it is successful then it will show the response if not then it will give temporary failure in name resolution.
+
+Where is the node command located? What about code? 
+
+which node
+
+it returns the path to the node command file.
+
+which code 
+
+it returns the path to the code command file.
