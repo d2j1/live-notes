@@ -6102,6 +6102,48 @@ https://github.com/arpitbbhayani/system-design-questions
 
 https://github.com/KingsGambitLab/Lecture_Notes/blob/master/Non-DSA%20Notes/HLD%20Notes/System%20Design%20-%20Microservices.md
 
+--------------------------------------
 
+System Design : Microservices 2 
+
+
+
+
+
+
+
+--------------------------------------
+
+CrewAI Multi agent course - 
+
+A Large Language Model (LLM) is an advanced deep learning model trained on vast amounts of text data to generate human-like text, understand language, and perform tasks such as text summarization, translation, question-answering, and code generation. LLMs rely on transformer architectures, like GPT (Generative Pre-trained Transformer), to process and generate coherent responses based on input prompts.
+
+Examples of LLMs
+GPT-4 (OpenAI)
+Claude (Anthropic)
+LLaMA (Meta)
+Gemini (Google DeepMind)
+Mistral (Mistral AI)
+Key Features of LLMs
+Text-based Processing – Understands and generates natural language.
+Pattern Recognition – Learns from large-scale datasets to predict the next words.
+No Autonomous Decision-Making – Does not independently take actions beyond text generation.
+Context-Limited Memory – Retains input only within a session (unless integrated with external memory).
+Definition of AI Agents
+An AI Agent is an autonomous system that perceives its environment, makes decisions, and takes actions to achieve a goal. AI agents can interact with users, software, APIs, and physical devices, leveraging LLMs, rule-based logic, and reinforcement learning to complete tasks dynamically.
+
+Examples of AI Agents
+AutoGPT – A self-improving agent using GPT to perform multi-step tasks.
+BabyAGI – A task-driven AI that autonomously completes objectives.
+Virtual Assistants (e.g., Siri, Google Assistant, Alexa) – Respond to voice commands and execute tasks.
+AI-powered Chatbots – Can call APIs, fetch data, and provide intelligent responses.
+Key Features of AI Agents
+Goal-Oriented – Acts towards achieving a specific task.
+Interacts with Systems – Calls APIs, executes code, and performs web searches.
+Can Use LLMs – May integrate with LLMs for natural language processing.
+Decision-Making Ability – Uses logic, learning models, and memory to act autonomously.
+Key Difference: LLMs vs. AI Agents
+LLMs generate text-based responses but do not act independently.
+AI Agents can use LLMs but also perform actions, call APIs, and automate workflows.
 
 
