@@ -6107,10 +6107,100 @@ https://github.com/KingsGambitLab/Lecture_Notes/blob/master/Non-DSA%20Notes/HLD%
 System Design : Microservices 2 
 
 
+Communication between multiple microservices - 
+
+1) HTTP request response model - In this api call is made by one service to another service. 
+
+This is the synchronous way of communication and json object is sent as part of the response. 
+
+On sender side the object is converted to the json it is called as Serialization and on receivers end the object is converted from json to object is called as deserilization.
+
+this converting process takes time. 
+
+2) RPC - remote procedure call - 
+
+gRPC + protobuf -> 
+
+gRPC - google remote procedure call
+
+Protobuff - Data in binary format. data is converted from object to binary and vice versa is done by using proto library. 
+
+This is more optimized than http request response model. 
+
+
+3) Asynchronous or event driven architecture - queue is used to perform this communication. publisher publish the event and consumer consumes the event . 
+
+Consistency between microservices - 
+
+1) Two phase commit - 
+
+phase one  - are you ready phase or also called as voting phase. - in this loack will be taken on both the entries. 
+
+phase two - just commit the data changes.  if both the services respond with yes then commit will happen at both the places and if any service respond with no then roll back both transaction on both the machines.
+
+This provides highest level of consistency.
+
+This has high latency.  
+
+but in case of swiggy we will have to take a lock on atleast 6 different services and this is not efficient. 
+
+like in swiggy we can not confirm order if payment is not confirm same we can not assign delivery partner before order is prepared by restaurant etc.
+
+in this example two phase commit is not good to use.
+
+for such situations SAGA pattern is used.
+
+SAGA pattern - it is also referred as orderly chaos. 
+
+Different services are going to talk to each other via message queues in between. Service will become decoupled. 
+
+To reduce the delay we need to have more consumers to consume the events, as orders are increasing the consumers are also increased by scaling the consumer services. 
+
+
+Ex - Order service will put the event in the queue which will read by payment service and once payment is successfull it will put the event in another queue and order service will read from second queue to confirm the order once order is confirmed it will put that event in another queue and that event will be read by the restaurant service. and once restaurant accepts the order it will put this event in another queue and this event will be read by delivery service.
 
 
 
+and in case of failure from any service like restaurant declined the order. For failure scenarios we will have another queue and if any service fails it will push the event in particular failure queue of the service. ex if restaurant declines the order then restaurant service will add that event in the failure queue of  restaurant service and and order service will read the event from this queue and process the requests. like this failures will be handled for all the services and each service will have seperate failure or cancelletion queue.   
 
+
+In this way we can avoid the lock and inefficiency. 
+
+Every service will have the SLA ( service level agreement), so for every api call lot of metrics are monitored once the response time of the service is increases the server will be scaled accordingly to reduce the latency.
+
+Saga pattern is of two types - 
+
+1) Orchestrated
+2) Choreoghraph
+
+
+Service discovery - Eureka service - This maintains how many servers of particular service is running and their ip addresses.
+
+
+Observability in microservice - This is related to logging and monitoring. 
+
+In microservice architecture the reuqest travels from one service to another service, in this case it becomes challenging to track the request. 
+
+
+To debug an issue effectively, we need to keep a track of the entire request journey in the right order.  
+ 
+for this unique trace id or correlation id or tracking id is used, this is a unique id that gets associated with the request at begining itself and stays with the request till the end. 
+
+
+So the log of these requests is stored on the seperate server, and each log will be stored with its trace id.
+
+
+ ELK - elastic search , log stash , kibana.  
+ 
+ Make sure downtime caused issues are not repeated and make sure to have some automated process to make sure that the code we are pushing has low latency. 
+ 
+ read about CQRS, Circuit breaker pattern. 
+   
+
+Microservices 1 - https://github.com/KingsGambitLab/Lecture_Notes/blob/non-dsa/non_dsa/hld/System%20Design%20-%20Microservices%201.pdf
+
+
+Microservices 2 - https://github.com/KingsGambitLab/Lecture_Notes/blob/non-dsa/non_dsa/hld/System%20Design%20-%20Microservices%202.pdf
 
 --------------------------------------
 
