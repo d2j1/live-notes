@@ -4397,5 +4397,73 @@ Kaggle
 
 ---------------------------------------
 
+DSA : contest 
 
+
+Q. You are working on a project for a given set of days. You have been given an array A with profit for N days. you also have Q queries represented by a 2D array B of size Q * 2. Each query consists of two integers B[i][0] and B[i][1].
+
+For every query, your task is to find the count of non-neative profit in the range from A[B[i][0]] to A[B[i][1]].
+
+solution -
+
+BF - 
+
+first convert A[i] = 1 if A[i] >= 0   otherwise 0.
+
+for( q from 0 to q-1 ) {
+
+l = queries[q][0]
+r = queries[q][1]
+
+for( i from l to r ) {
+
+if( A[i] >= 0 ) cnt++;
+
+}
+
+print(cnt);
+
+}
+
+
+TC - O(q * n)
+
+
+Optimised - 
+
+first convert A[i] = 1 if A[i] >= 0   otherwise 0.
+
+then create the prefix sum array.
+
+
+for( i from 0 to n-1) {
+
+if ( A[i] >= 0 ) A[i]=1;
+else A[i] =0
+
+}
+
+for( i from 1 to n-1 ) {
+
+A[i] += A[i-1];
+
+}
+
+
+for( q from 0 to q-1 ) {
+
+l = queries[q][0]
+r = queries[q][1]
+
+cnt =0;
+
+if( l == 0 ) cnt = A[r];
+else cnt = A[r] - A[l-1];
+
+print(cnt);
+
+}
+
+TC - O(n+q)
+SC - O(1)
 
