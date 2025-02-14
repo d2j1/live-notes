@@ -4397,5 +4397,35 @@ Kaggle
 
 ---------------------------------------
 
+Version control systems and how git helps in development flow 
+
+What is VCS -
+
+A Version Control System (VCS) is a tool that helps track and manage changes to code, documents, or any digital files over time. It allows multiple people to collaborate efficiently, maintain different versions, and revert to previous versions if needed.
+
+Production servers runs the linux operating system.
+
+VCS will helps in rollback.
+
+Types of VCS - 
+
+1) Centralised - all versions will be saved on one central server.
+
+This is single point of failure.
+But in this system we have to stay connected to the server continuously and not suitable for high latency.
+
+ex - perfoce, sub version.
+
+Google uses perforce.
+ 
+2) Distributed - 
+
+Git is an example distributed vcs.
+
+In this mulitple copies of code or versions present at multiple places, and we can work in offline fashion.
+
+
+
+
 
 
