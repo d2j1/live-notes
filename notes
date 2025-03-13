@@ -4424,8 +4424,209 @@ Git is an example distributed vcs.
 
 In this mulitple copies of code or versions present at multiple places, and we can work in offline fashion.
 
+-----------------------------------
+
+Lecture : Learning git commands 
+
+git clone <repo url>
+
+In each repository of the code the will be .git directory, if we delete this repo then we will not be able to run the git commands on the repository.
+
+git branch -
+
+to create branch - git branch new_branch_name
+
+to checkout in branch - git checkout branch_name
+
+to get the available branch names - git branch
+
+when you create a new branch called "test" from master branch, the new branch will inherit the commit history of master branch up to that point. 
+
+to create new branch and checkout in it right away - git checkout -b test4
+above will create a new branch and checkout in it.
 
 
+git status - this command gives modified files and not yet staged, staged files ( ready to commit), untracked files (new files not yet added to git), branch information ( current branch, ahead or behind status)
 
 
+unstaging the file - git restore --staged file_name_to_unstage
+
+git log - this command gives us commit history with commit hash id, author name, date and time of commit and commit message.
+
+To push your test branch to the remote repository in Git, follow these steps:
+
+Step 1: Switch to the test branch
+If you're not already on the test branch:
+
+git checkout test
+Step 2: Push the test branch to the remote
+
+git push origin test
+ origin → The default name for your remote repository.
+ test → The branch you want to push.
+
+Step 3: Set the test branch to track the remote branch (optional but recommended)
+If this is the first time you're pushing the branch, you can set it to track the remote branch using:
+
+git push -u origin test
+ The -u flag sets the test branch to track the remote branch automatically.
+ After this, you can simply run git push without specifying the branch name for future pushes.
+
+Step 4: Verify the branch on the remote
+
+To confirm the branch was pushed successfully:
+
+git branch -r
+
+This lists all remote branches.
+
+Example Output
+
+origin/master
+origin/test
+
+Pull Request - 
+
+A pull request (PR) is a process in Git that lets you notify team members about changes you've made in a branch. It's commonly used in collaborative development to review, discuss, and merge changes into the main codebase.
+
+🔹 What is a Pull Request (PR)?
+A pull request is a way to propose changes from one branch (e.g., feature/test) into another branch (e.g., master or main).
+
+In simple terms:
+➡️ "I have made some changes. Please review them and merge them if everything looks good."
+
+🔹 How Does a Pull Request Work?
+Step 1: Create a Branch
+Suppose you're adding a new feature or fixing a bug.
+Create a new branch (e.g., feature/test) from the main branch.
+bash
+Copy
+Edit
+git checkout -b feature/test
+Step 2: Make Changes & Commit
+Add your code changes and commit them.
+bash
+Copy
+Edit
+git add .
+git commit -m "Added feature X"
+Step 3: Push the Branch to Remote
+bash
+Copy
+Edit
+git push origin feature/test
+Step 4: Create a Pull Request
+Go to your repository on platforms like GitHub, GitLab, or Bitbucket.
+Navigate to the "Pull Requests" section.
+Click on "New Pull Request".
+Select:
+Base branch → The branch where changes will be merged (e.g., main or master).
+Compare branch → The branch with your changes (e.g., feature/test).
+Step 5: Code Review
+Other developers will review your code.
+They may add comments, request changes, or approve the PR.
+Step 6: Merge the PR
+Once approved, your changes will be merged into the base branch.
+
+🔹 Important Concepts in Pull Requests
+✅ Base Branch
+
+The branch where changes will be merged (commonly main or master).
+✅ Compare Branch
+
+The branch that contains your new changes (e.g., feature/test).
+✅ Code Review
+
+Team members review your code to ensure quality and standards are met.
+✅ Merge Conflict
+
+Happens when changes in both branches affect the same lines of code. You'll need to resolve these conflicts before merging.
+✅ Draft Pull Request
+
+Used for unfinished work. It signals that the PR is not yet ready for review.
+✅ Close Pull Request
+
+If the proposed changes are no longer needed, you can close the PR without merging.
+✅ Squash and Merge / Rebase and Merge
+
+Different merging strategies for cleaner commit history.
+🔹 Best Practices for Pull Requests
+✅ Keep PRs small and focused on a single task or feature.
+✅ Write clear titles and detailed descriptions for your PRs.
+✅ Request specific reviewers based on their expertise.
+✅ Use meaningful commit messages to explain your changes.
+✅ Regularly fetch changes from the base branch to avoid conflicts.
+
+🔹 Example Scenario
+Imagine your repo has a master branch. You create a new branch called feature/login.
+
+Create a branch:
+
+
+git checkout -b feature/login
+Add changes, commit, and push:
+
+git add .
+git commit -m "Added login feature"
+git push origin feature/login
+Create a pull request:
+
+Base branch: master
+Compare branch: feature/login
+After review and approval, the feature/login branch is merged into master.
+
+
+git pull - to get the remote changes to local.
+
+by default it will fetch and merge changes from the remote branch linked to current branch at local. and it will not fetch the other branches unless specified.
+
+to reset the latest commit -> git reset --hard HEAD~1
+
+This will remove the commit and the changes are also removed from file.
+
+git reset --soft HEAD~1
+
+above command will only remove the commit and changes in file will remain as it is.
+
+git reset --mixed HEAD~1
+
+git reset --mixed HEAD~1
+This command does the following:
+
+✅ Moves the HEAD pointer back by one commit (reverts the last commit).
+✅ Keeps your changes in the working directory (untracked but not staged).
+✅ Unstages the changes that were in the last commit.
+
+🔹 Example Scenario
+Suppose your commit history looks like this:
+
+
+commit A (HEAD -> master)
+commit B
+commit C
+
+If you run:
+
+git reset --mixed HEAD~1
+Result:
+
+commit A is removed from the commit history.
+The changes from commit A are still in your working directory but unstaged.
+State after the command:
+
+
+Unstaged changes (previous commit A's changes)
+commit B (HEAD -> master)
+commit C
+
+When to Use Each Version?
+
+git reset --mixed HEAD~1
+→ Removes the last commit, unstages changes, and keeps files in your working directory.
+
+git reset --soft HEAD~1
+→ Removes the last commit but keeps all changes staged, ready for a new commit.
+
+git reset --hard HEAD~1
+→ ⚠️ Completely deletes the last commit and all its changes — no recovery.
 
