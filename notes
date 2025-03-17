@@ -4630,3 +4630,157 @@ git reset --soft HEAD~1
 git reset --hard HEAD~1
 → ⚠️ Completely deletes the last commit and all its changes — no recovery.
 
+
+Merge and Merge conflict - 
+
+Recommendation - before merging anything into main branch rebase your branch in main.
+
+steps - 
+
+checkout to your branch.
+
+git rebase main_branch_name
+
+above steps will rebase your branch with main branch.
+
+
+1. Git Merge
+Merging in Git is used to combine changes from different branches into a single branch. It is commonly used in collaborative development where multiple developers work on different features or fixes.
+
+Example Scenario:
+You have two branches:
+
+main (stable branch)
+feature-branch (development branch)
+To merge feature-branch into main, you use:
+
+sh
+Copy
+Edit
+git checkout main  
+git merge feature-branch  
+If there are no conflicting changes, Git will automatically merge the changes.
+
+2. Merge Conflict
+A merge conflict occurs when Git cannot automatically resolve differences between two branches because the same lines in the same file were modified differently in each branch.
+
+Example:
+
+In main:
+java
+Copy
+Edit
+System.out.println("Hello, World!");
+In feature-branch:
+java
+Copy
+Edit
+System.out.println("Hello, Git!");
+If you merge feature-branch into main, Git cannot decide which version to keep, so it creates a merge conflict.
+
+Resolving Merge Conflict:
+
+Git marks conflicts in the file:
+java
+Copy
+Edit
+<<<<<<< HEAD
+System.out.println("Hello, World!");
+=======
+System.out.println("Hello, Git!");
+>>>>>>> feature-branch
+Manually edit the file to keep the correct version.
+Stage the resolved file:
+sh
+Copy
+Edit
+git add filename
+Complete the merge:
+sh
+Copy
+Edit
+git commit -m "Resolved merge conflict"
+Git Rebase and When to Use It
+1. What is Git Rebase?
+Rebasing is an alternative to merging that moves a branch to a new base commit, replaying its commits on top of another branch. This keeps the commit history cleaner by avoiding unnecessary merge commits.
+
+Example Scenario:
+
+You created a feature-branch from main.
+main has new commits since you started working.
+Instead of merging, you want to apply your changes on top of the latest main.
+Steps to Rebase:
+
+sh
+Copy
+Edit
+git checkout feature-branch  
+git rebase main  
+This replays all commits of feature-branch on top of main, making the history linear.
+
+2. When to Use Rebase?
+✅ Before merging a feature branch to ensure it includes the latest changes from main without creating a merge commit.
+✅ To keep a clean history without unnecessary merge commits.
+✅ When working alone and you want to maintain a linear commit history.
+
+⚠️ When NOT to use Rebase:
+❌ If the branch is shared with others, avoid rebasing because it rewrites history, making collaboration confusing.
+
+Merge vs. Rebase: Key Differences
+Feature	Merge	Rebase
+History	Creates a merge commit	Rewrites commit history
+Conflict Resolution	During merge	During rebase
+Use Case	Preserves commit history	Keeps history linear
+Safe for Collaboration?	Yes	No (if branch is shared)
+👍 Use merge for collaboration.
+👍 Use rebase for clean history before merging.
+
+1. Rebase Before Merge (Recommended for Clean History)
+Pros:
+✅ Keeps a linear, clean history without extra merge commits.
+✅ Ensures the feature branch is up to date before merging.
+✅ Makes git log easier to read.
+
+Cons:
+⚠️ Rewrites commit history, which can be risky in shared branches.
+⚠️ If conflicts occur, you must resolve them during the rebase.
+
+When to Use:
+✔ When working alone or on a private branch.
+✔ Before merging a feature branch into main to keep history clean.
+
+Steps to Follow:
+
+sh
+Copy
+Edit
+git checkout feature-branch  
+git rebase main  # Rebase feature branch onto main  
+git checkout main  
+git merge feature-branch  # Fast-forward merge (no extra merge commit)
+git push origin main  
+2. Merge Directly (Recommended for Team Collaboration)
+Pros:
+✅ Safer for shared branches (no history rewriting).
+✅ Keeps track of exactly when branches were merged.
+✅ Easier to debug since merge commits show where changes came from.
+
+Cons:
+⚠️ Creates extra merge commits, making history slightly messier.
+⚠️ Merge conflicts may happen if the branches diverge.
+
+When to Use:
+✔ When working with a team on a shared branch.
+✔ When you want to preserve a full history of merges.
+
+Steps to Follow:
+
+git checkout main  
+git merge feature-branch  
+git push origin main  
+
+My Recommendation:
+
+If working alone → Rebase before merging for a clean history.
+If working with a team → Merge directly to avoid rewriting history.
+
