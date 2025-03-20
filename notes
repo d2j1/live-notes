@@ -5001,3 +5001,202 @@ public class UserController {
     }
 }
 
+
+@RequestMapping("/users") - this defines the base path for all endpoints inside this controller.
+
+@GetMApping("/hello") maps the /users/hello endpoint to the sayHello() method.
+
+when we call GET for /users/hello we will get below output - 
+
+"Hello, Welcome to Spring Boot REST API!"
+
+
+
+user controller which returns JSON - 
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @GetMapping("/profile")
+    public User getUserProfile() {
+        return new User(1, "John Doe", "john.doe@example.com");
+    }
+}
+
+User class - 
+
+
+public class User {
+    private int id;
+    private String name;
+    private String email;
+
+    // Constructor
+    public User(int id, String name, String email) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+    }
+
+    // Getters
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public String getEmail() { return email; }
+}
+
+
+output while calling GET /users/profile - 
+
+{
+    "id": 1,
+    "name": "John Doe",
+    "email": "john.doe@example.com"
+}
+
+
+Spring automatically converts Java objects into JSON.
+
+GetMapping("/hello") - maps http get request to a specific method.
+
+@PostMapping("/hello") - maps that post request to a specific method.
+
+@PutMapping("/update") - maps HTTP put requests to a method.
+
+@DeleteMapping("/delete/{id}") - Maps http delete request to a method.
+
+CRUD example - 
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    private List<User> users = new ArrayList<>();
+
+    // CREATE (POST)
+    @PostMapping("/add")
+    public String addUser(@RequestBody User user) {
+        users.add(user);
+        return "User added successfully!";
+    }
+
+    // READ (GET)
+    @GetMapping
+    public List<User> getAllUsers() {
+        return users;
+    }
+
+    // UPDATE (PUT)
+    @PutMapping("/update/{id}")
+    public String updateUser(@PathVariable int id, @RequestBody User updatedUser) {
+        for (User user : users) {
+            if (user.getId() == id) {
+                users.remove(user);
+                users.add(updatedUser);
+                return "User updated successfully!";
+            }
+        }
+        return "User not found!";
+    }
+
+    // DELETE (DELETE)
+    @DeleteMapping("/delete/{id}")
+    public String deleteUser(@PathVariable int id) {
+        users.removeIf(user -> user.getId() == id);
+        return "User deleted successfully!";
+    }
+}
+
+@Component - 
+
+This is used for dependency injection and automatic bean management, this tells spring that class is spring managed bean and should be automatically detected and registered in spring application context.
+
+This marks the class as spring managed component, it allows component scanning mechanism to automatically detect and register the bean, Then the registered beans can be autowired into other spring managed beans. 
+
+@Component
+public class MyComponent {
+    public void showMessage() {
+        System.out.println("Hello from MyComponent!");
+    }
+}
+
+In above spring automatically detects MyComponent and registers it as a bean.
+
+Spring scans the package where @Component is used and it registers the class as a bean in the spring IoC container ( Application context), the bean can be injected into other component using @Autowired annotation.
+
+example - 
+
+@SpringBootApplication  // Enables component scanning
+public class ComponentExampleApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ComponentExampleApplication.class, args);
+    }
+}
+
+The @SpringBootApplication annotation will enable component scanning in the main application class. It has @ComponentScan so it will automatically detects all @Component classes.
+
+create component - 
+
+@Component  // Marking this class as a Spring component (bean)
+public class MessageService {
+    public String getMessage() {
+        return "Hello from MessageService!";
+    }
+}
+
+use component  -
+
+@Component
+public class UserService {
+    private final MessageService messageService;
+
+    @Autowired  // Injecting MessageService
+    public UserService(MessageService messageService) {
+        this.messageService = messageService;
+    }
+
+    public void displayMessage() {
+        System.out.println(messageService.getMessage());
+    }
+}
+
+@ComponentScan to define custom package - 
+
+@SpringBootApplication
+@ComponentScan(basePackages = "com.example.custompackage") // Custom package to scan
+public class ComponentExampleApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ComponentExampleApplication.class, args);
+    }
+}
+
+@ComponentScan tells the spring to scan the provided package for beans.
+
+there are two ways define the spring beans - 
+
+1) @Component
+2) using @Bean manual bean registration in a @Configuration class - 
+
+@Configuration
+public class AppConfig {
+    @Bean
+    public MyComponent myComponent() {
+        return new MyComponent();
+    }
+}
+
+when manual control is needed to create the objects @Bean is used.
+
+follow the baeldung documentation.
+
+
+------------------
+
+Create product controller and APIs.
+
+
+
+
+
+
+
