@@ -4784,3 +4784,220 @@ My Recommendation:
 If working alone → Rebase before merging for a clean history.
 If working with a team → Merge directly to avoid rewriting history.
 
+
+
+Git Stash -
+
+
+git stash is a command in Git that allows you to temporarily save changes that are not yet committed, so you can switch branches, pull updates, or perform other operations without losing your work. The stashed changes can be reapplied later.
+
+Real-World Scenario Where git stash is Useful
+Scenario 1: Interruptions for Urgent Fixes
+Imagine you are working on a new feature (feature-branch), but suddenly, an urgent bug needs to be fixed in the main branch. However, your current working directory has uncommitted changes. Instead of committing half-done work, you can stash your changes, switch to main, fix the bug, push the fix, then come back and restore your work.
+
+Scenario 2: Syncing with Latest Code
+You're working on a branch, and before pushing your changes, you need to pull the latest updates from develop. But Git warns about merge conflicts because of local uncommitted changes. You can stash them, pull the latest code, then apply your stashed changes back.
+
+Common git stash Commands
+Save Uncommitted Changes
+
+sh
+Copy
+Edit
+git stash
+or with a custom message:
+
+sh
+Copy
+Edit
+git stash push -m "Work in progress on login feature"
+View Stashed Items
+
+sh
+Copy
+Edit
+git stash list
+Output:
+
+pgsql
+Copy
+Edit
+stash@{0}: WIP on feature-branch: 123abc Login feature work
+stash@{1}: WIP on main: 456def Bug fix
+Apply Stashed Changes
+
+sh
+Copy
+Edit
+git stash apply
+or apply a specific stash:
+
+sh
+Copy
+Edit
+git stash apply stash@{1}
+Remove Stash After Applying
+
+sh
+Copy
+Edit
+git stash pop
+This restores the last stashed changes and removes them from the stash list.
+
+Delete a Specific Stash
+
+git stash drop stash@{0}
+Clear All Stashed Changes
+
+
+git stash clear
+Best Practices
+✅ Use stash when you need to switch branches but don’t want to commit incomplete work.
+✅ Always provide a meaningful message when stashing (git stash push -m "WIP on feature X") for better tracking.
+✅ Use git stash apply if you want to keep the stash for future use, and git stash pop if you don’t need it anymore.
+✅ Avoid excessive stashing without applying, as it can clutter your stash list.
+
+------------------------------------
+
+Lecture - APIs and REST and how to code APIs.
+
+API - application programming interface - API is a contract to connect to web application. 
+
+API (Application Programming Interface) is a set of rules, protocols, and tools that allow different software applications to communicate with each other. It defines how requests and responses should be structured between systems.
+
+Key Components of an API -
+
+Endpoints – URLs where the API is accessible.
+
+Methods (HTTP Verbs) – Define actions like:
+GET → Retrieve data
+POST → Create new data
+PUT/PATCH → Update data, put is for replacement and patch is for update.
+DELETE → Remove data
+
+Request & Response Format – Typically JSON or XML.
+
+Authentication – API keys, OAuth, JWT, etc., for secure access.
+
+REST APIS - 
+
+Best practices - 
+ 
+REST APIS should be stateless.
+
+REST APIs should have relation with N tables instead of only one. create seperate table for each entity instead of storing all the data in the one single table.
+
+REST APIs should talk in terms of JSON or XML.
+
+Resource based endpoints.
+
+What is REST?
+
+REST (Representational State Transfer) is an architectural style for designing networked applications. It is based on a set of principles that define how web services should work by using standard HTTP methods (GET, POST, PUT, DELETE, etc.) and stateless communication. RESTful APIs allow clients to interact with a server using standard web technologies.
+
+Best Practices for RESTful APIs
+1. Use Meaningful Resource URIs
+Use nouns instead of verbs in URLs.
+✅ GET /users (Good)
+❌ GET /getUsers (Bad)
+Use plural nouns for collections.
+✅ GET /products (List all products)
+✅ GET /products/123 (Retrieve product with ID 123)
+2. Use the Correct HTTP Methods
+GET → Retrieve data (Safe and Idempotent)
+POST → Create a new resource
+PUT → Update a resource (Replace existing data)
+PATCH → Partially update a resource
+DELETE → Remove a resource
+3. Use Proper Status Codes
+200 OK → Successful request
+201 Created → Resource successfully created
+204 No Content → Request successful but no response body
+400 Bad Request → Invalid request from client
+401 Unauthorized → Authentication required
+403 Forbidden → Client has no access rights
+404 Not Found → Resource does not exist
+500 Internal Server Error → Unexpected server failure
+4. Use Query Parameters for Filtering, Sorting, and Pagination
+Filtering: /products?category=electronics
+Sorting: /products?sort=price,desc
+Pagination: /products?page=2&size=10
+5. Use JSON as the Response Format
+JSON is widely used because it is lightweight and easy to parse.
+Always include Content-Type: application/json in responses.
+6. Implement Authentication and Authorization
+Use JWT (JSON Web Tokens) for authentication.
+Use OAuth 2.0 for API security when dealing with third-party integrations.
+7. Handle Errors Properly with Clear Messages
+Send structured error responses:
+
+
+{
+  "error": "Invalid request",
+  "message": "Product ID must be a number",
+  "status": 400
+}
+
+8. Version Your API
+Add versioning to API URLs to avoid breaking changes.
+✅ /api/v1/products
+
+9. Use HATEOAS (Optional for Advanced REST APIs)
+Hypermedia as the Engine of Application State (HATEOAS) helps clients navigate APIs dynamically.
+
+Build tools - 
+
+It createes a graph of all the dependancies and maven creates linked list of all the dependancies.
+
+Maven - 
+
+Maven users XML based configuration to define project structure, dependencies and lifecycle.
+
+fearures - dependencies management, Standardized directory structure, Lifecycle management. 
+
+Gradle - 
+
+this uses Groovy or kotlin instead of XML. This is more efficient than maven.
+
+features - 
+
+Performance optimization - uses incremental builds and caching.
+
+We can configure in groovy or Kotlin.
+
+Better suited for microservices and modulaer projects, and it supports the plugin system more customizable than maven.
+
+
+Creating spring boot application - 
+
+Once spring boot project is created then first create models, then controllers, 
+
+@RestController - for controllers.
+
+@Service - for service.
+
+@Component - for models.
+
+
+@RestController - it is advance version of the @Controller annotation. IT is used to create restful web services and automatically serializes the response data into JSON or XML format.
+
+It combines @Controller and @ResponseBody.
+
+It tells spring that this class will handle restful api requests.
+
+It is used to define controller that handles HTTP requests and return data instead of a view and data is automatically serialized into JSON or XML using jackson ( for json) or JAXB (for XML).
+
+without @ResponseBody, spring assumes you want to return view and @RestController serializes objects to JSON and sends them in the response body.
+
+example - 
+
+@RestController  // Marks this class as a REST Controller
+@RequestMapping("/users") // Base path for all endpoints in this controller
+public class UserController {
+
+    @GetMapping("/hello")
+    public String sayHello() {
+        return "Hello, Welcome to Spring Boot REST API!";
+    }
+}
+
