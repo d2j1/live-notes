@@ -5666,3 +5666,217 @@ Application Server: Apache Tomcat (handles Java backend)
 
 Database: PostgreSQL/MySQL (stores user data)
 
+------------------------------------------------------
+
+Lecture | Integrating 3rd Party APIs
+
+
+Rest template - 
+
+RestTemplate in Spring Boot
+RestTemplate is a synchronous HTTP client provided by Spring for making REST API calls from a Spring application. It allows you to send HTTP requests and handle responses in various formats.
+
+Note: RestTemplate is now deprecated in favor of WebClient (introduced in Spring WebFlux). However, it's still widely used in legacy projects.
+
+Basic Methods in RestTemplate
+getForObject(url, responseType): Fetch an object from the given URL.
+
+getForEntity(url, responseType): Fetch an entity with HTTP response details.
+
+postForObject(url, request, responseType): Send a POST request and get an object response.
+
+postForEntity(url, request, responseType): Send a POST request and get full response details.
+
+put(url, request): Update a resource.
+
+delete(url): Delete a resource.
+
+exchange(url, method, request, responseType): More customizable, allowing different HTTP methods.
+
+CRUD Operations Using RestTemplate
+1. Setup RestTemplate Bean
+java
+Copy
+Edit
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class RestTemplateConfig {
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+2. Example Model (User)
+java
+Copy
+Edit
+public class User {
+    private Long id;
+    private String name;
+    private String email;
+
+    // Getters and Setters
+}
+3. Service for CRUD Operations
+java
+Copy
+Edit
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Service
+public class UserService {
+    private final RestTemplate restTemplate;
+    private final String BASE_URL = "http://localhost:8080/api/users";
+
+    public UserService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    // 1. Create a User (POST)
+    public User createUser(User user) {
+        return restTemplate.postForObject(BASE_URL, user, User.class);
+    }
+
+    // 2. Get a User by ID (GET)
+    public User getUserById(Long id) {
+        return restTemplate.getForObject(BASE_URL + "/" + id, User.class);
+    }
+
+    // 3. Get All Users (GET)
+    public List<User> getAllUsers() {
+        User[] users = restTemplate.getForObject(BASE_URL, User[].class);
+        return Arrays.asList(users);
+    }
+
+    // 4. Update a User (PUT)
+    public void updateUser(Long id, User user) {
+        restTemplate.put(BASE_URL + "/" + id, user);
+    }
+
+    // 5. Delete a User (DELETE)
+    public void deleteUser(Long id) {
+        restTemplate.delete(BASE_URL + "/" + id);
+    }
+
+    // 6. Using exchange() method
+    public ResponseEntity<User> getUserUsingExchange(Long id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        
+        return restTemplate.exchange(BASE_URL + "/" + id, HttpMethod.GET, entity, User.class);
+    }
+}
+
+Spring’s RestTemplate provides exchange(), getForEntity(), postForEntity(), and similar methods that return a ResponseEntity<T>. These methods provide more details about the HTTP response, such as status codes and headers.
+
+1. Setup RestTemplate Bean
+java
+Copy
+Edit
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class RestTemplateConfig {
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+2. Example Model (User)
+java
+Copy
+Edit
+public class User {
+    private Long id;
+    private String name;
+    private String email;
+
+    // Constructors
+    public User() {}
+
+    public User(String name, String email) {
+        this.name = name;
+        this.email = email;
+    }
+
+    // Getters and Setters
+}
+3. Service with Entity Methods
+java
+Copy
+Edit
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Service
+public class UserService {
+    private final RestTemplate restTemplate;
+    private final String BASE_URL = "http://localhost:8080/api/users";
+
+    public UserService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    // 1. Create a User (POST)
+    public ResponseEntity<User> createUser(User user) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<User> requestEntity = new HttpEntity<>(user, headers);
+
+        return restTemplate.exchange(BASE_URL, HttpMethod.POST, requestEntity, User.class);
+    }
+
+    // 2. Get a User by ID (GET)
+    public ResponseEntity<User> getUserById(Long id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+
+        return restTemplate.exchange(BASE_URL + "/" + id, HttpMethod.GET, requestEntity, User.class);
+    }
+
+    // 3. Get All Users (GET)
+    public ResponseEntity<List<User>> getAllUsers() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+
+        ResponseEntity<User[]> responseEntity = restTemplate.exchange(BASE_URL, HttpMethod.GET, requestEntity, User[].class);
+        List<User> users = Arrays.asList(responseEntity.getBody());
+
+        return new ResponseEntity<>(users, responseEntity.getStatusCode());
+    }
+
+    // 4. Update a User (PUT)
+    public ResponseEntity<Void> updateUser(Long id, User user) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<User> requestEntity = new HttpEntity<>(user, headers);
+
+        return restTemplate.exchange(BASE_URL + "/" + id, HttpMethod.PUT, requestEntity, Void.class);
+    }
+
+    // 5. Delete a User (DELETE)
+    public ResponseEntity<Void> deleteUser(Long id) {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+
+        return restTemplate.exchange(BASE_URL + "/" + id, HttpMethod.DELETE, requestEntity, Void.class);
+    }
+}
+
