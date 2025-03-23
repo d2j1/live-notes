@@ -5214,9 +5214,8 @@ Validation – Enables custom validation for input data.
 Without a DTO, we expose the Entity class directly in our REST API.
 
 Entity Class (Exposed Directly)
-java
-Copy
-Edit
+
+
 import jakarta.persistence.*;
 
 @Entity
@@ -5231,9 +5230,8 @@ public class User {
     // Getters and Setters
 }
 Controller (Returning Entity Directly)
-java
-Copy
-Edit
+
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -5258,9 +5256,8 @@ Instead of returning the Entity, we create a DTO that contains only the required
 Step 1: Create a DTO Class
 The DTO contains only safe and necessary fields.
 
-java
-Copy
-Edit
+
+
 public class UserDTO {
     private String username;
     private String email;
@@ -5275,9 +5272,8 @@ public class UserDTO {
 Step 2: Convert Entity to DTO
 Modify the Service Layer to return a DTO instead of an Entity.
 
-java
-Copy
-Edit
+
+
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
@@ -5295,9 +5291,8 @@ public class UserService {
     }
 }
 Step 3: Update the Controller to Return DTO Instead of Entity
-java
-Copy
-Edit
+
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -5321,9 +5316,7 @@ Manually converting entities to DTOs can be repetitive. ModelMapper automates th
 
 📌 Add ModelMapper dependency (for Maven users):
 
-xml
-Copy
-Edit
+
 <dependency>
     <groupId>org.modelmapper</groupId>
     <artifactId>modelmapper</artifactId>
@@ -5331,9 +5324,8 @@ Edit
 </dependency>
 📌 Spring Configuration for ModelMapper:
 
-java
-Copy
-Edit
+
+
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -5347,9 +5339,8 @@ public class ModelMapperConfig {
 }
 📌 Using ModelMapper in the Service Layer:
 
-java
-Copy
-Edit
+
+
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -5375,9 +5366,7 @@ If you need to convert DTOs back to Entities (e.g., for saving user data):
 
 📌 Create a UserDTO with an additional constructor
 
-java
-Copy
-Edit
+
 public class UserDTO {
     private String username;
     private String email;
@@ -5393,9 +5382,7 @@ public class UserDTO {
 }
 📌 Convert DTO to Entity in the Service Layer
 
-java
-Copy
-Edit
+
 public User convertToEntity(UserDTO userDTO) {
     return modelMapper.map(userDTO, User.class);
 }
@@ -5404,18 +5391,15 @@ To ensure input data is valid, use Spring Validation with @Valid.
 
 📌 Add Validation Dependency (Maven)
 
-xml
-Copy
-Edit
+
+
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-validation</artifactId>
 </dependency>
 📌 Modify DTO to Include Validation Annotations
 
-java
-Copy
-Edit
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -5430,9 +5414,7 @@ public class UserDTO {
 }
 📌 Modify Controller to Validate Input DTO
 
-java
-Copy
-Edit
+
 @PostMapping("/create")
 public ResponseEntity<String> createUser(@Valid @RequestBody UserDTO userDTO) {
     userService.saveUser(userDTO);
@@ -5447,12 +5429,240 @@ Reduces unnecessary data transfer and improves API performance.
 ModelMapper automates entity-to-DTO conversion.
 Validation using @Valid ensures correct input data.
 
-
-00:32:18
-
+ObjectMapper - 
 
 
+ObjectMapper in DTO Conversion (Spring Boot)
+ObjectMapper is a powerful class from the Jackson library used for converting Java objects to JSON and vice versa. In the case of DTO (Data Transfer Object) conversion, it helps in mapping Entity → DTO and DTO → Entity efficiently.
+
+1. Adding Jackson Dependency (If Not Already Added)
+If you are using Spring Boot, Jackson is included by default. Otherwise, add it manually:
+
+xml
+Copy
+Edit
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.15.0</version>
+</dependency>
+2. DTO vs. Entity
+Before using ObjectMapper, let's assume we have an Entity and a corresponding DTO.
+
+Entity Class (UserEntity.java)
+java
+Copy
+Edit
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String name;
+    
+    private String email;
+    
+    @Enumerated(EnumType.STRING)
+    private Role role; // ENUM field
+}
+DTO Class (UserDTO.java)
+java
+Copy
+Edit
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserDTO {
+    private Long id;
+    private String name;
+    private String email;
+    private String role; // Keeping it as String for flexibility
+}
+3. Using ObjectMapper for DTO Conversion
+Jackson's ObjectMapper helps convert between UserEntity and UserDTO.
+
+Convert Entity → DTO
+java
+Copy
+Edit
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public UserDTO convertToDTO(UserEntity user) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    return objectMapper.convertValue(user, UserDTO.class);
+}
+💡 How it works?
+
+convertValue(user, UserDTO.class) automatically maps matching fields.
+The role enum is automatically converted to a String in UserDTO.
+Convert DTO → Entity
+java
+Copy
+Edit
+public UserEntity convertToEntity(UserDTO userDTO) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    return objectMapper.convertValue(userDTO, UserEntity.class);
+}
+💡 How it works?
+
+Fields are mapped automatically.
+Since role is a String in DTO, but Role (Enum) in UserEntity, it needs special handling.
+4. Handling Enum Conversion in DTO
+Since role is a String in UserDTO, but an Enum in UserEntity, you should handle the conversion manually:
+
+java
+Copy
+Edit
+public UserEntity convertToEntity(UserDTO userDTO) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    UserEntity user = objectMapper.convertValue(userDTO, UserEntity.class);
+    user.setRole(Role.valueOf(userDTO.getRole())); // Convert String to Enum
+    return user;
+}
+🚀 This ensures the role is correctly mapped from String to Enum!
+
+5. Using @Autowired ObjectMapper in a Service
+Instead of creating a new ObjectMapper instance every time, you can inject it in Spring Boot:
+
+Service Class Example
+java
+Copy
+Edit
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+    
+    private final ObjectMapper objectMapper;
+
+    public UserService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public UserDTO convertToDTO(UserEntity user) {
+        return objectMapper.convertValue(user, UserDTO.class);
+    }
+
+    public UserEntity convertToEntity(UserDTO userDTO) {
+        UserEntity user = objectMapper.convertValue(userDTO, UserEntity.class);
+        user.setRole(Role.valueOf(userDTO.getRole())); // Convert String to Enum
+        return user;
+    }
+}
+✅ Now ObjectMapper is managed by Spring Boot and is reusable.
+
+6. Alternative: Using ModelMapper (Better for Complex Mappings)
+If you have deeply nested DTOs, consider using ModelMapper instead of ObjectMapper:
+
+java
+Copy
+Edit
+<dependency>
+    <groupId>org.modelmapper</groupId>
+    <artifactId>modelmapper</artifactId>
+    <version>3.1.1</version>
+</dependency>
+Then use:
+
+java
+Copy
+Edit
+ModelMapper modelMapper = new ModelMapper();
+UserDTO userDTO = modelMapper.map(userEntity, UserDTO.class);
+But for simple cases, ObjectMapper is sufficient! 🚀
+
+Final Thoughts
+✅ Use ObjectMapper.convertValue() for simple DTO mappings.
+✅ Manually handle Enums (Role.valueOf(userDTO.getRole())).
+✅ Inject ObjectMapper in services instead of creating new instances.
+✅ For deeply nested DTOs, consider ModelMapper.
 
 
+-------------------------------
 
+Lecture - Introduction to SpringBoot, MVC , RestTemplate and Exceptions
+
+
+DAO - Data Access Object.
+
+
+Web Server
+A web server is responsible for handling HTTP requests from clients (browsers, mobile apps, etc.) and serving static content like HTML, CSS, JavaScript, and images. It can also act as a reverse proxy to forward dynamic requests to an application server.
+
+Common Web Servers:
+Apache HTTP Server
+
+Nginx
+
+Microsoft IIS
+
+LiteSpeed
+
+Functions of a Web Server:
+Handles static content (HTML, CSS, JavaScript, images, etc.)
+
+Supports HTTP protocol for communication
+
+Implements load balancing and reverse proxying
+
+Can serve as a gateway to application servers
+
+Example Usage:
+If you visit www.example.com, the web server fetches and serves the HTML page to your browser.
+
+2. Application Server
+An application server is responsible for executing business logic and handling dynamic content (e.g., database interactions, user authentication, API responses). It processes requests from the web server and generates dynamic responses.
+
+Common Application Servers:
+Apache Tomcat (Java-based)
+
+JBoss/WildFly (Java EE)
+
+WebLogic (Oracle)
+
+WebSphere (IBM)
+
+Node.js (JavaScript runtime)
+
+Functions of an Application Server:
+Executes business logic (e.g., processing orders, user authentication)
+
+Handles dynamic content generation (e.g., JSP, Servlets, ASP.NET)
+
+Manages database connections and APIs
+
+Supports transactions and session management
+
+Provides enterprise-level services like security and clustering
+
+Example Usage:
+When a user logs in, the web server forwards the request to the application server, which checks credentials in the database and returns a session token.
+
+
+How They Work Together
+In a typical three-tier architecture:
+
+Web Server receives the request (GET /products)
+
+If it's a static file (CSS, JS), the web server serves it.
+
+If it's a dynamic request (/login), the web server forwards it to the Application Server.
+
+The Application Server processes the request (e.g., queries a database) and sends a response back.
+
+The Web Server delivers the final response to the client.
+
+Example Stack in Java:
+Web Server: Nginx (serves React frontend)
+
+Application Server: Apache Tomcat (handles Java backend)
+
+Database: PostgreSQL/MySQL (stores user data)
 
