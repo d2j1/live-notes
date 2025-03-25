@@ -5884,6 +5884,709 @@ public class UserService {
 
 Lecture | Introduction to JPA and connecting Db
 
-https://www.scaler.com/academy/mentee-dashboard/class/366109/session?joinSession=1
+JPA connects to the database by using driver called JDBC.
 
-00:15:46
+JDBC is an interface and with help of its implementations we can connect to different types of databases like mysql connector, postgres connector etc.
+
+
+
+ORM - 
+
+What is ORM?
+ORM (Object-Relational Mapping) is a programming technique that allows developers to interact with a relational database using object-oriented programming concepts instead of SQL queries. It maps database tables to Java classes, making database interactions more intuitive and reducing the need for complex SQL statements.
+
+Benefits of ORM
+Abstraction – Hides SQL queries behind method calls.
+
+Productivity – Reduces boilerplate code for database interactions.
+
+Portability – Makes applications database-independent.
+
+Performance Optimization – Uses caching and lazy loading to improve performance.
+
+Automatic Schema Generation – Can generate database tables automatically.
+
+JPA (Java Persistence API) in Detail
+What is JPA?
+JPA (Java Persistence API) is a specification for ORM in Java. It provides a standard way to manage relational data using Java objects. JPA itself is just a specification; it requires an implementation like Hibernate, EclipseLink, or OpenJPA to work.
+
+Key Components of JPA
+Entity – Represents a table in the database.
+
+Entity Manager – Manages entity objects and provides CRUD operations.
+
+Persistence Context – A set of managed entity instances associated with a persistence unit.
+
+JPQL (Java Persistence Query Language) – Used to query database entities in an object-oriented way.
+
+Transactions – Handled using the @Transactional annotation or EntityTransaction in JPA.
+
+JPA Annotations with Examples
+1. Entity Class
+Each entity maps to a database table.
+
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
+
+    @Column(name = "email", nullable = false)
+    private String email;
+
+    // Getters and setters
+}
+2. Repository Layer (Spring Data JPA Example)
+Spring Data JPA simplifies CRUD operations.
+
+java
+Copy
+Edit
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    User findByUsername(String username);
+}
+3. Service Layer
+Handles business logic.
+
+java
+Copy
+Edit
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+public class UserService {
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+}
+4. Using EntityManager for Custom Queries
+java
+Copy
+Edit
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class UserDao {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public User getUserByEmail(String email) {
+        return entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
+                            .setParameter("email", email)
+                            .getSingleResult();
+    }
+}
+Lifecycle of JPA Entities
+New (Transient) – Object created but not associated with the database.
+
+Managed (Persistent) – Object is managed by JPA and associated with a database entry.
+
+Detached – Object is no longer managed but still exists in memory.
+
+Removed – Object is marked for deletion.
+
+Hibernate - 
+
+What is Hibernate?
+Hibernate is an Object-Relational Mapping (ORM) framework for Java that simplifies database interactions by mapping Java objects to database tables. It eliminates the need for writing complex SQL queries and provides an abstraction layer over JDBC.
+
+Key Features of Hibernate
+✔ ORM Support – Maps Java classes to database tables.
+✔ HQL (Hibernate Query Language) – Allows querying using an object-oriented approach.
+✔ Automatic Schema Generation – Can create, update, and validate database tables automatically.
+✔ Caching – Provides first-level and second-level caching to improve performance.
+✔ Lazy & Eager Loading – Optimizes data fetching strategies.
+✔ Transaction Management – Ensures data consistency with ACID compliance.
+✔ Database Independence – Supports multiple databases without code changes.
+
+How Hibernate Works?
+Configuration – Load Hibernate configurations (hibernate.cfg.xml or persistence.xml in JPA).
+
+Session Factory – A heavyweight object that manages database connections.
+
+Session – Lightweight, used for performing CRUD operations.
+
+Transaction Management – Ensures data consistency.
+
+Query Execution – Uses HQL or Criteria API for retrieving data.
+
+Architecture of Hibernate
+SessionFactory – A factory for Session objects, created once per application.
+
+Session – Represents a unit of work with the database (like JDBC Connection).
+
+Transaction – Manages database transactions.
+
+Query & Criteria API – Provides ways to query data.
+
+Cache – Stores frequently used objects to enhance performance.
+
+Hibernate Configuration
+1. Configure Hibernate (hibernate.cfg.xml)
+xml
+Copy
+Edit
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/mydb</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">password</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
+    </session-factory>
+</hibernate-configuration>
+✅ hibernate.hbm2ddl.auto options:
+
+create – Drops and creates the schema on startup.
+
+update – Updates schema without deleting existing data.
+
+validate – Ensures schema matches but doesn’t modify it.
+
+none – Disables automatic schema management.
+
+Mapping Java Class to Database Table
+2. Create an Entity Class
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
+
+    @Column(name = "email", nullable = false)
+    private String email;
+
+    // Getters and setters
+}
+Perform CRUD Operations with Hibernate
+3. Create SessionFactory & Session
+java
+Copy
+Edit
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+public class HibernateUtil {
+    private static final SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
+
+    public static Session getSession() {
+        return sessionFactory.openSession();
+    }
+}
+4. Insert Data (Save a User)
+java
+Copy
+Edit
+public class UserDao {
+    public void saveUser(User user) {
+        Session session = HibernateUtil.getSession();
+        Transaction transaction = session.beginTransaction();
+        
+        session.save(user);
+        
+        transaction.commit();
+        session.close();
+    }
+}
+5. Retrieve Data (Get a User by ID)
+java
+Copy
+Edit
+public class UserDao {
+    public User getUserById(Long id) {
+        Session session = HibernateUtil.getSession();
+        User user = session.get(User.class, id);
+        session.close();
+        return user;
+    }
+}
+6. Update Data
+java
+Copy
+Edit
+public void updateUser(Long id, String newEmail) {
+    Session session = HibernateUtil.getSession();
+    Transaction transaction = session.beginTransaction();
+
+    User user = session.get(User.class, id);
+    if (user != null) {
+        user.setEmail(newEmail);
+        session.update(user);
+    }
+
+    transaction.commit();
+    session.close();
+}
+7. Delete Data
+java
+Copy
+Edit
+public void deleteUser(Long id) {
+    Session session = HibernateUtil.getSession();
+    Transaction transaction = session.beginTransaction();
+
+    User user = session.get(User.class, id);
+    if (user != null) {
+        session.delete(user);
+    }
+
+    transaction.commit();
+    session.close();
+}
+Hibernate Query Language (HQL)
+HQL is an object-oriented query language similar to SQL but operates on entity classes instead of tables.
+
+Example HQL Queries
+java
+Copy
+Edit
+import org.hibernate.query.Query;
+
+public List<User> getAllUsers() {
+    Session session = HibernateUtil.getSession();
+    Query<User> query = session.createQuery("FROM User", User.class);
+    List<User> users = query.list();
+    session.close();
+    return users;
+}
+java
+Copy
+Edit
+public User getUserByUsername(String username) {
+    Session session = HibernateUtil.getSession();
+    Query<User> query = session.createQuery("FROM User WHERE username = :username", User.class);
+    query.setParameter("username", username);
+    User user = query.uniqueResult();
+    session.close();
+    return user;
+}
+Hibernate Caching
+1. First-Level Cache (Enabled by Default)
+Each session maintains a cache to store retrieved objects.
+
+2. Second-Level Cache (Shared Across Sessions)
+Hibernate supports caching using providers like EhCache, Infinispan, or Redis.
+
+Example configuration in hibernate.cfg.xml:
+
+xml
+Copy
+Edit
+<property name="hibernate.cache.use_second_level_cache">true</property>
+<property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+Lazy vs Eager Loading
+Lazy Loading (Default): Data is loaded only when accessed.
+
+java
+Copy
+Edit
+@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+private List<Order> orders;
+Eager Loading: Data is loaded immediately.
+
+java
+Copy
+Edit
+@OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+private List<Order> orders;
+Spring Boot Integration
+Spring Boot simplifies Hibernate configuration using Spring Data JPA.
+
+Steps to Integrate Hibernate with Spring Boot
+Add dependencies in pom.xml:
+
+
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+</dependency>
+Configure application.properties:
+
+
+spring.datasource.url=jdbc:mysql://localhost:3306/mydb
+spring.datasource.username=root
+spring.datasource.password=password
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+Use JpaRepository for easy data access:
+
+java
+Copy
+Edit
+public interface UserRepository extends JpaRepository<User, Long> {
+    User findByUsername(String username);
+}
+
+
+
+Add two depedencies to the POM - 
+
+Spring data starter JPA and MySQL Connector.
+
+
+Create database.
+
+add url, hibernate ddl auto, username, password, driver class properties to the application.properties file with its values.
+
+@MappedSuperClass - 
+
+What is @MappedSuperclass?
+The @MappedSuperclass annotation in JPA is used to create a base class that provides common attributes and mappings for multiple entity classes. However, this base class is not mapped to a database table on its own.
+
+Why Use @MappedSuperclass?
+✅ Code reusability – Define common fields (e.g., id, createdAt, updatedAt) in one place.
+✅ Avoid duplication – Prevent repeating the same fields in multiple entity classes.
+✅ Cleaner structure – Keeps entities more readable and maintainable.
+
+How @MappedSuperclass Works?
+A class annotated with @MappedSuperclass is not an entity itself.
+
+Subclasses inherit its fields and mappings as if they were defined in each subclass.
+
+It does not have a corresponding table in the database.
+
+Example: Using @MappedSuperclass for Auditing Fields
+Step 1: Create the Base Entity Class
+java
+Copy
+Edit
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@MappedSuperclass
+public abstract class BaseEntity {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    // Getters and Setters
+}
+💡 What Happens Here?
+
+@MappedSuperclass: Indicates this class should be a base class but not mapped to a table.
+
+@Id, @GeneratedValue: Common ID field for all child entities.
+
+@Column: Specifies column names and constraints.
+
+@PrePersist, @PreUpdate: Automatically set timestamps when saving/updating an entity.
+
+Step 2: Create an Entity That Extends BaseEntity
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
+public class User extends BaseEntity {
+    
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
+
+    @Column(name = "email", nullable = false)
+    private String email;
+
+    // Getters and Setters
+}
+💡 Key Points:
+
+User inherits id, createdAt, and updatedAt from BaseEntity.
+
+Hibernate treats BaseEntity fields as part of User, but BaseEntity itself has no database table.
+
+Step 3: Create Another Entity That Also Extends BaseEntity
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "products")
+public class Product extends BaseEntity {
+    
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "price", nullable = false)
+    private Double price;
+
+    // Getters and Setters
+}
+💡 Now both User and Product entities have id, createdAt, and updatedAt fields without duplicating code.
+
+
+
+ Use @MappedSuperclass when you only want to reuse fields.
+🔹 Use @Inheritance when you want a separate table for the parent class.
+
+
+Relationships between the entities - 
+
+In JPA, relationships between entities are managed using annotations like @OneToMany, @ManyToOne, @ManyToMany, and @OneToOne. These define how tables are linked in the database.
+
+1. @OneToMany and @ManyToOne (Bidirectional Relationship)
+✅ @OneToMany: One entity has a collection of another entity.
+✅ @ManyToOne: Many entities reference one entity.
+
+Example: One User can have multiple Orders
+Step 1: Create User Entity (@OneToMany)
+java
+Copy
+Edit
+import jakarta.persistence.*;
+import java.util.List;
+
+@Entity
+@Table(name = "users")
+public class User {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String username;
+
+    // One user can have multiple orders
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Order> orders;
+
+    // Getters and Setters
+}
+@OneToMany(mappedBy = "user"): Defines the one-to-many relationship.
+
+mappedBy = "user" means the user field in Order owns the relationship.
+
+cascade = CascadeType.ALL ensures deleting a user also deletes their orders.
+
+fetch = FetchType.LAZY improves performance by loading orders only when needed.
+
+Step 2: Create Order Entity (@ManyToOne)
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "orders")
+public class Order {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String product;
+
+    // Many orders belong to one user
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    // Getters and Setters
+}
+@ManyToOne: Multiple orders reference one user (User entity).
+
+@JoinColumn(name = "user_id"): Creates a foreign key (user_id) in orders table.
+
+nullable = false means an Order must be linked to a User.
+
+2. @ManyToMany (Bidirectional Relationship)
+✅ Used when both entities have a many-to-many relationship.
+✅ Requires a join table to link both entities.
+
+Example: Many Users can enroll in many Courses
+Step 1: Create User Entity (@ManyToMany)
+java
+Copy
+Edit
+import jakarta.persistence.*;
+import java.util.List;
+
+@Entity
+@Table(name = "users")
+public class User {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String username;
+
+    // Many users can enroll in many courses
+    @ManyToMany
+    @JoinTable(
+        name = "user_courses",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "course_id")
+    )
+    private List<Course> courses;
+
+    // Getters and Setters
+}
+@ManyToMany with @JoinTable: Creates a join table (user_courses) with user_id and course_id.
+
+A user can enroll in many courses, and a course can have many users.
+
+Step 2: Create Course Entity (@ManyToMany, mappedBy)
+java
+Copy
+Edit
+import jakarta.persistence.*;
+import java.util.List;
+
+@Entity
+@Table(name = "courses")
+public class Course {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String courseName;
+
+    @ManyToMany(mappedBy = "courses")
+    private List<User> users;
+
+    // Getters and Setters
+}
+@ManyToMany(mappedBy = "courses"): User owns the relationship, so Course uses mappedBy.
+
+Hibernate does not create another join table.
+
+3. @OneToOne (Bidirectional Relationship)
+✅ One-to-One mapping means each record in one table is linked to only one record in another table.
+✅ Example: A User has only one Profile.
+
+Example: One User has One Profile
+Step 1: Create User Entity (@OneToOne)
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
+public class User {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String username;
+
+    // One-to-One relationship
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Profile profile;
+
+    // Getters and Setters
+}
+@OneToOne(mappedBy = "user"): User does not own the relationship.
+
+Profile owns it, so mappedBy = "user" points to user in Profile.
+
+cascade = CascadeType.ALL: Deleting User also deletes Profile.
+
+Step 2: Create Profile Entity (@OneToOne)
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "profiles")
+public class Profile {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
+    private String bio;
+
+    // Foreign key
+    @OneToOne
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
+
+    // Getters and Setters
+}
+@OneToOne with @JoinColumn(name = "user_id"):
+
+Creates a foreign key (user_id) in profiles table.
+
+Unique constraint ensures one-to-one mapping.
+
+When to Use mappedBy?
+@OneToMany(mappedBy = "user"): Used on the parent side when the child owns the relationship.
+
+@ManyToMany(mappedBy = "courses"): Used on one side to indicate the other side owns the relationship.
+
+@OneToOne(mappedBy = "user"): Used when the other entity owns the foreign key.
+
+Final Thoughts
+✅ @OneToMany – One parent, multiple children (User -> Orders).
+✅ @ManyToOne – Multiple children reference one parent (Orders -> User).
+✅ @ManyToMany – Many-to-many with a join table (Users <-> Courses).
+✅ @OneToOne – One entity links to exactly one other entity (User -> Profile).
+
+
