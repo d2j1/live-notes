@@ -6589,4 +6589,194 @@ Final Thoughts
 ✅ @ManyToMany – Many-to-many with a join table (Users <-> Courses).
 ✅ @OneToOne – One entity links to exactly one other entity (User -> Profile).
 
+ 
+------------------------------
 
+
+Lecture | Implement StorageProductService
+
+
+@Qualifier Annotation in Spring Boot
+In Spring Boot, the @Qualifier annotation is used to resolve ambiguity when multiple beans of the same type are present in the application context. It tells Spring which specific bean to inject when multiple beans of the same type exist.
+
+🔹 Why is @Qualifier Needed?
+Spring uses dependency injection to autowire beans into a class. By default, it resolves dependencies by type (@Autowired). However, when multiple beans of the same type are available, Spring gets confused about which one to inject. This is where @Qualifier helps.
+
+🔹 How @Qualifier Works?
+It is used along with @Autowired to specify which bean to inject.
+
+The value inside @Qualifier("beanName") must match the name of the bean defined in the configuration.
+
+🛠 Example 1: Without @Qualifier (Ambiguity Issue)
+java
+Copy
+Edit
+@Component
+public class Dog implements Animal {
+    @Override
+    public void speak() {
+        System.out.println("Woof! Woof!");
+    }
+}
+
+@Component
+public class Cat implements Animal {
+    @Override
+    public void speak() {
+        System.out.println("Meow! Meow!");
+    }
+}
+
+@Service
+public class AnimalService {
+    @Autowired
+    private Animal animal;  // 🚨 Ambiguity! Spring doesn't know which one to inject.
+
+    public void makeSound() {
+        animal.speak();
+    }
+}
+❌ Error: NoUniqueBeanDefinitionException because Spring finds two Animal beans (Dog and Cat) and doesn't know which one to inject.
+
+🛠 Example 2: Using @Qualifier to Resolve Ambiguity
+java
+Copy
+Edit
+@Component("dog")
+public class Dog implements Animal {
+    @Override
+    public void speak() {
+        System.out.println("Woof! Woof!");
+    }
+}
+
+@Component("cat")
+public class Cat implements Animal {
+    @Override
+    public void speak() {
+        System.out.println("Meow! Meow!");
+    }
+}
+
+@Service
+public class AnimalService {
+    @Autowired
+    @Qualifier("dog")  // ✅ Explicitly specify which bean to inject
+    private Animal animal;
+
+    public void makeSound() {
+        animal.speak();
+    }
+}
+✅ Now, Spring will inject the dog bean, and the output will be:
+
+Copy
+Edit
+Woof! Woof!
+🛠 Example 3: Using @Qualifier in Constructor Injection
+@Qualifier also works with constructor-based dependency injection:
+
+java
+Copy
+Edit
+@Service
+public class AnimalService {
+    private final Animal animal;
+
+    @Autowired
+    public AnimalService(@Qualifier("cat") Animal animal) {
+        this.animal = animal;
+    }
+
+    public void makeSound() {
+        animal.speak();
+    }
+}
+✅ Now, Spring will inject the cat bean, and the output will be:
+
+Copy
+Edit
+Meow! Meow!
+🛠 Example 4: Using @Qualifier in Method Injection
+You can also use @Qualifier in setter methods:
+
+java
+Copy
+Edit
+@Service
+public class AnimalService {
+    private Animal animal;
+
+    @Autowired
+    public void setAnimal(@Qualifier("dog") Animal animal) {
+        this.animal = animal;
+    }
+
+    public void makeSound() {
+        animal.speak();
+    }
+}
+✅ This will inject the dog bean.
+
+🛠 Example 5: @Qualifier with @Bean in Configuration Class
+If beans are defined using @Bean in a configuration class, @Qualifier can still be used.
+
+java
+Copy
+Edit
+@Configuration
+public class AnimalConfig {
+    @Bean(name = "dogBean")
+    public Animal getDog() {
+        return new Dog();
+    }
+
+    @Bean(name = "catBean")
+    public Animal getCat() {
+        return new Cat();
+    }
+}
+
+@Service
+public class AnimalService {
+    private final Animal animal;
+
+    @Autowired
+    public AnimalService(@Qualifier("dogBean") Animal animal) {
+        this.animal = animal;
+    }
+
+    public void makeSound() {
+        animal.speak();
+    }
+}
+✅ This explicitly injects the dogBean.
+
+🔹 Difference Between @Primary and @Qualifier
+Feature	@Primary	@Qualifier
+Purpose	Sets a default bean when multiple beans exist	Specifies exactly which bean to inject
+Scope	Works at the class level	Works at the injection point
+Priority	Lower priority (overridden by @Qualifier)	Higher priority
+Example:
+java
+Copy
+Edit
+@Component
+@Primary
+public class Dog implements Animal { ... }
+
+@Component
+public class Cat implements Animal { ... }
+
+@Service
+public class AnimalService {
+    @Autowired
+    private Animal animal; // ✅ Dog is injected by default due to @Primary
+}
+If @Qualifier("cat") is used, it overrides @Primary.
+
+🎯 Key Takeaways
+✅ @Qualifier is used to resolve ambiguity when multiple beans of the same type exist.
+✅ Works with field injection, constructor injection, and setter injection.
+✅ It overrides @Primary if both are present.
+✅ Used with @Component, @Bean, and other Spring stereotypes.
