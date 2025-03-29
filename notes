@@ -6780,3 +6780,838 @@ If @Qualifier("cat") is used, it overrides @Primary.
 ✅ Works with field injection, constructor injection, and setter injection.
 ✅ It overrides @Primary if both are present.
 ✅ Used with @Component, @Bean, and other Spring stereotypes.
+
+
+
+
+----------------------------------
+
+
+
+Lecture | UUIDs and Representing Inheritance in Database
+
+
+What is UUID?
+UUID (Universally Unique Identifier) is a 128-bit unique identifier used to ensure uniqueness across distributed systems. It is widely used in databases, applications, and APIs for generating unique keys.
+
+UUID Format
+A UUID is represented as a 36-character string in hexadecimal format, usually divided into 5 groups like this:
+
+Copy
+Edit
+xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx
+M: Represents the UUID version.
+
+N: Defines the UUID variant.
+
+Example UUID:
+550e8400-e29b-41d4-a716-446655440000
+
+Generating UUID in Java
+Java provides the java.util.UUID class to generate UUIDs. You can create different types of UUIDs using built-in methods.
+
+1. Random UUID
+java
+Copy
+Edit
+import java.util.UUID;
+
+public class UUIDExample {
+    public static void main(String[] args) {
+        UUID uuid = UUID.randomUUID();
+        System.out.println("Generated UUID: " + uuid);
+    }
+}
+💡 How it Works?
+
+Uses random numbers and cryptographic algorithms.
+
+Ensures uniqueness with very low chances of collision.
+
+No external input required.
+
+2. Name-based UUID (MD5 - Version 3 & SHA-1 - Version 5)
+If you need consistent UUIDs for the same input, you can use a name-based UUID.
+
+java
+Copy
+Edit
+import java.util.UUID;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+
+public class NameBasedUUID {
+    public static void main(String[] args) {
+        String name = "agripulse";
+        UUID uuid = generateNameBasedUUID(name);
+        System.out.println("Name-Based UUID: " + uuid);
+    }
+
+    public static UUID generateNameBasedUUID(String name) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] hash = md.digest(name.getBytes(StandardCharsets.UTF_8));
+            hash[6] &= 0x0F; // Set version (SHA-1 = version 5)
+            hash[6] |= 0x50;
+            hash[8] &= 0x3F; // Set variant
+            hash[8] |= 0x80;
+            return UUID.nameUUIDFromBytes(hash);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+💡 How it Works?
+
+Converts a string input into a UUID.
+
+Uses MD5 (v3) or SHA-1 (v5) hashing.
+
+The same input always generates the same UUID.
+
+3. Time-based UUID (Version 1)
+Uses timestamp, MAC address, and sequence number.
+
+Spring Boot does not provide built-in support for v1 UUIDs, but you can use an external library like UUID Creator:
+
+xml
+Copy
+Edit
+<dependency>
+    <groupId>com.github.f4b6a3</groupId>
+    <artifactId>uuid-creator</artifactId>
+    <version>5.2.0</version>
+</dependency>
+java
+Copy
+Edit
+import com.github.f4b6a3.uuid.UuidCreator;
+
+public class TimeBasedUUID {
+    public static void main(String[] args) {
+        UUID uuid = UuidCreator.getTimeBased();
+        System.out.println("Time-Based UUID: " + uuid);
+    }
+}
+💡 How it Works?
+
+Uses current timestamp for uniqueness.
+
+Avoids randomness, ensuring uniqueness in distributed systems.
+
+UUID in Spring Boot
+In Spring Boot, UUIDs are often used in databases, request IDs, and distributed applications.
+
+1. Using UUID as Primary Key in JPA
+java
+Copy
+Edit
+import jakarta.persistence.*;
+import java.util.UUID;
+
+@Entity
+public class Farmer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+
+    private String name;
+
+    // Getters and Setters
+}
+💡 How it Works?
+
+Uses Hibernate to auto-generate UUIDs.
+
+Prevents duplicate keys across distributed databases.
+
+2. Generating UUID in Spring Boot Service
+java
+Copy
+Edit
+import org.springframework.stereotype.Service;
+import java.util.UUID;
+
+@Service
+public class UUIDService {
+    public String generateUUID() {
+        return UUID.randomUUID().toString();
+    }
+}
+💡 Use Case?
+
+Generate unique identifiers for API responses.
+
+UUID Versions and Parameters Used
+Version	Type	Parameters Used	Use Case
+1	Time-based	Timestamp + MAC Address + Sequence	Distributed Systems
+2	DCE Security	User ID + Timestamp	Rarely Used
+3	Name-based (MD5)	Namespace + Name	Same input = Same UUID
+4	Random	Random Numbers	General Purpose
+5	Name-based (SHA-1)	Namespace + Name	Secure name-based UUID
+When to Use UUID?
+✅ When working with distributed systems.
+✅ When needing globally unique identifiers.
+✅ When using NoSQL databases (e.g., MongoDB).
+✅ When requiring secure, unpredictable IDs.
+
+🚫 Avoid UUID if performance is a concern, as it takes more storage (16 bytes) compared to integers.
+
+Conclusion
+UUID is a powerful way to generate unique identifiers in Java and Spring Boot. Depending on your use case, you can choose random (v4), name-based (v3/v5), or time-based (v1) UUIDs.
+
+
+Storing inheritance relationships in the database - 
+
+In relational databases, storing inheritance relationships is challenging because relational databases do not natively support inheritance like object-oriented programming languages do. However, there are three main strategies to map inheritance hierarchies to a relational database:
+
+Single Table Inheritance (Table Per Hierarchy - TPH)
+
+Table Per Subclass (Table Per Concrete Class - TPC)
+
+Table Per Concrete Class (Table Per Type - TPT)
+
+Each of these approaches has its own advantages and disadvantages.
+
+1. Single Table Inheritance (TPH)
+In this approach, all classes in the inheritance hierarchy are stored in a single table. A discriminator column is used to differentiate between different types.
+
+Example
+Consider an inheritance hierarchy with Vehicle as the parent class and Car and Bike as subclasses. The table will have all the fields from the subclasses, and a Type column will indicate whether a row is for a Car or a Bike. However, some columns may be NULL for certain types.
+
+Pros
+✔ Simple Schema – Only one table is needed, making it easier to query and manage.
+✔ Better Performance – Since all data is stored in one table, queries don’t require complex joins.
+✔ Easy to Implement – No need for multiple foreign keys or joins between tables.
+
+Cons
+❌ Data Sparsity – Some columns are irrelevant for certain subclasses, leading to many NULL values.
+❌ Schema Rigidity – Adding a new subclass may require schema changes (new columns).
+❌ Data Integrity Issues – Constraints may not be enforceable efficiently (e.g., Max_Speed should only apply to Car and Bike, but it exists for all records).
+
+2. Table Per Subclass (TPC)
+Each subclass has its own table, and the base class stores only common attributes. The subclass tables reference the base class using a foreign key.
+
+Example
+A Vehicle table will store common attributes like ID and Wheels. Separate tables for Car and Bike will store specific attributes like Engine_Type and Max_Speed. Each subclass table will have a foreign key referencing Vehicle.
+
+Pros
+✔ Better Data Integrity – Each table contains only relevant data, enforcing constraints at the table level.
+✔ Efficient Storage – No NULL values, as each table contains only necessary columns.
+✔ Extensibility – Adding new subclasses is straightforward (create a new table without modifying existing ones).
+
+Cons
+❌ Complex Queries – Retrieving all Vehicles requires JOIN operations across multiple tables.
+❌ Performance Issues – Joins can slow down queries, especially when retrieving polymorphic results.
+❌ Harder to Maintain – More tables mean more complexity in database schema and management.
+
+3. Table Per Concrete Class (TPT)
+Each subclass has its own table, containing all fields (including those of the parent class). No shared table exists.
+
+Example
+Instead of a shared Vehicle table, each subclass (Car and Bike) has its own table, including both common (Wheels) and specific (Engine_Type, Max_Speed) fields. There are no foreign key references between them.
+
+Pros
+✔ Fast Queries – No joins are needed to get subclass-specific data.
+✔ Simple Reads/Writes – Each table corresponds to a single class, making queries efficient.
+✔ Data Integrity – Each subclass has its constraints properly defined.
+
+Cons
+❌ Data Duplication – Common attributes (e.g., Wheels) are repeated across tables.
+❌ Hard to Maintain – If the parent class structure changes, every table needs to be updated.
+❌ Inflexibility – Queries spanning multiple types (e.g., fetching all Vehicles) require UNION operations.
+
+Comparison Summary
+Single Table (TPH): Simple and fast, but leads to NULL values and schema rigidity.
+
+Table Per Subclass (TPC): Structured and extensible, but requires JOINs and adds complexity.
+
+Table Per Concrete Class (TPT): Optimized for subclass-specific queries but causes data duplication.
+
+Which One Should You Use?
+Use Single Table (TPH) if:
+
+Your hierarchy is shallow (few subclasses).
+
+You prioritize performance and simple queries.
+
+NULL values are not a concern.
+
+Use Table Per Subclass (TPC) if:
+
+Your hierarchy is deep and evolving.
+
+You need strong referential integrity.
+
+Joins are acceptable in queries.
+
+Use Table Per Concrete Class (TPT) if:
+
+You want fast reads with no joins.
+
+Data duplication is not a major concern.
+
+You don’t frequently query across all subclasses.
+
+Final Thoughts
+Each approach has trade-offs, and the best choice depends on your application’s needs.
+For example:
+
+In an e-commerce system, where performance is key, TPH may be best.
+
+In an enterprise application, where integrity and flexibility matter, TPC is a better choice.
+
+For analytics-heavy systems, where reads are optimized, TPT might work well.
+
+MappedSuperClass - 
+
+@MappedSuperclass in JPA does not map inheritance into a table structure like the other three strategies (TPH, TPC, TPT). Instead, it is used only for code reuse. It does not create a separate table for the parent class; instead, all the fields of the parent class are copied into each subclass's table.
+
+How @MappedSuperclass Works
+The superclass does not have its own table.
+
+All fields of the superclass are directly inherited by the subclass.
+
+Each subclass has its own table, containing both the subclass's attributes and the inherited attributes.
+
+There is no polymorphism support (i.e., you cannot query the superclass and get all its subclass instances).
+
+Example
+Superclass
+java
+Copy
+Edit
+@MappedSuperclass
+public abstract class Vehicle {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private int wheels;
+}
+Subclass - Car
+java
+Copy
+Edit
+@Entity
+public class Car extends Vehicle {
+    private String engineType;
+}
+Subclass - Bike
+java
+Copy
+Edit
+@Entity
+public class Bike extends Vehicle {
+    private int maxSpeed;
+}
+Resulting Database Tables
+There is no Vehicle table.
+
+The Car table has id, wheels, and engineType.
+
+The Bike table has id, wheels, and maxSpeed.
+
+Comparison with Other Approaches
+Similar to Table Per Concrete Class (TPT) because each subclass has its own independent table.
+
+Unlike TPT, there is no parent class table, meaning no shared relationships.
+
+Best suited for code reuse rather than actual inheritance modeling.
+
+Pros and Cons of @MappedSuperclass
+✔ Encourages Code Reuse – Avoids redundant fields in subclasses.
+✔ No Joins Required – Each entity has all necessary fields in its own table.
+✔ Simple Structure – No discriminator columns or foreign keys.
+
+❌ No Polymorphic Queries – Cannot fetch all Vehicle types in a single query.
+❌ Data Duplication – If many subclasses exist, the common fields are repeated in each table.
+❌ Hard to Maintain Schema – Changing the superclass requires altering every subclass's table.
+
+When to Use @MappedSuperclass?
+When you need code reuse but do not need polymorphic queries.
+
+When you don’t want a base table and want each subclass to have a self-contained schema.
+
+When subclass queries are independent and there’s no need to query all subclass types together.
+
+Examples of implementations - 
+
+1. Single Table Inheritance (@Inheritance(strategy = InheritanceType.SINGLE_TABLE))
+✅ Uses a single table for all entities with a discriminator column.
+✅ Best for performance but may have NULL values.
+
+Entity Classes
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "vehicle_type", discriminatorType = DiscriminatorType.STRING)
+public abstract class Vehicle {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private int wheels;
+}
+
+@Entity
+@DiscriminatorValue("Car")
+public class Car extends Vehicle {
+    private String engineType;
+}
+
+@Entity
+@DiscriminatorValue("Bike")
+public class Bike extends Vehicle {
+    private int maxSpeed;
+}
+Repositories
+java
+Copy
+Edit
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface VehicleRepository extends JpaRepository<Vehicle, Long> {}
+public interface CarRepository extends JpaRepository<Car, Long> {}
+public interface BikeRepository extends JpaRepository<Bike, Long> {}
+2. Table Per Subclass (@Inheritance(strategy = InheritanceType.JOINED))
+✅ Uses separate tables for each subclass but inherits primary key from the base table.
+✅ Avoids NULL values but requires JOINs when querying the base entity.
+
+Entity Classes
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Vehicle {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private int wheels;
+}
+
+@Entity
+public class Car extends Vehicle {
+    private String engineType;
+}
+
+@Entity
+public class Bike extends Vehicle {
+    private int maxSpeed;
+}
+Repositories
+java
+Copy
+Edit
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface VehicleRepository extends JpaRepository<Vehicle, Long> {}
+public interface CarRepository extends JpaRepository<Car, Long> {}
+public interface BikeRepository extends JpaRepository<Bike, Long> {}
+3. Table Per Concrete Class (@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS))
+✅ Each subclass has its own independent table (no shared parent table).
+✅ Fast for querying single entities, but data duplication occurs.
+
+Entity Classes
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public abstract class Vehicle {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    private int wheels;
+}
+
+@Entity
+public class Car extends Vehicle {
+    private String engineType;
+}
+
+@Entity
+public class Bike extends Vehicle {
+    private int maxSpeed;
+}
+Repositories
+java
+Copy
+Edit
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface VehicleRepository extends JpaRepository<Vehicle, Long> {}
+public interface CarRepository extends JpaRepository<Car, Long> {}
+public interface BikeRepository extends JpaRepository<Bike, Long> {}
+4. Mapped Superclass (@MappedSuperclass)
+✅ Superclass is NOT an entity and no table is created for it.
+✅ Fields are copied into each subclass's table.
+
+Entity Classes
+
+
+import jakarta.persistence.*;
+
+@MappedSuperclass
+public abstract class Vehicle {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private int wheels;
+}
+
+@Entity
+public class Car extends Vehicle {
+    private String engineType;
+}
+
+@Entity
+public class Bike extends Vehicle {
+    private int maxSpeed;
+}
+Repositories
+
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CarRepository extends JpaRepository<Car, Long> {}
+public interface BikeRepository extends JpaRepository<Bike, Long> {}
+⚠ No VehicleRepository because Vehicle is not an entity!
+
+Example Service Layer
+For each approach, you can use the following service layer for CRUD operations.
+
+
+
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+public class VehicleService {
+    private final VehicleRepository vehicleRepository;
+    private final CarRepository carRepository;
+    private final BikeRepository bikeRepository;
+
+    public VehicleService(VehicleRepository vehicleRepository, CarRepository carRepository, BikeRepository bikeRepository) {
+        this.vehicleRepository = vehicleRepository;
+        this.carRepository = carRepository;
+        this.bikeRepository = bikeRepository;
+    }
+
+    public Car saveCar(Car car) {
+        return carRepository.save(car);
+    }
+
+    public Bike saveBike(Bike bike) {
+        return bikeRepository.save(bike);
+    }
+
+    public List<Vehicle> getAllVehicles() {
+        return vehicleRepository.findAll();
+    }
+
+    public List<Car> getAllCars() {
+        return carRepository.findAll();
+    }
+
+    public List<Bike> getAllBikes() {
+        return bikeRepository.findAll();
+    }
+}
+
+Which One Should You Use?
+Use SINGLE_TABLE if performance is a priority, and you don’t mind some NULL values.
+
+Use JOINED if data integrity and normalization are important.
+
+Use TABLE_PER_CLASS if you need fast subclass-specific queries and don't query across all types often.
+
+
+example - 
+
+1. What is @PrimaryKeyJoinColumn?
+By default, when using InheritanceType.JOINED, JPA uses Foreign Key Join to link subclass tables to the parent table. However, we can explicitly specify which column in the subclass table should be used as the Primary Key & Foreign Key by using @PrimaryKeyJoinColumn.
+
+How it Works
+The parent class (Vehicle) has a primary key (id).
+
+The subclass tables (Car and Bike) inherit id as a primary key and foreign key referencing the Vehicle table.
+
+The @PrimaryKeyJoinColumn(name = "id") ensures that the id column in Car and Bike is both:
+
+The Primary Key of the subclass table.
+
+The Foreign Key referencing Vehicle.id.
+
+2. Database Structure
+Using @PrimaryKeyJoinColumn, the tables will look like this:
+Vehicle Table (Parent Table)
+id	wheels
+1	4
+2	2
+Car Table (Subclass Table)
+id	engine_type
+1	Petrol
+Bike Table (Subclass Table)
+id	max_speed
+2	120
+Notice:
+
+Car.id and Bike.id are Primary Keys but also Foreign Keys referencing Vehicle.id.
+
+No redundant columns—only relevant attributes are stored in each subclass.
+
+3. Implementation in Spring Boot with JPA
+Step 1: Define the Parent Class (Vehicle)
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class Vehicle {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private int wheels;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public int getWheels() {
+        return wheels;
+    }
+
+    public void setWheels(int wheels) {
+        this.wheels = wheels;
+    }
+}
+Step 2: Define the Subclass (Car)
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@PrimaryKeyJoinColumn(name = "id") // This column is both PRIMARY KEY & FOREIGN KEY
+public class Car extends Vehicle {
+    private String engineType;
+
+    // Getters and Setters
+    public String getEngineType() {
+        return engineType;
+    }
+
+    public void setEngineType(String engineType) {
+        this.engineType = engineType;
+    }
+}
+Step 3: Define Another Subclass (Bike)
+java
+Copy
+Edit
+import jakarta.persistence.*;
+
+@Entity
+@PrimaryKeyJoinColumn(name = "id") // This column is both PRIMARY KEY & FOREIGN KEY
+public class Bike extends Vehicle {
+    private int maxSpeed;
+
+    // Getters and Setters
+    public int getMaxSpeed() {
+        return maxSpeed;
+    }
+
+    public void setMaxSpeed(int maxSpeed) {
+        this.maxSpeed = maxSpeed;
+    }
+}
+Step 4: Create JPA Repositories
+java
+Copy
+Edit
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface VehicleRepository extends JpaRepository<Vehicle, Long> {}
+public interface CarRepository extends JpaRepository<Car, Long> {}
+public interface BikeRepository extends JpaRepository<Bike, Long> {}
+Step 5: Create Service Layer
+java
+Copy
+Edit
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+public class VehicleService {
+    private final VehicleRepository vehicleRepository;
+    private final CarRepository carRepository;
+    private final BikeRepository bikeRepository;
+
+    public VehicleService(VehicleRepository vehicleRepository, CarRepository carRepository, BikeRepository bikeRepository) {
+        this.vehicleRepository = vehicleRepository;
+        this.carRepository = carRepository;
+        this.bikeRepository = bikeRepository;
+    }
+
+    public Car saveCar(Car car) {
+        return carRepository.save(car);
+    }
+
+    public Bike saveBike(Bike bike) {
+        return bikeRepository.save(bike);
+    }
+
+    public List<Vehicle> getAllVehicles() {
+        return vehicleRepository.findAll();
+    }
+}
+Step 6: Create Controller Layer
+java
+Copy
+Edit
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/vehicles")
+public class VehicleController {
+    private final VehicleService vehicleService;
+
+    public VehicleController(VehicleService vehicleService) {
+        this.vehicleService = vehicleService;
+    }
+
+    @PostMapping("/car")
+    public Car addCar(@RequestBody Car car) {
+        return vehicleService.saveCar(car);
+    }
+
+    @PostMapping("/bike")
+    public Bike addBike(@RequestBody Bike bike) {
+        return vehicleService.saveBike(bike);
+    }
+
+    @GetMapping
+    public List<Vehicle> getAllVehicles() {
+        return vehicleService.getAllVehicles();
+    }
+}
+4. Testing the API
+1. Create a Car
+POST Request:
+bash
+Copy
+Edit
+POST /vehicles/car
+Content-Type: application/json
+{
+    "wheels": 4,
+    "engineType": "Diesel"
+}
+✅ Response:
+
+json
+Copy
+Edit
+{
+    "id": 1,
+    "wheels": 4,
+    "engineType": "Diesel"
+}
+2. Create a Bike
+POST Request:
+bash
+Copy
+Edit
+POST /vehicles/bike
+Content-Type: application/json
+{
+    "wheels": 2,
+    "maxSpeed": 150
+}
+✅ Response:
+
+json
+Copy
+Edit
+{
+    "id": 2,
+    "wheels": 2,
+    "maxSpeed": 150
+}
+3. Get All Vehicles
+GET Request:
+bash
+Copy
+Edit
+GET /vehicles
+✅ Response:
+
+json
+Copy
+Edit
+[
+    {
+        "id": 1,
+        "wheels": 4
+    },
+    {
+        "id": 2,
+        "wheels": 2
+    }
+]
+(Note: Since Vehicle is abstract, only common fields appear in the JSON response.)
+
+5. Advantages of Using @PrimaryKeyJoinColumn
+✔ Efficient Storage: No duplicate parent fields in subclass tables.
+✔ Better Normalization: Parent and child data are linked efficiently.
+✔ Flexible Queries:
+
+Fetch all vehicles (SELECT * FROM Vehicle)
+
+Fetch only cars (SELECT * FROM Car)
+
+Fetch only bikes (SELECT * FROM Bike)
+
+6. When to Use @PrimaryKeyJoinColumn?
+✅ Use it when:
+
+You want better normalization (no redundant data).
+
+You expect frequent queries on the base class (Vehicle).
+
+You want to enforce strong foreign key constraints.
+
+❌ Avoid if:
+
+You want fewer joins (because queries require JOIN operations).
+
+Your hierarchy is shallow, and you prefer a single table (SINGLE_TABLE).
+
+Final Thoughts
+🔹 @PrimaryKeyJoinColumn is useful when mapping normalized inheritance relationships in databases.
+🔹 It ensures that subclass tables inherit the primary key from the parent while maintaining separate tables.
+🔹 Although JOINs may slightly impact performance, they help in maintaining data integrity.
+
+
+--------------------------------
+
+
+Lecture | DbMigration, Queries and Query Methods
