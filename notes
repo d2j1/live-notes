@@ -7640,7 +7640,24 @@ Each migration script is executed sequentially based on its versio number.
 
 when flyway executes these scripts - it records their execution in flyway_schema_history, if the scripts are already executed, flyway skips them. This ensures that each script runs only once.
 
+For we need add jpa plugin to the intellij called JPA buddy. ( the one with dog icon ).
 
+every time restart the application if using flyway.
 
+click on the jpa Explorer ( on the left side panel of intellij ).
+
+then click on + icon in opened tab then select generate DDL by entities, then select DDL type as DB schema initialization then click on Ok button.
+
+Above steps used for generating the schema files for previously generated tables and schema changes.
+
+all the migration files will be created in resources folder -> db.migration folder. 
+
+Whenever there is change in schema again click on jpa explorer, ( on the left side panel of intellij ).
+
+then click on + icon in opened tab then select Existing DB updates (Diff), then select DDL type as DB schema initialization then click on Ok button, then check the queries and click on save button.
+
+these migration files will be helpful to recreate the schema changes and get the latest schema in the database these are for the developers.
+
+01:36:00
 
 
