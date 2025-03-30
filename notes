@@ -7615,3 +7615,32 @@ Final Thoughts
 
 
 Lecture | DbMigration, Queries and Query Methods
+
+
+Db Migration is the process of adding or undoing changes to the db. Changes in this case is the structure of the tables not about the data.
+
+It is the process of modifying a database structure, schema, or data while ensuring the system continues to function correctly. 
+
+DB schema version - this is similar to version control which helps in keeping track of DB schema ( What all the fields and tables we have).
+
+
+It is required to maintain database intefrity, version control for database, consistency across environments.
+
+Tools used for this - 
+
+Flyway - It uses versioned SQL scripts, it automatically applies pending migrations. 
+
+Flyway follows a simple convention based migration strategy. It tracks database versions using versioned migration scripts stored in a specific directory. When the application starts, fllyway checks for any pending migrations and applies the in the correct order.
+
+When Flyway starts, it creates a metadata table called flyway_schema_history in the database (if it doesn't already exist), This table tracks all applied migrations to prevent duplicate execution.
+
+Flyway scans the migration directory ( src/main/resources/db/migration/) and compares available scripts with the ones already recorded in flyway_schema_history, if a script is missing in the history table, flyway runs it.
+
+Each migration script is executed sequentially based on its versio number.
+
+when flyway executes these scripts - it records their execution in flyway_schema_history, if the scripts are already executed, flyway skips them. This ensures that each script runs only once.
+
+
+
+
+
