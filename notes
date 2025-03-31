@@ -8153,3 +8153,360 @@ Helps reduce query overhead while avoiding excessive eager loading.
 Batchsize with select mode is always better.
 
 
+-------------------------------
+
+
+Lecture | Introduction to Testing and Best Practices of writing Unit Tests
+
+
+Different types of testing - 
+
+Unit testing, Integration testing, functional testing.
+
+Unit - is something very small which can not be broken further.
+
+in testing we make sure whether our code handles all scenarios correctly or not.
+
+Unit Testing: A Complete Guide
+What is Unit Testing?
+Unit testing is a software testing technique where individual units (functions, methods, or components) of a program are tested in isolation to verify their correctness.
+
+✅ Goals of Unit Testing:
+
+Ensure each unit behaves as expected.
+
+Identify and fix bugs early in development.
+
+Improve code reliability and maintainability.
+
+Types of Unit Tests
+1. Positive Test Cases
+✅ Definition:
+
+Tests that check if the system behaves correctly with valid inputs.
+
+Ensures the function returns expected outputs under normal conditions.
+
+✅ Example (Java, JUnit 5):
+
+java
+Copy
+Edit
+@Test
+void testAdditionPositive() {
+    int result = Calculator.add(2, 3);
+    assertEquals(5, result); // Expected output: 5
+}
+✔ If the function returns 5, the test passes.
+
+2. Negative Test Cases
+❌ Definition:
+
+Tests that check how the system handles invalid inputs or errors.
+
+Ensures proper error handling and validation.
+
+❌ Example:
+
+java
+Copy
+Edit
+@Test
+void testAdditionNegative() {
+    assertThrows(IllegalArgumentException.class, () -> Calculator.add(null, 3));
+}
+✔ The test passes if the method throws an IllegalArgumentException when given null.
+
+3. Edge Cases
+⚡ Definition:
+
+Tests that verify behavior at boundaries or extreme conditions.
+
+Ensures the system does not fail under rare, extreme, or special inputs.
+
+⚡ Examples:
+
+java
+Copy
+Edit
+@Test
+void testAdditionEdgeCases() {
+    assertEquals(0, Calculator.add(0, 0)); // Zero inputs
+    assertEquals(Integer.MAX_VALUE, Calculator.add(Integer.MAX_VALUE, 0)); // Upper limit
+    assertEquals(Integer.MIN_VALUE, Calculator.add(Integer.MIN_VALUE, 0)); // Lower limit
+}
+✔ The function must handle edge conditions correctly.
+
+Code Coverage in Unit Testing
+📊 What is Code Coverage?
+
+Code coverage is a measure of how much of your code is tested by unit tests.
+
+Higher coverage = More tested code = Better reliability.
+
+📊 Types of Code Coverage:
+
+Type	Description	Example
+Statement Coverage	Ensures each line of code is executed at least once.	Every if-else and loop is hit.
+Branch Coverage	Ensures each decision point (if, switch) covers all possible branches.	Both if and else are tested.
+Path Coverage	Ensures all possible execution paths are tested.	Every function call path is executed.
+Condition Coverage	Ensures all boolean conditions (`&&,	
+🔹 Tools for Code Coverage:
+
+JaCoCo (Java Code Coverage)
+
+Cobertura
+
+SonarQube
+
+📊 Example JaCoCo Report (After Running Tests)
+
+yaml
+Copy
+Edit
+Class: Calculator.java
+Statements Coverage: 90%
+Branch Coverage: 75%
+👉 90% coverage means 90% of code was tested.
+👉 75% branch coverage means some conditions were not fully tested.
+
+How to Write Effective Unit Tests?
+✅ Follow the AAA Pattern (Arrange, Act, Assert)
+
+java
+Copy
+Edit
+@Test
+void testMultiplication() {
+    // Arrange - Setup test data
+    int a = 5, b = 4;
+
+    // Act - Call the method
+    int result = Calculator.multiply(a, b);
+
+    // Assert - Verify the output
+    assertEquals(20, result);
+}
+✅ Use Mocks for Dependencies (Mockito Example)
+
+java
+Copy
+Edit
+@Mock
+DatabaseService databaseService; // Mock database
+
+@Test
+void testUserLogin() {
+    when(databaseService.findUser("admin")).thenReturn(new User("admin", "pass123"));
+
+    User user = authService.login("admin", "pass123");
+
+    assertNotNull(user);
+    assertEquals("admin", user.getUsername());
+}
+✅ Test All Scenarios (Positive, Negative, Edge Cases)
+
+✅ Ensure High Code Coverage (>80%)
+
+Final Thoughts
+Unit tests improve code quality and catch bugs early.
+
+Always write positive, negative, and edge test cases.
+
+Use mocking frameworks for testing dependencies.
+
+Code coverage should be high but meaningful (aim for >80%).
+
+
+Cucumber can be used to perform integration testing.
+
+
+Integration Testing vs Functional Testing
+Both Integration Testing and Functional Testing are essential in ensuring that an application works correctly. Let’s break them down.
+
+1️⃣ Integration Testing
+🔹 What is Integration Testing?
+Integration testing verifies how different modules or components work together. It ensures that the data flow between modules is correct.
+
+🔹 Goal:
+
+Test interactions between components (APIs, databases, services).
+
+Identify bugs in communication between different parts of the system.
+
+🔹 Example Scenario:
+
+In an e-commerce app, a PaymentService calls an OrderService. Integration tests ensure the payment is processed and updated correctly.
+
+🔹 How to Perform Integration Testing?
+✅ Use Real or Mock Databases (H2, PostgreSQL, MySQL)
+✅ Test API Endpoints (Spring Boot + REST Assured, Postman)
+✅ Verify Communication Between Services (MockMVC, WireMock)
+
+🔹 Example: Spring Boot Integration Test
+java
+Copy
+Edit
+@SpringBootTest
+@AutoConfigureMockMvc
+public class OrderServiceIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void testPlaceOrder() throws Exception {
+        mockMvc.perform(post("/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ \"productId\": 1, \"quantity\": 2 }"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orderId").exists());
+    }
+}
+🔥 This test checks if the /orders API works end-to-end.
+
+2️⃣ Functional Testing
+🔹 What is Functional Testing?
+Functional testing ensures that the application behaves correctly based on the requirements.
+
+🔹 Goal:
+
+Validate that the system performs the expected business logic.
+
+Ensure each feature meets the functional specifications.
+
+🔹 Example Scenarios:
+
+Login should work with correct credentials.
+
+An item added to the cart should appear in checkout.
+
+A user should get an error message when entering an invalid email.
+
+🔹 Functional Testing Includes:
+✅ Unit Testing – Testing individual functions/methods.
+✅ Integration Testing – Testing interactions between modules.
+✅ System Testing – Testing the entire system.
+✅ Acceptance Testing – Ensuring the system meets user requirements.
+
+🔹 Example: Functional Test for Login API
+java
+Copy
+Edit
+@Test
+void testLoginSuccessful() throws Exception {
+    mockMvc.perform(post("/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"username\": \"admin\", \"password\": \"pass123\" }"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.token").exists());
+}
+
+@Test
+void testLoginFailure() throws Exception {
+    mockMvc.perform(post("/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{ \"username\": \"admin\", \"password\": \"wrongpass\" }"))
+            .andExpect(status().isUnauthorized());
+}
+✔ The first test checks successful login.
+✔ The second test checks invalid password failure.
+
+Best Practices for Writing Unit Tests
+✅ 1️⃣ Follow the AAA Pattern (Arrange, Act, Assert)
+
+java
+Copy
+Edit
+@Test
+void testMultiplication() {
+    // Arrange - Setup test data
+    int a = 5, b = 4;
+
+    // Act - Call the method
+    int result = Calculator.multiply(a, b);
+
+    // Assert - Verify the output
+    assertEquals(20, result);
+}
+✔ This ensures clean and structured tests.
+
+✅ 2️⃣ Write Positive, Negative & Edge Cases
+
+Test Type	Example
+Positive Case	Valid login returns token.
+Negative Case	Wrong password returns error.
+Edge Case	Empty username returns validation error.
+✅ 3️⃣ Keep Tests Independent
+
+Avoid shared state between tests.
+
+Reset test data before each test.
+
+✔ Use @BeforeEach in JUnit:
+
+java
+Copy
+Edit
+@BeforeEach
+void setup() {
+    userRepository.deleteAll(); // Clean database before each test
+}
+✅ 4️⃣ Use Mocks for Dependencies
+Use Mockito to mock dependencies and avoid testing real DBs or APIs.
+
+java
+Copy
+Edit
+@Mock
+UserRepository userRepository;
+
+@Test
+void testFindUser() {
+    when(userRepository.findByUsername("admin"))
+        .thenReturn(new User("admin", "pass123"));
+
+    User user = userService.findByUsername("admin");
+
+    assertNotNull(user);
+}
+✔ This ensures fast, independent tests.
+
+✅ 5️⃣ Ensure High Code Coverage (>80%)
+
+Use JaCoCo to measure coverage.
+
+Cover branches, conditions, and edge cases.
+
+Final Thoughts
+Aspect	Integration Testing	Functional Testing
+Focus	Interaction between components	Validating business logic
+Scope	APIs, databases, services	User flows, feature behavior
+Tools	MockMvc, WireMock, TestContainers	Selenium, Postman, Rest Assured
+Example	Order Service calling Payment Service	User login and checkout flow
+
+
+Unit testing best practices - 
+
+We should write UT quickly.
+
+Arrange - create
+ACt - Call
+Assert - Check
+
+Arrange means create objec of a class whose methods we are going to test.
+
+Create mock of external depedencies and other things whatever required.
+
+Act means calling the function which we want to test and store result in some variable. 	
+
+Assert means checking if received output matches the expected result or not.
+
+Unit tests should be repeatable means if we run it at any time it should run and give the same response.
+
+
+
+Unit tests should be automatic. Inputs are always hard coded.
+
+Unit test should always test the behivour and not implementation.
+
