@@ -7656,8 +7656,500 @@ Whenever there is change in schema again click on jpa explorer, ( on the left si
 
 then click on + icon in opened tab then select Existing DB updates (Diff), then select DDL type as DB schema initialization then click on Ok button, then check the queries and click on save button.
 
-these migration files will be helpful to recreate the schema changes and get the latest schema in the database these are for the developers.
+these migration files will be helpful to recreate the schema changes and get the latest schema in the database and these are used by the developers.
 
-01:36:00
+
+------------------------------
+
+
+Lecture | FetchTypes and Modes
+
+Fetch types - 
+
+1. Eager Loading
+Definition
+In Eager Loading, related entities are fetched immediately along with the main entity.
+
+It reduces the number of queries but may load unnecessary data, affecting performance.
+
+Example
+Consider a system where we have:
+
+User entity
+
+Profile entity (One-to-One relationship with User)
+
+java
+Copy
+Edit
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String name;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "profile_id")
+    private Profile profile;
+
+    // Getters and Setters
+}
+java
+Copy
+Edit
+@Entity
+public class Profile {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String bio;
+    
+    // Getters and Setters
+}
+Behavior
+When we fetch a User, the Profile is also fetched immediately, even if we don’t need it.
+
+java
+Copy
+Edit
+User user = userRepository.findById(1L).get();
+System.out.println(user.getName());  // Loads user
+System.out.println(user.getProfile().getBio()); // Already loaded
+Drawbacks
+If Profile is large and not always needed, it increases memory usage and reduces performance.
+
+Fetching large collections eagerly can lead to performance bottlenecks.
+
+2. Lazy Loading
+Definition
+In Lazy Loading, related entities are fetched only when explicitly accessed.
+
+This is the default behavior in JPA.
+
+Example
+Modify the @OneToOne relationship:
+
+java
+Copy
+Edit
+@OneToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "profile_id")
+private Profile profile;
+Behavior
+java
+Copy
+Edit
+User user = userRepository.findById(1L).get();
+System.out.println(user.getName()); // Loads only User
+
+// Profile is fetched only when accessed
+System.out.println(user.getProfile().getBio());
+Benefits
+Improves performance by fetching related data only when needed.
+
+Reduces initial query size.
+
+Problems
+Can cause LazyInitializationException if accessed outside a transaction:
+
+java
+Copy
+Edit
+@Transactional
+public void fetchUser() {
+    User user = userRepository.findById(1L).get();
+    // Transaction is open, so lazy loading works
+    System.out.println(user.getProfile().getBio());
+}
+Without @Transactional, the session might close before fetching the related entity.
+
+When to Use What?
+Use Eager Loading when related data is always required (e.g., fetching a User with its Roles).
+
+Use Lazy Loading when related data is optional or large, reducing memory usage.
+
+Fetch types eventually helps in getting when data will be fetched.
+
+while fetching there are multiple ways like by using select, subquery and join.
+
+Fetch modes - 
+
+Fetch Modes in Spring Data JPA: JOIN, SELECT, and SUBSELECT
+When using JPA relationships (@OneToOne, @OneToMany, @ManyToOne, @ManyToMany), the way related entities are fetched can significantly impact performance. Fetch modes control how related entities are retrieved.
+
+JPA provides three fetch strategies under @Fetch annotation from Hibernate-specific FetchMode:
+
+FetchMode.JOIN → Uses JOIN queries.
+
+FetchMode.SELECT → Uses separate SELECT queries.
+
+FetchMode.SUBSELECT → Uses a subquery.
+
+These fetch modes work alongside FetchType.EAGER and FetchType.LAZY. Let’s explore in detail.
+
+1. FetchMode.JOIN (Immediate Fetching with JOIN Query)
+Definition
+Uses an INNER JOIN or LEFT JOIN to fetch related entities in a single query.
+
+Works only with EAGER loading.
+
+Reduces the number of queries but can lead to cartesian product issues (N+1 problem for collections).
+
+Example
+Consider User and Profile entities with a @OneToOne relationship.
+
+java
+Copy
+Edit
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String name;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "profile_id")
+    @Fetch(FetchMode.JOIN)  // Uses JOIN fetching
+    private Profile profile;
+}
+Generated SQL Query
+sql
+Copy
+Edit
+SELECT u.id, u.name, p.id, p.bio 
+FROM user u 
+JOIN profile p ON u.profile_id = p.id 
+WHERE u.id = 1;
+Advantages
+✔ Efficient for one-to-one or many-to-one relationships.
+✔ Reduces extra queries for related entities.
+
+Disadvantages
+❌ Not good for one-to-many relationships, as it can cause data duplication.
+❌ If you have a large collection, it can load unnecessary data upfront.
+
+2. FetchMode.SELECT (Lazy Loading with Separate Queries)
+Definition
+Fetches the related entities using separate queries.
+
+Works with both EAGER and LAZY loading.
+
+Default behavior when using FetchType.LAZY.
+
+Example
+Modify @OneToOne with FetchMode.SELECT:
+
+java
+Copy
+Edit
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String name;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id")
+    @Fetch(FetchMode.SELECT) // Uses separate SELECT queries
+    private Profile profile;
+}
+Generated SQL Queries
+When fetching the user:
+
+sql
+Copy
+Edit
+SELECT id, name FROM user WHERE id = 1;
+When accessing profile:
+
+sql
+Copy
+Edit
+SELECT id, bio FROM profile WHERE id = 2;
+Advantages
+✔ Best for one-to-many or many-to-one relationships (avoids duplicate rows).
+✔ Reduces initial load time by fetching only what is needed.
+
+Disadvantages
+❌ N+1 Query Problem → If we fetch multiple users, each Profile is fetched separately.
+❌ LazyInitializationException → If accessed outside a transaction, Hibernate cannot fetch the related entity.
+
+3. FetchMode.SUBSELECT (Batch Fetching with Subqueries)
+Definition
+Fetches collections using a subquery when accessed.
+
+Works only with lazy loading (FetchType.LAZY).
+
+Useful for avoiding N+1 problem in @OneToMany relationships.
+
+Example
+Let's say a User can have multiple Posts (@OneToMany relationship).
+
+java
+Copy
+Edit
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String name;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)  // Uses a subquery to fetch related posts
+    private List<Post> posts;
+}
+Generated SQL Queries
+When fetching all users:
+
+sql
+Copy
+Edit
+SELECT id, name FROM user;
+When accessing posts:
+
+sql
+Copy
+Edit
+SELECT id, title, user_id FROM post 
+WHERE user_id IN (SELECT id FROM user);
+🔹 This avoids multiple queries and fetches all related posts in one go.
+
+Advantages
+✔ Efficient for One-To-Many relationships (batch fetches related entities).
+✔ Prevents the N+1 problem.
+
+Disadvantages
+❌ Not good for single record retrievals.
+❌ Not useful for one-to-one relationships.
+
+Comparison of Fetch Modes
+Fetch Mode	Works with	Query Type	Pros	Cons
+JOIN	EAGER	Single JOIN query	Efficient for one-to-one/many-to-one, reduces query count	Causes data duplication in one-to-many
+SELECT	LAZY & EAGER	Multiple SELECT queries	Avoids data duplication, good for one-to-many	N+1 problem, can cause LazyInitializationException
+SUBSELECT	LAZY	Single SELECT query with subquery	Prevents N+1 problem, batch-fetches collections	Not good for one-to-one or small datasets
+Which Fetch Mode to Use?
+Use JOIN for one-to-one or many-to-one relationships when data is frequently used.
+
+Use SELECT for lazy loading when the related data is not always required.
+
+Use SUBSELECT for one-to-many when you want to batch-fetch related entities efficiently.
+
+Final Thoughts
+FetchType.LAZY with FetchMode.SUBSELECT is best for collections.
+
+FetchType.EAGER with FetchMode.JOIN is best for small relationships.
+
+FetchType.LAZY with FetchMode.SELECT is best when related data is rarely needed.
+
+Observations from class - 
+
+FetchType        FetchMode          Result
+
+ LAZY             SELECT             Asked For Products - Queries - 2 select
+                                     Not Asked For Products - Queries - 1 select
+
+
+ EAGER            SELECT             Asked For Products - Queries - 2 select
+                                     Not Asked For Products - Queries - 2 select
+
+
+
+ LAZY             JOIN               Asked For Products - Queries - 1 join
+                                     Not Asked For Products - Queries - 1 join
+
+
+
+ EAGER            JOIN               Asked For Products - Queries - 1 join
+                                     Not Asked For Products - Queries - 1 join
+
+
+
+ LAZY             SUBSELECT           Asked For Products - Queries - 2 select
+                                      Not Asked For Products - Queries - 1 select
+
+
+
+ EAGER            SUBSELECT          Asked For Products - Queries - 2 select
+                                     Not Asked For Products - Queries - 2 select
+
+
+ Summary ->
+
+ FetchMode JOIN is dominant over all cases. It doesn't honor any fetchtype
+
+ In case of FetchMode Select and Subselect, FetchType is honored, that means we will not get child
+ entity in case of lazy loading.
+
+ In  case of FetchMode Select and Subselect , 2 select queries from product and category table, even though join would
+ have ran.
+ 
+ Batch size - 
+ 
+ Understanding @BatchSize in Spring Data JPA
+The @BatchSize annotation in Hibernate helps improve performance when dealing with lazy-loaded collections or associations. It controls how many related entities are fetched in a single query, reducing the N+1 problem in many-to-one and one-to-many relationships.
+
+Why @BatchSize?
+The N+1 Problem
+When fetching an entity with lazy-loaded relationships, Hibernate executes an extra query for each related entity.
+
+Example: If we fetch 10 Users, and each User has 1 Profile, Hibernate will execute 1 query for Users + 10 queries for Profiles (N+1 problem).
+
+Solution: @BatchSize
+Instead of fetching one entity at a time, Hibernate fetches multiple related entities in batches.
+
+This reduces the number of queries.
+
+How @BatchSize Works
+Syntax
+java
+Copy
+Edit
+@BatchSize(size = 5)
+size = 5 → Hibernate fetches 5 entities at once instead of querying each separately.
+
+Example 1: @BatchSize in @OneToMany (User → Posts)
+Entities
+User (One User has many Posts)
+java
+Copy
+Edit
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String name;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @BatchSize(size = 5) // Fetch 5 Users' Posts at once
+    private List<Post> posts;
+}
+Post (Many Posts belong to one User)
+java
+Copy
+Edit
+@Entity
+public class Post {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String title;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+}
+Without @BatchSize: N+1 Problem
+java
+Copy
+Edit
+List<User> users = userRepository.findAll(); 
+for (User user : users) {
+    System.out.println(user.getPosts().size());
+}
+Generated SQL Queries (Bad Performance)
+sql
+Copy
+Edit
+SELECT * FROM user;  -- Fetch all Users (1 query)
+SELECT * FROM post WHERE user_id = 1;  -- Fetch Posts for User 1
+SELECT * FROM post WHERE user_id = 2;  -- Fetch Posts for User 2
+SELECT * FROM post WHERE user_id = 3;  -- Fetch Posts for User 3
+-- If we have 10 Users, this results in 11 queries (1 + 10)
+🔥 Problem: Too many queries = Performance issues.
+
+With @BatchSize(size = 5): Optimized Querying
+sql
+Copy
+Edit
+SELECT * FROM user;  -- Fetch all Users (1 query)
+SELECT * FROM post WHERE user_id IN (1, 2, 3, 4, 5);  -- Batch fetch 5 Users' Posts
+SELECT * FROM post WHERE user_id IN (6, 7, 8, 9, 10); -- Next batch of 5
+🔥 Optimization: Now only 3 queries instead of 11!
+
+Example 2: @BatchSize in @ManyToOne (Post → User)
+Post with Many-to-One Relationship
+java
+Copy
+Edit
+@Entity
+public class Post {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String title;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @BatchSize(size = 10)  // Fetch 10 Users at once when accessed
+    private User user;
+}
+Without @BatchSize
+Fetching 10 Posts causes 10 separate queries to fetch their User.
+
+With @BatchSize(size = 10)
+Hibernate groups the requests and fetches 10 Users at once.
+
+Example 3: @BatchSize in @OneToOne (User → Profile)
+java
+Copy
+Edit
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id")
+    @BatchSize(size = 3) // Fetch 3 Profiles at a time
+    private Profile profile;
+}
+Query Optimization
+sql
+Copy
+Edit
+SELECT * FROM user; -- Fetch all Users (1 query)
+SELECT * FROM profile WHERE id IN (1, 2, 3); -- Fetch 3 Profiles at a time
+When to Use @BatchSize?
+Relationship	Use @BatchSize?	Why?
+One-to-Many (@OneToMany)	✅ Yes	Prevents N+1 problem by fetching multiple child records in a batch.
+Many-to-One (@ManyToOne)	✅ Yes	Fetches multiple parent entities efficiently.
+One-to-One (@OneToOne)	✅ Yes	Helps in lazy loading of related entities in batches.
+Many-to-Many (@ManyToMany)	✅ Yes	Reduces excessive join queries.
+@BatchSize vs FetchMode.SUBSELECT
+Feature	@BatchSize	FetchMode.SUBSELECT
+Query Strategy	Multiple queries, but batched	Single query using a subquery
+Works with	LAZY loading	LAZY loading
+Best for	Fetching parent-child relationships efficiently	Fetching all child entities for multiple parents
+Performance	Better than SELECT (default)	Best for batch fetching collections
+Best Practices
+✔ Use @BatchSize(size = X) instead of FetchType.EAGER to avoid unnecessary eager loading.
+✔ Use FetchMode.SUBSELECT for large collections, but @BatchSize for better flexibility.
+✔ Set the right size based on expected usage (too large may cause memory issues).
+
+Conclusion
+@BatchSize solves the N+1 problem by batching queries for lazy-loaded relationships.
+
+Works best with Many-to-One and One-to-Many associations.
+
+Helps reduce query overhead while avoiding excessive eager loading.
+
+
+Batchsize with select mode is always better.
 
 
