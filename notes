@@ -8510,3 +8510,250 @@ Unit tests should be automatic. Inputs are always hard coded.
 
 Unit test should always test the behivour and not implementation.
 
+-------------------------------
+
+Lecture | Let's write Unit Tests
+
+
+AAA (Arrange-Act-Assert) Method for Writing Unit Test Cases
+The AAA (Arrange-Act-Assert) method is a structured way of writing unit tests that improves readability and maintainability. It consists of three main steps:
+
+Arrange – Set up the necessary objects, mock dependencies, and initialize the required state.
+
+Act – Perform the actual method call that needs to be tested.
+
+Assert – Verify the expected results using assertions.
+
+Example: Writing Unit Test Cases in Java Using JUnit
+Let's assume we have a simple Calculator class with an add method.
+
+Production Code (Calculator.java)
+java
+Copy
+Edit
+public class Calculator {
+    public int add(int a, int b) {
+        return a + b;
+    }
+}
+Unit Test Using AAA (CalculatorTest.java)
+java
+Copy
+Edit
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class CalculatorTest {
+
+    @Test
+    void testAddition() {
+        // Arrange: Set up the calculator instance and inputs
+        Calculator calculator = new Calculator();
+        int a = 5;
+        int b = 10;
+
+        // Act: Call the method under test
+        int result = calculator.add(a, b);
+
+        // Assert: Verify the expected result
+        assertEquals(15, result, "Addition should return the correct sum");
+    }
+}
+Best Practices for Writing Unit Tests
+Follow the AAA Pattern
+
+Clearly separate the Arrange, Act, and Assert steps.
+
+Use Meaningful Test Method Names
+
+Use descriptive names like testAddition_returnsCorrectSum() instead of testAdd().
+
+Keep Tests Independent
+
+Each test should be self-contained and should not depend on other tests.
+
+Test Both Positive and Negative Cases
+
+Example: Test for valid input, edge cases, and invalid input scenarios.
+
+Use Mocks for External Dependencies
+
+When testing services that interact with databases or APIs, use Mockito to mock dependencies.
+
+Follow the Single Responsibility Principle (SRP)
+
+Each test case should test one specific behavior of a method.
+
+Ensure Tests Run Fast
+
+Avoid unnecessary dependencies that slow down test execution.
+
+Example with Mocking (Using Mockito)
+Suppose we have a UserService class that depends on UserRepository. Instead of calling the real repository, we mock it.
+
+Production Code (UserService.java)
+
+
+public class UserService {
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public boolean isUserActive(String username) {
+        User user = userRepository.findByUsername(username);
+        return user != null && user.isActive();
+    }
+}
+Unit Test with Mocking (UserServiceTest.java)
+
+
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class UserServiceTest {
+
+    @Test
+    void testIsUserActive_whenUserExistsAndActive() {
+        // Arrange
+        UserRepository mockRepository = mock(UserRepository.class);
+        UserService userService = new UserService(mockRepository);
+        
+        User mockUser = new User("john_doe", true);
+        when(mockRepository.findByUsername("john_doe")).thenReturn(mockUser);
+
+        // Act
+        boolean isActive = userService.isUserActive("john_doe");
+
+        // Assert
+        assertTrue(isActive, "User should be active");
+    }
+}
+Conclusion
+The AAA (Arrange-Act-Assert) pattern helps in writing clean and well-structured unit tests. Following best practices like using meaningful test names, keeping tests independent, and leveraging mocking frameworks ensures robust and maintainable test cases.
+
+
+ test method names for both positive and negative cases:
+
+For a Calculator class with an add method:
+
+Positive Case: testAdd_TwoPositiveNumbers_ReturnsCorrectSum()
+
+Negative Case: testAdd_PositiveAndNegativeNumber_ReturnsCorrectSum()
+
+Edge Case: testAdd_NumberAndZero_ReturnsSameNumber()
+
+Edge Case: testAdd_LargeNumbers_ReturnsCorrectSum()
+
+For a UserService class with an isUserActive method:
+
+Positive Case: testIsUserActive_UserExistsAndActive_ReturnsTrue()
+
+Negative Case: testIsUserActive_UserDoesNotExist_ReturnsFalse()
+
+Negative Case: testIsUserActive_UserExistsButInactive_ReturnsFalse()
+
+For an AuthenticationService class with a login method:
+
+Positive Case: testLogin_ValidCredentials_ReturnsToken()
+
+Negative Case: testLogin_InvalidCredentials_ThrowsAuthenticationException()
+
+Edge Case: testLogin_EmptyUsernameOrPassword_ThrowsValidationException()
+
+Best practices for naming test methods:
+
+Follow a structured format: test<MethodUnderTest>_<Condition>_<ExpectedOutcome>()
+
+Use descriptive names instead of generic ones like testLogin().
+
+Include edge cases such as testDivide_ByZero_ThrowsArithmeticException().
+
+Use underscores for readability: testRegisterUser_AlreadyExists_ThrowsException().
+
+
+Here's an example of a unit test using Mockito to mock an object. We'll test a UserService class that depends on a UserRepository.
+
+Production Code (UserService.java)
+java
+Copy
+Edit
+public class UserService {
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public boolean isUserActive(String username) {
+        User user = userRepository.findByUsername(username);
+        return user != null && user.isActive();
+    }
+}
+Mocking Example: Unit Test Using Mockito (UserServiceTest.java)
+java
+Copy
+Edit
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class UserServiceTest {
+
+    @Test
+    void testIsUserActive_UserExistsAndActive_ReturnsTrue() {
+        // Arrange: Mock the UserRepository and User object
+        UserRepository mockRepository = mock(UserRepository.class);
+        UserService userService = new UserService(mockRepository);
+
+        User mockUser = new User("john_doe", true);
+        when(mockRepository.findByUsername("john_doe")).thenReturn(mockUser);
+
+        // Act: Call the method under test
+        boolean isActive = userService.isUserActive("john_doe");
+
+        // Assert: Verify the expected result
+        assertTrue(isActive, "User should be active");
+
+        // Verify that the method was called with the correct argument
+        verify(mockRepository, times(1)).findByUsername("john_doe");
+    }
+
+    @Test
+    void testIsUserActive_UserDoesNotExist_ReturnsFalse() {
+        // Arrange
+        UserRepository mockRepository = mock(UserRepository.class);
+        UserService userService = new UserService(mockRepository);
+
+        when(mockRepository.findByUsername("unknown_user")).thenReturn(null);
+
+        // Act
+        boolean isActive = userService.isUserActive("unknown_user");
+
+        // Assert
+        assertFalse(isActive, "User should not be active");
+
+        // Verify that the repository method was called once
+        verify(mockRepository, times(1)).findByUsername("unknown_user");
+    }
+}
+Explanation of Mocking in This Test
+Mock the Dependency: We create a mock of UserRepository using mock(UserRepository.class).
+
+Stub Method Calls: We use when(mockRepository.findByUsername("john_doe")).thenReturn(mockUser); to define the behavior of the mocked object.
+
+Call the Method Under Test: The isUserActive method is called.
+
+Assert the Result: We use assertTrue() or assertFalse() to verify the expected outcome.
+
+Verify Method Calls: The verify(mockRepository, times(1)).findByUsername("john_doe"); ensures the mocked method was called exactly once.
+
+This approach ensures that we isolate the service logic and do not interact with the actual database while testing.
+
+
+We can call multiple assert statememnts in the same test method.
+
