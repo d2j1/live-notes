@@ -8757,3 +8757,126 @@ This approach ensures that we isolate the service logic and do not interact with
 
 We can call multiple assert statememnts in the same test method.
 
+Argument Captor in Unit Testing (Mockito ArgumentCaptor)
+When testing methods that interact with dependencies, we often want to verify which arguments were passed to a mocked method. Mockito’s ArgumentCaptor allows us to capture and inspect those arguments.
+
+Why Use ArgumentCaptor?
+To verify the exact parameters passed to a mocked method.
+
+Useful when working with methods that do not return values (e.g., void methods).
+
+Helps validate complex objects passed as arguments.
+
+Example Scenario: Capturing Arguments in a Service Method
+We have a UserService that saves user details via UserRepository.
+
+Production Code (UserService.java)
+java
+Copy
+Edit
+public class UserService {
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public void registerUser(String username) {
+        User user = new User(username, true);
+        userRepository.save(user);  // Calls a void method
+    }
+}
+Unit Test Using ArgumentCaptor (UserServiceTest.java)
+java
+Copy
+Edit
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class UserServiceTest {
+
+    @Test
+    void testRegisterUser_CapturesUserObject() {
+        // Arrange: Create a mock repository and service
+        UserRepository mockRepository = mock(UserRepository.class);
+        UserService userService = new UserService(mockRepository);
+
+        // Create an ArgumentCaptor to capture User objects
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+
+        // Act: Call the method under test
+        userService.registerUser("john_doe");
+
+        // Assert: Verify that save() was called and capture the argument
+        verify(mockRepository).save(userCaptor.capture());
+        User capturedUser = userCaptor.getValue();
+
+        // Validate the captured User object
+        assertEquals("john_doe", capturedUser.getUsername(), "Username should be correct");
+        assertTrue(capturedUser.isActive(), "User should be active by default");
+    }
+}
+Explanation of How ArgumentCaptor Works
+Create a mock object:
+UserRepository mockRepository = mock(UserRepository.class);
+
+Create an ArgumentCaptor:
+ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+
+Invoke the method under test:
+userService.registerUser("john_doe");
+
+Capture the argument passed to save(user) method:
+verify(mockRepository).save(userCaptor.capture());
+
+Retrieve the captured argument:
+User capturedUser = userCaptor.getValue();
+
+Perform assertions on the captured object:
+We check if the captured User object has the correct username and is active.
+
+Use Cases for ArgumentCaptor
+1️⃣ Capturing Primitive Values
+For methods that take String, int, or other primitives, we can use:
+
+java
+Copy
+Edit
+ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+verify(mockService).sendMessage(stringCaptor.capture());
+assertEquals("Hello", stringCaptor.getValue());
+2️⃣ Capturing Multiple Arguments
+For methods that take multiple arguments:
+
+java
+Copy
+Edit
+ArgumentCaptor<String> arg1 = ArgumentCaptor.forClass(String.class);
+ArgumentCaptor<Integer> arg2 = ArgumentCaptor.forClass(Integer.class);
+
+verify(mockService).updateUser(arg1.capture(), arg2.capture());
+
+assertEquals("john_doe", arg1.getValue());
+assertEquals(25, arg2.getValue());
+3️⃣ Capturing Arguments for Multiple Calls
+If the method is called multiple times, we can capture all values:
+
+java
+Copy
+Edit
+verify(mockRepository, times(2)).save(userCaptor.capture());
+List<User> capturedUsers = userCaptor.getAllValues();
+assertEquals(2, capturedUsers.size());
+When to Use ArgumentCaptor?
+✔ Use when testing void methods (e.g., methods that don’t return a value).
+✔ Use when verifying complex objects (e.g., when an object is modified before passing to a method).
+✔ Use when ensuring the correct argument is passed to a mocked method.
+
+------------------------
+
+
+Lecture | Mock MVC , Asserting in JSONs and Types of Doubles
+
+
