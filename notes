@@ -9885,4 +9885,446 @@ BCrypt is built-in and recommended by Spring Security.
 
 
 
+Lecture | Generate and validate JWT in API
+
+
+To generate JWT tokens -
+
+add below dependancies - 
+
+jjwt-api
+jjwt-impl
+jjwt-jackson
+
+What is MacAlgorithm?
+In the JJWT library, MacAlgorithm is an interface representing HMAC (Hash-based Message Authentication Code) algorithms.
+
+These are symmetric algorithms, meaning:
+
+The same secret key is used to sign and verify the JWT.
+
+Common HMAC algorithms include:
+
+HS256 → HMAC using SHA-256
+
+HS384 → HMAC using SHA-384
+
+HS512 → HMAC using SHA-512
+
+So, MacAlgorithm defines the contract used internally to configure and apply these HMAC algorithms securely.
+
+Where It Lives
+In the newer versions of JJWT (0.11.0+), the API is now more type-safe and modular. Instead of passing a string like "HS256", you now work with algorithm types and instances.
+
+MacAlgorithm is part of the JJWT crypto module:
+
+java
+Copy
+Edit
+import io.jsonwebtoken.security.MacAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Jwts;
+How It Works
+You use a MacAlgorithm when creating or verifying JWTs signed with an HMAC algorithm.
+
+Example: Creating a JWT with HS256
+java
+Copy
+Edit
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.MacAlgorithm;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+
+public class JwtService {
+
+    private final SecretKey secretKey = Keys.secretKeyFor(MacAlgorithm.HS256); // Generate secret key
+
+    public String generateToken(String subject) {
+        return Jwts.builder()
+                .subject(subject)
+                .issuedAt(new Date())
+                .signWith(secretKey, MacAlgorithm.HS256)
+                .compact();
+    }
+}
+Explanation:
+Keys.secretKeyFor(MacAlgorithm.HS256) generates a secure random key suitable for HS256.
+
+signWith(secretKey, MacAlgorithm.HS256) explicitly tells JJWT what algorithm you're using.
+
+This makes the JWT signing explicit and secure, avoiding the ambiguity or misuse of strings like "HS256".
+
+Why MacAlgorithm Instead of Just a String?
+Older versions used string names for algorithms:
+
+java
+Copy
+Edit
+signWith(SignatureAlgorithm.HS256, secretKey)
+But:
+
+You could accidentally use a mismatched key and algorithm.
+
+You had no type-safety or clarity on requirements.
+
+With MacAlgorithm:
+
+It's type-safe
+
+It's clearly scoped for symmetric (HMAC) algorithms
+
+Enforces secure key usage
+
+Common Algorithms You Can Use
+All of these implement MacAlgorithm:
+
+Algorithm	Purpose
+MacAlgorithm.HS256	HMAC with SHA-256 (most common)
+MacAlgorithm.HS384	HMAC with SHA-384
+MacAlgorithm.HS512	HMAC with SHA-512
+Use a stronger algorithm like HS512 if you want better security at the cost of larger tokens and slightly more CPU use.
+
+Key Management (Important)
+You must:
+
+Use a secret key of sufficient length (e.g., 256-bit key for HS256).
+
+Store it securely (e.g., in environment variables, config servers, or secrets manager).
+
+Never expose the secret key publicly — it's symmetric.
+
+java
+Copy
+Edit
+SecretKey key = Keys.hmacShaKeyFor("your-256-bit-secret-goes-here".getBytes(StandardCharsets.UTF_8));
+This should be exactly 256 bits (32 bytes) for HS256, or more for HS384/512.
+
+Summary
+MacAlgorithm is an interface in the JJWT crypto module used for HMAC-based signing.
+
+It provides stronger typing and safer configuration than older string-based SignatureAlgorithm.
+
+Use Keys.secretKeyFor(MacAlgorithm.XYZ) to generate secure keys for your JWTs.
+
+Works with symmetric encryption — same key for both signing and verifying.
+
+Use it when you're signing JWTs in stateless authentication systems (Spring Boot APIs, microservices, etc.).
+
+
+Example of login and sign up -
+
+
+ Dependencies (pom.xml)
+xml
+Copy
+Edit
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>0.11.5</version>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>0.11.5</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-jackson</artifactId>
+        <version>0.11.5</version>
+        <scope>runtime</scope>
+    </dependency>
+</dependencies>
+✅ Entity: User
+java
+Copy
+Edit
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String username;
+    private String password;
+    private String role;
+}
+✅ DTO: AuthRequest
+java
+Copy
+Edit
+public class AuthRequest {
+    private String username;
+    private String password;
+}
+✅ Repository
+java
+Copy
+Edit
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+}
+✅ JWT Service
+java
+Copy
+Edit
+@Service
+public class JwtService {
+
+    private static final String SECRET = "VerySecureSecretKeyAtLeast32Chars!";
+    private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+    private final MacAlgorithm algorithm = MacAlgorithm.HS256;
+
+    public String generateToken(UserDetails userDetails) {
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour
+                .signWith(key, algorithm)
+                .compact();
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        try {
+            String username = extractUsername(token);
+            Date expiration = extractExpiration(token);
+            return username.equals(userDetails.getUsername()) && !isTokenExpired(expiration);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public String extractUsername(String token) {
+        return parseToken(token).getPayload().getSubject();
+    }
+
+    public Date extractExpiration(String token) {
+        return parseToken(token).getPayload().getExpiration();
+    }
+
+    private boolean isTokenExpired(Date expiration) {
+        return expiration.before(new Date());
+    }
+
+    private Jws<Claims> parseToken(String token) {
+        return Jwts.parser()
+                .verifyWith(key, algorithm)
+                .build()
+                .parseSignedClaims(token);
+    }
+}
+✅ Security Config
+java
+Copy
+Edit
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Autowired
+    private JwtAuthenticationFilter jwtFilter;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .userDetailsService(userDetailsService)
+                .build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+}
+✅ JWT Filter
+java
+Copy
+Edit
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String username;
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        jwt = authHeader.substring(7);
+        username = jwtService.extractUsername(jwt);
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}
+✅ UserDetailsServiceImpl
+java
+Copy
+Edit
+@Service
+public class UserDetailsServiceImpl implements UserDetailsService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return new org.springframework.security.core.userdetails.User(
+            user.getUsername(),
+            user.getPassword(),
+            List.of(new SimpleGrantedAuthority(user.getRole()))
+        );
+    }
+}
+✅ Controller
+java
+Copy
+Edit
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @PostMapping("/signup")
+    public ResponseEntity<String> signup(@RequestBody AuthRequest request) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body("Username already exists");
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole("ROLE_USER");
+
+        userRepository.save(user);
+        return ResponseEntity.ok("User registered successfully");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@RequestBody AuthRequest request) {
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
+
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        String token = jwtService.generateToken(userDetails);
+
+        return ResponseEntity.ok(Map.of("token", token));
+    }
+}
+✅ Sample Test
+Signup
+
+json
+Copy
+Edit
+POST /api/auth/signup
+{
+  "username": "alice",
+  "password": "alice123"
+}
+Login
+
+json
+Copy
+Edit
+POST /api/auth/login
+{
+  "username": "alice",
+  "password": "alice123"
+}
+Use returned token:
+
+makefile
+Copy
+Edit
+Authorization: Bearer <token>
+
+
+project repo
+
+https://github.com/ak-s-0723/UserAuthenticationServiceFeb2025
+
+
+
+
 
