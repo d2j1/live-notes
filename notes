@@ -9756,5 +9756,133 @@ In Java, use jjwt, Spring Security filters, and custom providers to issue and va
 
 Proper handling of expiration, revocation, and signature validation is critical
 
+---------------------
+
+
+
+Lecture | Create UserAuthService, Implement Signup and Login API using BCrypt
+
+
+What is BCrypt?
+BCrypt is a password hashing algorithm designed to be:
+
+Slow and computationally expensive (by design), which protects against brute-force attacks.
+
+Salted — meaning each password is hashed with a random value (salt) to prevent rainbow table attacks.
+
+Adaptive — you can configure how “expensive” (slow) it should be via a cost factor.
+
+BCrypt was designed specifically for password hashing and is not reversible. You cannot "decrypt" a hashed password — you only verify if a plain password matches the hash.
+
+Why use BCrypt in Java?
+Spring Security includes built-in support for BCrypt via the BCryptPasswordEncoder class.
+
+It hashes the password with a unique salt every time.
+
+Even if the user enters the same password again, the hash will be different.
+
+When verifying a login attempt, BCrypt will internally use the salt embedded in the hashed password to validate the plain input.
+
+Internal Structure of BCrypt Hash
+A sample BCrypt hash might look like this:
+
+perl
+Copy
+Edit
+$2a$10$Dow1HtH/JqtgN.yjqK1v9uUqKu3ybYfbt5o6IUGjbTxqLR96dxGx6
+Breakdown:
+
+$2a$: BCrypt version
+
+10: Cost factor (log2 number of rounds, i.e., 2¹⁰ = 1024 rounds of hashing)
+
+Dow1HtH/JqtgN.yjqK1v9u: 128-bit salt (base64 encoded)
+
+qKu3ybYfbt5o6IUGjbTxqLR96dxGx6: Hashed password result
+
+Using BCrypt in Java (Spring Boot Example)
+1. Add the Encoder as a Bean
+java
+Copy
+Edit
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(); // default strength = 10
+    }
+}
+You can also increase the strength:
+
+java
+Copy
+Edit
+new BCryptPasswordEncoder(12); // 2^12 = 4096 rounds
+2. Hashing a Password During Signup
+java
+Copy
+Edit
+@Autowired
+private PasswordEncoder passwordEncoder;
+
+public void registerUser(String username, String plainPassword) {
+    String hashedPassword = passwordEncoder.encode(plainPassword);
+
+    User user = new User();
+    user.setUsername(username);
+    user.setPassword(hashedPassword);
+
+    userRepository.save(user);
+}
+encode(...) hashes the password using a random salt and the configured cost factor.
+
+The hash is stored in the database, not the original password.
+
+3. Verifying Password During Login
+java
+Copy
+Edit
+public boolean login(String username, String inputPassword) {
+    User user = userRepository.findByUsername(username);
+    if (user == null) return false;
+
+    String storedHashedPassword = user.getPassword();
+    return passwordEncoder.matches(inputPassword, storedHashedPassword);
+}
+matches(...) will:
+
+Extract the salt and cost from the stored hash
+
+Hash the input password using the same salt and cost
+
+Compare the resulting hash
+
+Security Considerations
+Always hash passwords — never store plain passwords.
+
+BCrypt is slower on purpose — do not worry about performance for hashing; it’s meant to slow down brute-force attacks.
+
+Never use raw == or .equals() to compare hashes; let BCrypt handle comparison via matches(...).
+
+Consider higher cost factor (12–14) for more security, but benchmark based on your system.
+
+Summary
+BCryptPasswordEncoder is a secure, adaptive password hashing utility.
+
+It’s ideal for use in authentication systems where passwords need to be stored securely.
+
+Each password is hashed with a random salt.
+
+You use encode() to hash and matches() to verify.
+
+BCrypt is built-in and recommended by Spring Security.
+
+
+
+
+--------------------------
+
+
 
 
