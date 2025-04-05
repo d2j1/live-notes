@@ -9329,7 +9329,432 @@ Don’t mock what you don’t own (prefer real objects for simple logic)
 If method signatures change, stubs may silently break
 
 
+-----------------------
 
+
+Lecture | Authentication Vs Authorization, OAuth2 and JWT
+
+Authentication - Authentication is the process of verifying the identity of a user or system.
+
+Think of authentication like showing your ID card to enter a building.
+
+Authorization - Authorization is the process of determining what a user is allowed to do after they have been authenticated.
+
+
+Different types of Authentication - 
+
+Password, Fingerprint, sessions limit, security questions, Authenticator apps.
+
+
+
+OAuth - Open authentication 2.0 this was the first protocol came to market.
+
+this is used for Authentication and Authorization. 
+
+Sign in google is this feature.
+
+OAuth (pronounced “oh-auth”) stands for Open Authorization.
+
+It is a protocol (set of rules) that lets third-party applications access a user’s data without needing their password.
+
+Why do we need OAuth?
+Imagine you’re using an app like Canva, and it says:
+
+"Do you want to sign in with your Google account?"
+
+You click yes, and Canva gets access to your Google email and profile picture — but never sees your password.
+
+This is made possible by OAuth.
+
+Real-World Analogy
+Let’s say you go to a hotel and want to access the gym.
+
+You show your ID at the front desk (authentication).
+
+The hotel gives you a keycard that allows gym access only (authorization).
+
+You never gave the gym your ID directly.
+
+The keycard works only for a limited time and only for certain areas.
+
+That keycard = access token
+The hotel = OAuth provider (like Google, Facebook, GitHub)
+
+
+Actors in OAuth 2.0
+Let’s define the key entities first:
+
+1. Resource Owner
+This is the end user (you or me) — the person who owns the data (e.g., Gmail inbox, profile info, GitHub repositories). They must authorize access to this data.
+
+2. Client
+This is the application trying to access the resource owner’s data on another service.
+Example: A third-party app like Trello trying to access your Google Calendar.
+
+The client is not the user — it’s your application.
+
+3. Authorization Server
+This is the server owned by the service provider (e.g., Google, GitHub) responsible for:
+
+Authenticating the user
+
+Asking the user for consent
+
+Issuing access tokens and refresh tokens
+
+Google's OAuth server is a typical Authorization Server.
+
+4. Resource Server
+This is where the user’s actual data lives. It is protected by the Authorization Server.
+
+If you want to get a user’s Gmail inbox, Google’s Gmail API is the Resource Server.
+
+It only gives access if a valid access token is presented.
+
+🧭 Full Authorization Code Flow (Step-by-Step)
+Let’s assume you’re building a web application that wants to fetch the user's email and profile picture from Google.
+
+🔹 Step 1: Client Initiates Authorization Request
+Your client app redirects the user to the authorization server (Google’s OAuth endpoint):
+
+bash
+Copy
+Edit
+GET https://accounts.google.com/o/oauth2/v2/auth?
+  response_type=code
+  &client_id=your-client-id
+  &redirect_uri=https://yourapp.com/callback
+  &scope=openid email profile
+  &state=random-generated-string
+response_type=code means we want an authorization code
+
+client_id identifies your app
+
+redirect_uri is where Google should send the user after login
+
+scope defines what kind of access you want
+
+state is used for CSRF protection
+
+📍This is done in the user’s browser — they are redirected to Google.
+
+🔹 Step 2: User Authenticates and Grants Consent
+On the Authorization Server (Google), the user:
+
+Logs in with their Google account
+
+Sees a consent screen: “This app wants to access your email and profile”
+
+If the user consents, the authorization server redirects back to the redirect_uri:
+
+lua
+Copy
+Edit
+https://yourapp.com/callback?code=abc123&state=random-generated-string
+The code is a short-lived authorization code
+
+The state value should match the one you sent to prevent CSRF
+
+📍 Your frontend sends this code to your backend server for token exchange.
+
+🔹 Step 3: Backend Exchanges Authorization Code for Access Token
+Your backend server sends a POST request to the Authorization Server’s token endpoint:
+
+bash
+Copy
+Edit
+POST https://oauth2.googleapis.com/token
+
+Headers:
+  Content-Type: application/x-www-form-urlencoded
+
+Body:
+  code=abc123
+  &client_id=your-client-id
+  &client_secret=your-client-secret
+  &redirect_uri=https://yourapp.com/callback
+  &grant_type=authorization_code
+If everything checks out, the authorization server responds:
+
+json
+Copy
+Edit
+{
+  "access_token": "ya29.a0AfH6...",
+  "expires_in": 3600,
+  "refresh_token": "1//0gW...",
+  "token_type": "Bearer",
+  "id_token": "eyJhbGciOiJSUzI1..."
+}
+Access Token:
+This is a bearer token that gives your backend access to the user’s data on the resource server.
+
+It expires in a short time (e.g., 1 hour).
+
+Refresh Token:
+Optional — if included, allows your server to request a new access token later without user involvement.
+
+🔹 Step 4: Access Protected Resource
+Now your backend makes an API call to the Resource Server (Google API) with the access token:
+
+bash
+Copy
+Edit
+GET https://www.googleapis.com/oauth2/v2/userinfo
+Authorization: Bearer ya29.a0AfH6...
+Google responds:
+
+json
+Copy
+Edit
+{
+  "id": "123456789",
+  "email": "johndoe@gmail.com",
+  "name": "John Doe",
+  "picture": "https://..."
+}
+📍 Now your server has verified the user’s identity and can create or log in a user in your app.
+
+🔹 Step 5: Optional — Refresh Token Flow
+If the access_token expires, your server can use the refresh_token to get a new one:
+
+arduino
+Copy
+Edit
+POST https://oauth2.googleapis.com/token
+
+Body:
+  client_id=your-client-id
+  &client_secret=your-client-secret
+  &refresh_token=1//0gW...
+  &grant_type=refresh_token
+Google responds with a new access_token.
+
+🔐 Security Considerations
+Never expose access or refresh tokens to the frontend.
+
+Always use HTTPS to protect token transmission.
+
+Use the state parameter to defend against CSRF attacks.
+
+Validate the ID token (JWT) if using OpenID Connect for authentication.
+
+🧩 What's the Difference Between Authorization Server and Resource Server?
+Authorization Server is responsible for:
+
+Authenticating the user
+
+Asking for user consent
+
+Issuing access tokens
+
+Resource Server:
+
+Stores and protects the actual data
+
+Accepts access tokens and returns data if the token is valid
+
+In most systems (like Google), both are part of the same ecosystem, but conceptually and technically, they are different.
+
+✅ Summary of Flow (Technically)
+User is redirected to Authorization Server.
+
+User logs in and consents.
+
+Authorization Server sends an authorization code to your redirect URI.
+
+Your server exchanges the code for an access token (and optionally refresh token).
+
+Your server uses the access token to call the Resource Server and get user data.
+
+You now know who the user is — securely.
+
+
+JWT - 
+
+JWT (JSON Web Token) is a compact, URL-safe token format used for securely transmitting information between parties as a JSON object. It is digitally signed using a secret (HMAC) or a public/private key pair (RSA or ECDSA).
+
+In backend systems, especially with Spring Security or stateless microservices, JWT is widely used for authentication and authorization.
+
+Structure of a JWT
+A JWT consists of three parts, separated by dots:
+
+php-template
+Copy
+Edit
+<HEADER>.<PAYLOAD>.<SIGNATURE>
+Each part is Base64URL encoded.
+
+1. Header
+The header typically looks like this:
+
+json
+Copy
+Edit
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+alg: Algorithm used to sign the token (e.g., HS256 = HMAC with SHA-256).
+
+typ: Indicates this is a JWT.
+
+2. Payload (Claims)
+This is the body of the token and contains claims: statements about the user and other data.
+
+Example:
+
+json
+Copy
+Edit
+{
+  "sub": "user123",
+  "name": "John Doe",
+  "roles": ["ROLE_USER"],
+  "iat": 1712178000,
+  "exp": 1712181600
+}
+Common claim fields:
+
+sub: Subject (usually user ID)
+
+iat: Issued at (timestamp)
+
+exp: Expiration time
+
+iss: Issuer
+
+aud: Audience
+
+Custom claims: like roles, email, etc.
+
+3. Signature
+The signature ensures that the token has not been tampered with.
+
+If using HMAC SHA-256:
+
+scss
+Copy
+Edit
+HMACSHA256(
+  base64UrlEncode(header) + "." + base64UrlEncode(payload),
+  secret
+)
+This is what protects the integrity of the token.
+
+Why Use JWT?
+Stateless authentication: No session or server-side storage needed.
+
+Self-contained: All required user information is embedded inside the token.
+
+Portable: Can be passed in headers or as URL query parameters.
+
+Widely supported: Standard format used across languages and platforms.
+
+How JWT is Used in Java (Spring Security Context)
+Authentication Flow with JWT:
+User Logs In
+User provides username and password to your /login endpoint.
+
+Backend Validates Credentials
+You authenticate using a UserDetailsService and AuthenticationManager.
+
+JWT Is Generated
+Once the user is authenticated, you create a JWT using a library like io.jsonwebtoken (JJWT):
+
+java
+Copy
+Edit
+String token = Jwts.builder()
+    .setSubject(userId)
+    .claim("roles", roles)
+    .setIssuedAt(new Date())
+    .setExpiration(new Date(System.currentTimeMillis() + 3600000))
+    .signWith(SignatureAlgorithm.HS256, secretKey)
+    .compact();
+Token is Returned to Client
+This token is returned to the frontend (in HTTP response or a Set-Cookie header).
+
+Subsequent Requests
+The client includes the token in the Authorization header:
+
+makefile
+Copy
+Edit
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Backend Validates Token
+Every incoming request is filtered (e.g., using JwtAuthenticationFilter), where:
+
+The token is extracted from the header.
+
+Signature and expiration are validated.
+
+User details are fetched and security context is populated.
+
+This allows your controller endpoints to be protected by annotations like @PreAuthorize("hasRole('ADMIN')").
+
+Validating JWT in Java
+Typical JWT validation involves:
+
+Verifying signature using the secret key
+
+Verifying exp (expiration time)
+
+Optionally checking iss, aud, and custom claims
+
+If everything is valid, authentication is successful
+
+Example using JJWT:
+
+java
+Copy
+Edit
+Claims claims = Jwts.parser()
+    .setSigningKey(secretKey)
+    .parseClaimsJws(token)
+    .getBody();
+
+String userId = claims.getSubject();
+List<String> roles = claims.get("roles", List.class);
+Security Best Practices
+Always use HTTPS to avoid token leakage over the network.
+
+Do not store tokens in localStorage (if using a frontend) — use HTTP-only cookies if possible.
+
+Set short expiration (exp) and use refresh tokens if needed.
+
+Use strong secrets or private/public keys depending on the algorithm.
+
+Blacklist tokens on logout (optional but recommended for high-security systems).
+
+Rotate signing keys periodically.
+
+Use a secure, time-constant comparison method when comparing tokens or secrets to avoid timing attacks.
+
+Common Algorithms
+HS256: HMAC with SHA-256 (symmetric; same key for signing and verifying)
+
+RS256: RSA with SHA-256 (asymmetric; private key to sign, public key to verify)
+
+For microservices or distributed systems, asymmetric signing (RS256) is recommended. You can have a central auth server signing tokens with a private key and all services verifying them using the public key.
+
+JWT vs Session-based Authentication
+Feature	JWT	Session-Based Auth
+Stateless	Yes	No (server must store sessions)
+Scalability	High (good for microservices)	Harder to scale
+Revocation	Hard to revoke	Easy (invalidate session)
+Payload stored where	Inside the token	On server
+Frontend storage	HTTP-only cookie / localStorage	Session ID in cookie
+JWT is ideal for stateless APIs, especially RESTful or mobile applications.
+
+Summary
+A JWT is a signed token containing claims.
+
+It can be used to authenticate and authorize users without maintaining server-side session state.
+
+In Java, use jjwt, Spring Security filters, and custom providers to issue and validate tokens.
+
+Proper handling of expiration, revocation, and signature validation is critical
 
 
 
