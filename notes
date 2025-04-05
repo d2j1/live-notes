@@ -8880,3 +8880,456 @@ When to Use ArgumentCaptor?
 Lecture | Mock MVC , Asserting in JSONs and Types of Doubles
 
 
+ While testing controller we will mock the service.
+ 
+ Json is converted into string and then sent to the front end.
+ 
+  What is MockMvc?
+MockMvc is a part of Spring Test module that allows you to test your Spring MVC controllers without starting the full HTTP server.
+
+Instead of deploying your app in a servlet container like Tomcat, it lets you simulate HTTP requests (like GET, POST, PUT, DELETE) and assert the results, all within memory.
+
+📦 Where does MockMvc belong?
+MockMvc is part of:
+
+xml
+Copy
+Edit
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-test</artifactId>
+  <scope>test</scope>
+</dependency>
+You use it in unit or integration tests for your web layer.
+
+✅ Why Use MockMvc?
+No need to start the full server → faster tests
+
+Simulate HTTP requests and responses easily
+
+Test filters, interceptors, controller logic, and error handling
+
+Verify JSON, status codes, headers, redirections, etc.
+
+🏗️ How MockMvc Works
+It loads the Spring MVC configuration (optionally).
+
+It executes controller methods using mock HTTP requests.
+
+It verifies the response content, status, headers, etc.
+
+🧪 Basic Example
+Say you have a controller like:
+
+java
+Copy
+Edit
+@RestController
+@RequestMapping("/api")
+public class HelloController {
+    
+    @GetMapping("/hello")
+    public String sayHello() {
+        return "Hello, World!";
+    }
+}
+📋 Test using MockMvc
+java
+Copy
+Edit
+@SpringBootTest
+@AutoConfigureMockMvc
+public class HelloControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    public void testSayHello() throws Exception {
+        mockMvc.perform(get("/api/hello"))
+               .andExpect(status().isOk())
+               .andExpect(content().string("Hello, World!"));
+    }
+}
+⚙️ Setup Options
+There are two main ways to set up MockMvc:
+
+1. Full Context – loads everything (used in integration tests)
+java
+Copy
+Edit
+@SpringBootTest
+@AutoConfigureMockMvc
+class MyControllerTest {
+    @Autowired
+    private MockMvc mockMvc;
+}
+2. Standalone Setup – loads only controller (used in unit tests)
+java
+Copy
+Edit
+@BeforeEach
+void setup() {
+    mockMvc = MockMvcBuilders.standaloneSetup(new MyController()).build();
+}
+🔧 Common Methods
+Method	Description
+.perform()	Performs a request (e.g. get(), post())
+.andExpect()	Verifies the result
+.andReturn()	Returns the MvcResult for further inspection
+.param()	Adds query params
+.content()	Sends request body (for POST/PUT)
+.contentType()	Specifies request content type
+.header()	Adds headers
+📦 JSON Testing Example
+java
+Copy
+Edit
+@Test
+void testPostJson() throws Exception {
+    String json = "{\"name\":\"John\"}";
+
+    mockMvc.perform(post("/api/user")
+            .content(json)
+            .contentType(MediaType.APPLICATION_JSON))
+           .andExpect(status().isCreated())
+           .andExpect(jsonPath("$.name").value("John"));
+}
+✅ When to Use MockMvc vs Other Approaches
+Use Case	Suggested Tool
+Testing controllers without full server	MockMvc
+Testing full application with embedded server	@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT) + TestRestTemplate
+Testing services without web layer	Plain JUnit + Mockito
+
+Examples - 
+
+ Example 1: GET request with query parameters
+✅ Controller
+java
+Copy
+Edit
+@RestController
+@RequestMapping("/api")
+public class GreetController {
+
+    @GetMapping("/greet")
+    public String greet(@RequestParam String name) {
+        return "Hello, " + name + "!";
+    }
+}
+🧪 Test
+java
+Copy
+Edit
+@Test
+void testGreetWithParam() throws Exception {
+    mockMvc.perform(get("/api/greet").param("name", "Alice"))
+           .andExpect(status().isOk())
+           .andExpect(content().string("Hello, Alice!"));
+}
+🧪 Example 2: POST request with JSON
+✅ Controller
+java
+Copy
+Edit
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    @PostMapping("/user")
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        user.setId(1L); // mock saving
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    }
+}
+java
+Copy
+Edit
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class User {
+    private Long id;
+    private String name;
+}
+🧪 Test
+java
+Copy
+Edit
+@Test
+void testCreateUser() throws Exception {
+    String json = "{\"name\":\"John\"}";
+
+    mockMvc.perform(post("/api/user")
+            .content(json)
+            .contentType(MediaType.APPLICATION_JSON))
+           .andExpect(status().isCreated())
+           .andExpect(jsonPath("$.id").value(1))
+           .andExpect(jsonPath("$.name").value("John"));
+}
+🧪 Example 3: PUT request with headers
+✅ Controller
+java
+Copy
+Edit
+@PutMapping("/user/{id}")
+public ResponseEntity<String> updateUser(
+        @PathVariable Long id,
+        @RequestHeader("X-Auth-Token") String token,
+        @RequestBody User user) {
+
+    if (!"valid-token".equals(token)) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+    }
+
+    return ResponseEntity.ok("User updated: " + user.getName());
+}
+🧪 Test
+java
+Copy
+Edit
+@Test
+void testUpdateUserWithHeader() throws Exception {
+    String json = "{\"name\":\"Alice\"}";
+
+    mockMvc.perform(put("/api/user/1")
+            .header("X-Auth-Token", "valid-token")
+            .content(json)
+            .contentType(MediaType.APPLICATION_JSON))
+           .andExpect(status().isOk())
+           .andExpect(content().string("User updated: Alice"));
+}
+🧪 Example 4: DELETE request
+✅ Controller
+java
+Copy
+Edit
+@DeleteMapping("/user/{id}")
+public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    return ResponseEntity.noContent().build();
+}
+🧪 Test
+java
+Copy
+Edit
+@Test
+void testDeleteUser() throws Exception {
+    mockMvc.perform(delete("/api/user/1"))
+           .andExpect(status().isNoContent());
+}
+🧪 Example 5: Error handling and exception
+✅ Controller with exception
+java
+Copy
+Edit
+@GetMapping("/error-test")
+public ResponseEntity<String> throwError() {
+    throw new RuntimeException("Something went wrong!");
+}
+✅ Global Exception Handler
+java
+Copy
+Edit
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+}
+🧪 Test
+java
+Copy
+Edit
+@Test
+void testExceptionHandling() throws Exception {
+    mockMvc.perform(get("/api/error-test"))
+           .andExpect(status().isInternalServerError())
+           .andExpect(content().string("Something went wrong!"));
+}
+🧪 Example 6: Validate request body (DTO + validation)
+✅ DTO + Validation
+java
+Copy
+Edit
+@Data
+class Product {
+    @NotBlank
+    private String name;
+
+    @Min(1)
+    private int quantity;
+}
+✅ Controller
+java
+Copy
+Edit
+@PostMapping("/product")
+public ResponseEntity<String> addProduct(@Valid @RequestBody Product product) {
+    return ResponseEntity.ok("Product added");
+}
+🧪 Test (Invalid input)
+java
+Copy
+Edit
+@Test
+void testProductValidationError() throws Exception {
+    String json = "{\"name\":\"\",\"quantity\":0}";
+
+    mockMvc.perform(post("/api/product")
+            .content(json)
+            .contentType(MediaType.APPLICATION_JSON))
+           .andExpect(status().isBadRequest());
+}
+🔁 Summary of Techniques Used
+Feature	Method or Annotation
+GET/POST/PUT/DELETE	mockMvc.perform(get(...)) etc.
+Params	.param("key", "value")
+JSON body	.content(json) + MediaType.JSON
+Headers	.header("Header-Name", "value")
+Status check	.andExpect(status().isOk()) etc.
+Content check	.andExpect(content().string(...))
+JSON path check	.andExpect(jsonPath("$.field"))
+Validation	@Valid, @NotBlank, etc.
+Error handling	@RestControllerAdvice + @ExceptionHandler
+
+
+When jackson converts Json to Object it will always take all fields whose value is not null.
+
+Doubles or Stubbing - 
+
+What Are Test Doubles?
+Think of a test double as a "stand-in" or "fake version" of a real object you use in production. It lets you test code in isolation — without needing the full database, network, or complex dependencies.
+
+Just like a stunt double in movies takes the place of the real actor, test doubles take the place of real classes in unit testing.
+
+🧩 Types of Test Doubles (according to Martin Fowler):
+Type	What it does	Use case
+Dummy	Just fills parameter slots	Not used, but required
+Fake	Has working, simple implementation	In-memory DB
+Stub	Returns pre-defined responses	Simulate specific behavior
+Mock	Verifies method calls/interactions	Check if methods are called correctly
+Spy	Partial mock + tracks interactions	Track behavior of real object
+But in real-world Java testing, we mostly talk about Stubs, Mocks, and Spies using Mockito.
+
+🧪 What Is Stubbing?
+Stubbing is when you tell a test double (like a mock or spy):
+
+"When this method is called with these arguments, return this specific value."
+
+You’re basically programming fake behavior for your test object.
+
+🔧 Example: Real Use Case
+Let’s say you have a service like:
+
+java
+Copy
+Edit
+@Service
+public class OrderService {
+
+    @Autowired
+    private PaymentGateway paymentGateway;
+
+    public boolean processOrder(String orderId) {
+        return paymentGateway.charge(orderId);
+    }
+}
+Now PaymentGateway might be a complex class that talks to a real bank API — not something you want during unit tests.
+
+✅ Step 1: Mock and Stub
+In the test:
+
+java
+Copy
+Edit
+@ExtendWith(MockitoExtension.class)
+class OrderServiceTest {
+
+    @Mock
+    private PaymentGateway paymentGateway;
+
+    @InjectMocks
+    private OrderService orderService;
+
+    @Test
+    void testProcessOrder_Successful() {
+        // STUB: simulate method return
+        when(paymentGateway.charge("order123")).thenReturn(true);
+
+        boolean result = orderService.processOrder("order123");
+
+        assertTrue(result);
+    }
+}
+✔️ This is stubbing: you’re saying “when charge() is called with order123, return true”
+No actual payment is made — it's just a stubbed response.
+
+🔍 Mockito Cheatsheet for Stubbing
+Mockito Syntax	What it does
+when(obj.method()).thenReturn(value)	Returns value
+when(obj.method()).thenThrow(new Exception())	Throws an exception
+doReturn(value).when(mock).method()	Alternate syntax
+doThrow(new Exception()).when(mock).method()	Throws exception
+doNothing().when(mock).method()	For void methods
+📦 Full Example: Service with Dependency
+🤖 Real Classes
+java
+Copy
+Edit
+public class UserService {
+    private UserRepository userRepository;
+
+    public UserService(UserRepository repo) {
+        this.userRepository = repo;
+    }
+
+    public User getUser(String id) {
+        return userRepository.findById(id).orElse(null);
+    }
+}
+🧪 Stubbed Test
+java
+Copy
+Edit
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserService userService;
+
+    @Test
+    void testGetUser() {
+        User mockUser = new User("1", "Alice");
+        when(userRepository.findById("1")).thenReturn(Optional.of(mockUser));
+
+        User result = userService.getUser("1");
+
+        assertEquals("Alice", result.getName());
+    }
+}
+🧠 Why Stubbing Is Important
+Avoid slow dependencies (DB, API, network)
+
+Test edge cases (like nulls, errors)
+
+Focus on one class at a time
+
+Keep tests fast and reliable
+
+✋ Gotchas with Stubbing
+Over-stubbing can make tests too rigid
+
+Don’t mock what you don’t own (prefer real objects for simple logic)
+
+If method signatures change, stubs may silently break
+
+
+
+
+
+
