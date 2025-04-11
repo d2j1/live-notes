@@ -10347,3 +10347,305 @@ Lecture | What are cloud Providers , Overview of AWS and EC2, EBS
 
 Cloud computing is a tech that allows computers to use and access compute resources like server storage, caches over internet.
 
+------------------------
+
+Lecture | Deployment on Elastic Bean Stalk
+
+EC2 - 
+
+What is EC2?
+Amazon EC2 is a web service that provides resizable compute capacity—essentially, virtual machines called instances—in the cloud. It’s designed to make web-scale cloud computing easier for developers.
+
+🧠 Key Concepts
+1. Instances
+Virtual servers for running applications.
+
+You can launch different types of instances depending on your needs (compute-optimized, memory-optimized, GPU, etc.)
+
+Instances are based on AMIs (Amazon Machine Images).
+
+2. AMIs (Amazon Machine Images)
+Pre-configured templates for EC2 instances.
+
+Includes OS, application server, and applications.
+
+You can use prebuilt AMIs (e.g., Ubuntu, Amazon Linux, Windows) or create your own custom AMIs.
+
+3. Instance Types
+Defined by CPU, memory, storage, and networking capacity.
+
+Common families:
+
+t2, t3, t4g – General purpose
+
+c6g, c5 – Compute optimized
+
+r6g, r5 – Memory optimized
+
+p3, g4ad – GPU instances
+
+4. EBS (Elastic Block Store)
+Persistent block storage for EC2.
+
+Acts like a hard drive that you can attach/detach from instances.
+
+Data persists even after an instance is stopped or terminated.
+
+5. Security Groups
+Virtual firewalls for your instances.
+
+Control inbound and outbound traffic (e.g., allow SSH (port 22), HTTP (port 80), etc.)
+
+6. Key Pairs
+Used for SSH access to Linux instances.
+
+AWS creates a public/private key pair.
+
+You keep the private key, and AWS stores the public key to allow login.
+
+7. Elastic IP
+Static IPv4 address associated with your account.
+
+Useful if your instance needs a consistent public IP address.
+
+8. EC2 Pricing Models
+On-Demand – Pay per hour/second with no commitment.
+
+Reserved – 1 or 3 year commitment, cheaper than On-Demand.
+
+Spot Instances – Bid for unused EC2 capacity, up to 90% cheaper, but can be terminated anytime.
+
+Savings Plans – Flexible pricing model, similar to Reserved.
+
+⚙️ How EC2 Works (High-Level Steps)
+Choose AMI – Select the operating system and software.
+
+Choose Instance Type – Decide CPU, memory, and storage.
+
+Configure Instance – Add networking, IAM roles, monitoring.
+
+Add Storage – Use EBS volumes.
+
+Configure Security Group – Set up firewalls.
+
+Launch and Connect – Use SSH or RDP to connect to the instance.
+
+🧰 Use Cases of EC2
+Hosting websites and web apps.
+
+Running backend APIs or microservices.
+
+High-performance computing (HPC).
+
+Machine learning model training (with GPU instances).
+
+Batch processing and data analysis.
+
+🧩 Integration with Other AWS Services
+Auto Scaling – Automatically scale instances based on demand.
+
+Elastic Load Balancer (ELB) – Distribute traffic across instances.
+
+CloudWatch – Monitor metrics and logs.
+
+IAM – Manage permissions and access.
+
+VPC – Securely isolate your instances within a virtual network.
+
+🛠 Example EC2 Use Case: Host a Web App
+Launch a Linux EC2 instance.
+
+SSH into the instance using your key pair.
+
+Install NGINX or Apache.
+
+Deploy your code.
+
+Open port 80 in the security group.
+
+Associate an Elastic IP for a stable URL.
+
+Set up a domain and route traffic via Route 53 (optional).
+
+✅ Pros
+Highly scalable.
+
+Customizable.
+
+Wide instance variety.
+
+Integration with AWS ecosystem.
+
+⚠️ Cons
+Can get expensive if not managed well.
+
+Steeper learning curve than some PaaS options.
+
+Needs management (patching, monitoring, scaling).
+
+Elastic bean stalk - 
+
+What is Elastic Beanstalk?
+Elastic Beanstalk is a Platform as a Service (PaaS) offered by AWS that allows developers to deploy, manage, and scale web applications and services.
+
+⚡ Key Idea:
+You just upload your code, and Beanstalk automatically:
+
+Handles deployment
+
+Provisions resources (like EC2, Load Balancers, RDS, etc.)
+
+Monitors your app
+
+Scales it up/down as needed
+
+🧠 How Elastic Beanstalk Works
+✅ You provide:
+Application code (Java, Node.js, Python, Go, PHP, .NET, Ruby, Docker, etc.)
+
+Configuration (optional)
+
+🌐 Beanstalk handles:
+Infrastructure provisioning (EC2, VPC, ELB, RDS)
+
+Load balancing and auto-scaling
+
+Health monitoring
+
+Application updates
+
+Environment management
+
+⚙️ Deployment Workflow
+Create an Application in the Beanstalk console or CLI.
+
+Choose the platform (e.g., Node.js, Java, Python, Docker, etc.).
+
+Upload your code (ZIP file or through Git).
+
+Beanstalk:
+
+Launches an environment
+
+Provisions EC2, ELB, Auto Scaling Group
+
+Deploys your app
+
+You access your app via a public URL.
+
+💡 Components of Elastic Beanstalk
+1. Application
+The collection of environments, versions, and configurations.
+
+2. Environment
+A version of your app running on AWS resources.
+
+Two types:
+
+Web server environment (e.g., Nginx/Apache + EC2)
+
+Worker environment (for background tasks using SQS)
+
+3. Environment Configuration
+All settings for the environment, such as instance type, VPC, auto scaling rules, software config, etc.
+
+4. Application Version
+A specific bundle of deployable code (ZIP file).
+
+Stored in S3.
+
+🚀 Supported Platforms
+Java (Tomcat)
+
+.NET (IIS)
+
+Node.js
+
+Python
+
+Ruby
+
+PHP
+
+Go
+
+Docker (single container or multi-container)
+
+Packer-based custom platforms
+
+📦 Deployment Options
+All at once – Fast, but causes downtime
+
+Rolling – Update in batches, maintains some availability
+
+Rolling with additional batch – Adds new instances before killing old ones
+
+Immutable – Deploy new instances, swap them in only if healthy
+
+📊 Monitoring & Logs
+Integrated with Amazon CloudWatch.
+
+Health monitoring with traffic light indicators.
+
+Logs from EC2 can be viewed/downloaded through the console.
+
+🔒 Security & IAM
+You can attach IAM roles to instances.
+
+Use security groups to control access to environments.
+
+Integrate with RDS, S3, Secrets Manager, etc., securely.
+
+💰 Pricing
+Elastic Beanstalk itself is free – you only pay for the underlying resources (EC2, ELB, RDS, etc.).
+
+🧰 Use Cases
+Quickly deploy REST APIs and web apps
+
+Handle backend services with minimal DevOps
+
+Deploy scalable microservices
+
+Run Docker containers with zero manual infrastructure
+
+✅ Pros
+Easy to use (great for beginners and rapid development).
+
+Fully managed infrastructure.
+
+Supports many platforms and CI/CD.
+
+Built-in scaling, monitoring, and load balancing.
+
+⚠️ Cons
+Less control over infrastructure.
+
+Not suited for highly customized architectures.
+
+Can be overkill for very simple apps, or too limited for complex ones.
+
+🔧 Example Scenario: Deploying a Node.js App
+Create a ZIP of your app (e.g., app.js, package.json).
+
+Go to Beanstalk console → Create Application.
+
+Choose Node.js as platform.
+
+Upload ZIP → Click deploy.
+
+Beanstalk sets up:
+
+EC2 instance with Node.js
+
+Security group
+
+Load balancer
+
+Auto scaling group
+
+Monitoring dashboard
+
+Access your app at http://your-env.elasticbeanstalk.com.
+
+
+
