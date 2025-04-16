@@ -11079,4 +11079,205 @@ At its heart, RDS is a platform that turns relational databases into durable, sc
 
 It’s not just a tool for storing data — it’s a reimagining of what database operations look like in a modern, distributed, self-healing cloud architecture.
 
- 
+---------------------------
+
+
+Lecture | Redis Integration in Project
+
+
+Spring boot with redis - https://stackabuse.com/spring-boot-with-redis-hashoperations-crud-functionality/
+
+install redis on windows - 
+
+https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/install-redis-on-windows/
+
+what is caching - 
+
+Caching is a technique used to store frequently accessed data in a temporary and fast-access storage (called a cache) so that future requests for that data can be served more quickly.
+
+caches are faster and registers are faster than caches.
+
+add below depedency to the pom - 
+
+Spring boot starter data redis 
+
+add below properties to the application.properties -
+
+spring.data.redis.host = localhost
+spring.data.redis.port = 6379
+
+
+We also need to create the object of the redis in spring boot app - 
+
+class - 
+
+@Configuration
+public class RedisConfig {
+
+@Bean
+RedisTemplate<key_data_type, value_data_type or Object> redisTemplate(RedisConnectionFactory redisConnectionFactory ) {
+
+RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+
+redisTemplate.setConnectionFactory(redisConnectionFactory);
+
+return redisTemplate;
+}
+
+}
+
+
+redis internally stores the data in the binary format and when we try to put the object into it. It converts the object into binary format by using serialization and while fetching object back from the redis it will deserialize the object and give the object.
+
+ What is Redis?
+Redis (REmote DIctionary Server) is an in-memory key-value store often used for caching, real-time analytics, session storage, and pub-sub systems.
+
+🧠 How Redis Stores Data Internally
+Redis stores everything as a key-value pair, but the underlying data structure used for values depends on the Redis data type and size of the data.
+
+🧩 Core Components:
+Keys
+
+Stored as binary-safe strings (just like a Java String)
+
+Internally managed using a dictionary (hash table)
+
+Values
+Can be stored using different internal data structures depending on the data type and size:
+
+📦 Redis Data Types & Internal Representations
+
+Redis Type	Internal Structure Used
+String	SDS (Simple Dynamic String) — resizable byte arrays
+List	QuickList (combines linked list + compressed ziplist)
+Set	Hash Table or IntSet (if all elements are integers)
+Hash	ZipList (compact) or Hash Table (for large data)
+Sorted Set	SkipList + Hash Table
+Bitmap	Raw byte arrays (bit-level operations)
+HyperLogLog	Probabilistic algorithm-based structure
+Stream	Radix tree + linked list for message IDs
+🔁 Example: What Happens Internally?
+Let’s say you run:
+
+shell
+Copy
+Edit
+SET user:1 "John"
+Internally:
+
+Redis creates a key user:1 (as an SDS string)
+
+Value "John" is also stored as an SDS
+
+It stores both in a dictionary (hash table)
+
+📉 Memory Optimization
+Redis automatically switches internal representations for memory and speed optimization:
+
+Small hashes use ziplist (compact memory layout)
+
+Small sets with only integers use intset
+
+Lists internally compress adjacent elements using quicklist with ziplist nodes
+
+You can configure these thresholds with Redis settings like:
+
+ini
+Copy
+Edit
+hash-max-ziplist-entries
+hash-max-ziplist-value
+📁 Persistence (RDB / AOF)
+Although Redis is in-memory, data can be persisted to disk using:
+
+RDB (snapshotting): periodic dump of data
+
+AOF (Append Only File): logs every write command
+
+🧠 Summary:
+Keys are stored in a hash table
+
+Values are stored using optimized internal structures
+
+Redis chooses the best format dynamically for performance and memory efficiency
+
+
+
+why redis takes two keys while putting the data in the redis - 
+
+
+	Short Answer:
+Redis itself only deals with one key.
+But when using Redis through a framework like Spring Cache, it may look like you’re passing two keys because:
+
+One is the Redis key (the main key used to store/retrieve)
+
+The second is often part of a composite key or used in key generation logic
+
+🔍 Example with Spring Boot (@Cacheable):
+java
+Copy
+Edit
+@Cacheable(value = "userCache", key = "#userId")
+public User getUserById(String userId) {
+    // fetch from DB if not in cache
+}
+Here:
+
+"userCache" is the cache name (or namespace/grouping)
+
+#userId is the actual key used inside that cache
+
+So internally, Spring might generate a final Redis key like:
+
+
+userCache::12345
+Looks like two parts, but it’s just one Redis key under the hood.
+
+🔧 Breakdown:
+
+What You See	What Redis Sees
+@Cacheable(value, key)	One final key string
+redisTemplate.opsForHash()	Redis hash with field key
+redisTemplate.opsForValue()	Simple key-value
+🛠 With RedisTemplate and Hashes:
+
+
+redisTemplate.opsForHash().put("userCache", "123", userObject);
+"userCache" = Redis key (it's a hash)
+
+"123" = field inside the hash
+
+So Redis stores a hash structure:
+Key = "userCache"
+Field = "123"
+Value = serialized userObject
+
+This helps with grouping — all users in a single Redis hash.
+
+✅ So Why Two Keys (Visually)?
+It depends on how you're storing:
+
+String key-value (via opsForValue()):
+
+
+redisTemplate.opsForValue().set("user:123", user);
+Hash key-field-value (via opsForHash()):
+
+
+redisTemplate.opsForHash().put("users", "123", user);
+So it’s not that Redis itself requires two keys — it's just that some APIs or patterns (like hashes or caching) involve compound structures.
+
+Want a TL;DR?
+Redis natively uses one key, but
+
+Frameworks (like Spring) or data types (like Hash) might make you feel like you’re using two
+
+It helps with organization, grouping, and namespacing
+
+
+
+
+
+
+
