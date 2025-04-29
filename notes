@@ -11275,9 +11275,54 @@ Frameworks (like Spring) or data types (like Hash) might make you feel like youâ
 
 It helps with organization, grouping, and namespacing
 
+---------------------------------------------------
+
+
+
+-------------------------------
+
+Lecture | Searching , Paging and Sorting APIs Implementation in Product Catalog Service
+
+
+
+3
+4
+5
+6
+7
+8
+9
+
+---------------------------------------------------
+
+
+
+Lecture | DSA: Arrays 2: Two Dimensional
+
+
+BF - For every row count no of 1s and return the row with maximum no of 1s.
+
+TC - O(n^2)
 
 
 
 
+Code - 
 
+ public int solve(int[][] A) {
 
+         int n = A.length;
+        int maxRowIndex = -1;
+        int j = n - 1; 
+
+        for (int i = 0; i < n; i++) {
+         
+            while (j >= 0 && A[i][j] == 1) {
+                j--;
+                maxRowIndex = i; 
+            }
+        }
+
+        return maxRowIndex;
+
+    }
