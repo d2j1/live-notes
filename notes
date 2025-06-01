@@ -11295,34 +11295,90 @@ Lecture | Searching , Paging and Sorting APIs Implementation in Product Catalog 
 
 ---------------------------------------------------
 
+Lecture | DSA: Arrays 3: Interview Problems
+ 
+ Salt, pepper, lime, steamed food, salad, pulses, beans
+ 
+ Meditation .
+ 
+ Omega 3 fatty acid food.
+ 
+ Omega 3 is non imflamatory and omega 6 is imflamatory.
+ 
+ Need to get Omega 3 and Omega 6 levels checked. 
+ 
+ Omega test, blood test,  microbiome test, genetic test.
+
+ Omega 3 - Chia seed, flex seeds or flex seed oil, walnuts, dark chocolate - organic cocoa powder, dark coffee -   
+ 
+ 
+ Research nootropics
+ 
+ --------
+ 
+ 
+ Creatine, Whey proteins, butter fruit (Avocado), Tofu, Dal, natural proteins.
+
+Take 5 gm of creatine with breakfast. Test serum creatine levels to check if creatine is messing with it and consult a nephologist. 
 
 
-Lecture | DSA: Arrays 2: Two Dimensional
+Blood tests for gym - 
+
+High sensitivity c-reactive protein (HS-CRP)- this is the inflammation marker, It measures sensitive marker of chronic inflammation and cardiovascular risk. Elevated hs-CRP levels are linked to heart disease, autoimmune conditions and metabolic dysfunction. Even low grade inflammation can accelerate aging and increase disease risk. 
 
 
-BF - For every row count no of 1s and return the row with maximum no of 1s.
+Optimal range - 
 
-TC - O(n^2)
+Below 1.0 mg/L - Low risk
+1.0 - 3.0 mg/L - Moderate risk
+above 3.0 mg/L - high risk
+
+2) RBC zinc - the bioavailable zinc test. It measures zinc inside red blood cells (RBC), giving a more accurate reflection of long term zinc status than serum zinc. 
+
+It is crucial for immunity, brain function, testosterone production and wound healing. Deficiency can lead to poor immunity, fatigue, hair loss and lower testosterone levels. 
+
+Optimal range - 
+
+5.0 - 7.5 mg/L
+
+3) Free T4 - the inactive thyroid hormone. It measures the inactive form of thyroid hormone that gets converted to T3, the active form. 
+
+Low T4 can indicate hypothyroidism, which causes fatigue, weight gain, cold intolerance and sluggish metabolism. If T4 is normal but T3 is low, conversion issues ( like stress, poor liver function, or nutrient deficiencies) may be at play which is why its essential to measure both. 
+
+Optimal range - 
+
+0.8 to 1.8 ng/dL
+
+4) Free T3 - the active thyroid hormone. It measures the active form of thyroid hormone responsible for metabolism, energy and fat loss. Low T3 can cause brain fog, fatigue, weight gain and cold extremities, even if T4 is normal. Chronic stress, fasting or low carb diets can impair T4 to T3 conversion leading to sluggish metabolism. 
+
+Optimal range - 
+
+3.5 to 4.2 pg/mL
+
+5) Prolactin - the hidden hormone that lowers testosterone. It measures a harmone produced by the pituitary gland, which affects testosterone, dopamine and libido. 
+
+High prolactin can supress testosterone, lower libido and even cause erectile dysfunction in men, elevated levels may indicate dopamine deficiency, stress or pituitary tumors ( prolactinomas). 
+
+Optimal range - 
+
+men - 4 - 15 ng/mL
+
+6) Homocysteine - the cardiovascular and brain health marker - It measures amino acid linked to heart disease, stroke and cognitive decline. High homocysteine levels can damage blodd vessels and increase heart attach risk. It can indicate poor methylation due to vitamin B deficiencies. 
+
+Optimal range -
+Below 7 umol/L - ideal
+above 15 umol/L - high risk
+
+7) Free testosterone the hormone that drives performance - It measures the unbound, bilavailable testosterone that directly affects muscle mass, energy, libido and mood. Low free testosterone can cause fatigue, depression, low motivation and reduced muscle growth. Total testosterone does not tell the full story, free T is what your body can actually use. 
+
+Optimal range - 
+
+Men - 15 - 21 pg/mL
+
+------------------------------
 
 
-
-
-Code - 
-
- public int solve(int[][] A) {
-
-         int n = A.length;
-        int maxRowIndex = -1;
-        int j = n - 1; 
-
-        for (int i = 0; i < n; i++) {
-         
-            while (j >= 0 && A[i][j] == 1) {
-                j--;
-                maxRowIndex = i; 
-            }
-        }
-
-        return maxRowIndex;
-
-    }
+ Arrays 3: Interview Problems
+ 
+ 
+ 
