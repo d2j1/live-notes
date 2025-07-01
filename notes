@@ -11377,8 +11377,1102 @@ Men - 15 - 21 pg/mL
 
 ------------------------------
 
+Soni's -
 
- Arrays 3: Interview Problems
+
+Bit Manipulation 1 - 
+
+
+Problem solving framework - 
+
+Start 25 mins timer
+
+Read problem statement carefully
+
+Understand the problem and identify the inputs and outputs
+
+Think of a brute force approach to solve the problem
+
+Optimise the brute force to reduce time complexity
+
+if you are able to solve the problem within 25 mins then move on to next problem.
+
+if you are not able to solve the problem within 25 mins then bookmark that problem for revision on upcoming sundays.
+
+Take hints progressively from below points - 
+
+1) Check if the class notes if we have solved the specific question in the class.
+
+2) Utilise hints
+3) Watch the video
+4) Watch the video solution.
+
+
+Solve this question and Ask yourself what concept if I knew would have helped me solve this question on my own without any help and note it down.
+
+
+
+And move on to next question.
+
+Bitwise operators - 
+
+& - AND
+| - OR 
+^ -XOR 
+~ - negate 
+<< - Left shift
+>> - Right shift
+
+
+
+1 & 1 = 1
+2 & 1 = 0
+3 & 1 = 1
+4 & 1 = 0
+
+Basic properties - 
+
+Even/Odd numbers - 
+
+no & 1 == 1 then no is odd
+no & 1 == 0 then no is even
+
+Observations - 
+
+A &  1 == 1 then A is odd
+A & 1 == 0 then A is even
+
+
+2) 
+
+A & 0  = 0
+
+3) 
+
+A & A = A
+
+4) 
+
+A | 0 = A
+
+5) 
+
+A | A = A
+
+6) 
+
+A ^ 0 = A
+
+A ^ A = 0
+
+7) Comutative property - 
+
+a & b = b & a
+a ^ b = b ^ a
+a | b = b | a
+
+8) Associative property - 
+
+a & b & c = (a & b) & c = a & ( b & c) and same goes for xor and or as well.
+
+Left shift operator << ->
+
+shifts the bits of the number by provided number of positions towards the left.
+
+its like multiplying the number by 2 for each shift of bits by one position.
+
+a << 1 = a * 2
+a << 2 = a * 2^2
+a << 3 = a * 2^3
+a << n = a * 2^n
+
+1 << n = 2^n
+
+
+Right shift operator >> ->
+
+Shifts the bits to the right of the number by provided number of bits.
+
+Its like dividing the number by 2 for each shifting of a bit by one position.
+
+
+
+Power of left shift operator - 
+
+
+1) Set 5th bit of A - 
+
+A = 21;
+
+bit = 1 << 5;
+
+ans = A | bit;
+
+2) Toggle the ith bit - 
+
+bit = 1 << i;
+
+ans = A ^ bit ;
+
+
+3) Unset ith bit - 
+
+A = 21;
+
+bit = 1 << i;
+
+bit = ~bit;
+
+ans = A & bit;
+
+
+Q - Check whether ith bit is set or not.
+
+A = 21;
+
+i = 3;
+
+int setBit = 1 << i;
+
+ ans = A & setBit; 
+
+if( ans > 0) {
+
+bit is set.
+
+}else{
+
+bit is not set.
+
+}
+
+
+Q  - Given an integer N. Count the set bits in N.
+
+
+Idea - 
+
+check for each bit in range 0 to 31 if the bit is set then count++.
+
+cnt = 0;
+
+for( bit from 0 to 31 ) {
+
+if( checkBit(N, bit)){
+cnt++;
+
+}
+
+}
+
+print(cnt);
+
+
+---
+
+
+checkBit(N, bit){
+
+int setBit = 1 << bit;
+
+ ans = N & setBit; 
+
+if( ans > 0) {
+
+return true;
+
+}else{
+
+return false;
+
+}
+
+}
+
+
+TC - O(log(Integer.MAX_VALUE))
+SC - O(1)
+
+
+
+Or 
+
+
+while( N > 0){
+
+if( N & 1) == 1) cnt +=1;
+N = N >> 1;
+
+}
+
+print(cnt);
+
+TC - O(log(n))
+SC - O(1)
+
+Q - IRCTC wants to improve how it shows train options to its users. They have decided that trains which run more frequently should appear higher up in the search result. To figure this out, they look at a 28 day period to see how often each train runs.
+
+Problem - for each train they have come up with a special number. This isn't just any number, though, if you were to write it down in binary form ( which is like a special code of 0s and 1s), each of the 28 digits corresponds to a day in that period. A '1' means the train runs on that day, and a '0' means it doesn't.
+
+Task - Your task is to help IRCTC by writing a program. Given a list A of these special numbers for different trains, your program should find the train that runs the most.
+
+solution - 
+
+In this we have to find which no which has maximum number of 1's present in it.
+
+count the number of set bits present in each number and return the index of that number.
+
+Q - given three integers  - A, B, C. Return a decimal number which has A no of 0's as msb and then B number of 1's and then C number of 0's in binary representation.
+
+solution - 
+
+ans = 0
+
+for( bit from C to C+B-1 ) {
+
+ans = ans | ( 1 << bit);
+
+}
+
+---------------------------
+
+
+DSA: Bit Manipulation 2
+
+
+
+Q - Maximum and pair - 
+
+Given N positive array elements. Find the maximum value of arr[i] & arr[j] where i != j.
+
+BF - Take and of each element with other by using two loops.
+
+
+for( i from 0 to N-1) {
+
+
+for( j from 0 to N-1) {
+
+if( i != j) {
+
+ans = max(ans, A[i] & A[j] );
+}
+
+}
+
+}
+
+print(ans);
+
+
+TC -  O(n^2)
+SC - O(1)
+
+Observations - 
+
+MSB will give us the maximum and value.
+
+count the elements of an array who has msb bit set. if it more than 1 then there are two elements which will give us maximum and value, and make elements whose that bit is not set 0.
+
+like this move to the left side bits from msb. In this process make sure that at least two elements should remain non zero.
+
+
+code - 
+
+
+for( bit from 30 to 0) {
+
+cnt =0;
+
+for( i from 0 to N-1 ) {
+
+if( A[i] & ( 1 << bit )  > 0 ) { 
+
+cnt++;
+
+}
+
+}
+
+
+if( cnt >= 2 ){
+pair = pair | (1 << bit);
+
+
+// set values in A to zero
+
+
+for( i from 0 to N-1 ) {
+
+if( A[i] & ( 1 << bit) == 0 ) {
+A[i] =0;
+}
+
+}
+}
+}
+
+
+TC - O(31 * N) = O(N)
+SC - O(1)
+
+
+Google interview question - 
+
+
+Given N positive numbers count total no of pairs whose bitwise & is maximum. A[i] & A[j] and i != j
+
+Solution - 
+
+n = size of an array
+
+ans = (n * ( n-1)) / 2.
+
+---------------------
+
+ Tools to enhance working memory and attention - 
+ 
+ If dopamine levels are good then working memory work at its best.
+ 
+ Tools to enhance dopamine levels - 
+ 
+1) Yoga nidra - check videos for this.
+
+2) Non sleep deep rest - video -> NSDR huberman 
+
+do above 2 for 30 mins at the start and then reduce it to 10 mins.
+
+3) Cold showers below neck, do not take water on head - for 10 mins.
+
+4) Listen to Binural beats (40hz, 15hz)
+
+--------------------------
+ 
+ Load Balancing and consistent hashing - 
+ 
+ Vertical scaling - Scaling up - This is simple, limited space for scaling and cost heavy.
+ 
+ Horizontle scaling  - Scaling out - Load distibution is equal.
+ 
+ Load balancer distributes the traffic to multiple servers. 
+ 
+ Load balancer is singular unified entry points to the servers. 
+ 
+ Load balancer helps in -
+ 1) State management - keeps track of the server availiability by using health check (pull mechanism - LB balancer calls healthcheck api of application server), Heart beat ( Push Mechanism - application servers sends the message to LB that it is alive, If LB does not get heartbeat from server for certain period of time like 10 sec then it will remove that server from LB mapping). Once server is online it will call the register api of load balancer to register itself. 
+ 
+ Most cloud provides the heartbeat mechanism to keep track of application servers health.
+ 
+ 2) High availability - 
+ 
+ This is achieved by using multiple machines and we can also keep few load balancers on stand by. Each geo location will have seperate load balancer and traffic to these load balancers will be routed by Geo DNS, Geo DNS gives the ip address closest to the user.  
+ 
+ When any machine is active it is called as hot, when machine is not working then it is called as cold.
+ 
+ On AWS load balancer keep sending health check messages to cloudwatch and when cloudwatch does not receive health check update from loadbalancer it will create alarm, and there are two ways to react to these alarms 
+ 
+ 1) Manual - In this admin will log in and debug the issue or start new load balancer. 
+ 2) Automatic  - This will create new loadbalancer instance automatically and assign the ip address to this new load balancer. 
  
  
+ In geo dns we will only get the one ip address and We can also setup dns configuration like one domain name will have more than one ip address, in this case DNS will return all the ip addresses and browser will decide which ip to ping (Ip is decided either randomnly or first ip from the list of ip addresses )
  
+ 
+ Scaling storage - 
+ 
+ Data is stored on seperate server called database server. 
+ 
+ we can vertically or horizontally scale a database. Scaling relational databases horizontally is very complicated. 
+
+Scaling database vertically also has limitations, Performace will go down as we scale it vertically, so after one point we will have to scale horizontally. 
+
+Vertical scalling has limitations, it is costly, and decreases performance as data on one server is increasing. 
+
+Horizontle scalling in this data is divided based on sharding key and these chunks of data are stored on seperate database servers, and we can keep adding servers to store more data. 
+
+Sharding - 
+
+Sharding is a database architecture pattern in which a large dataset is horizontally partitioned across multiple independent databases (called shards), where each shard holds a subset of the total data based on a defined sharding key. It is primarily used to improve scalability, performance, and availability in high-volume systems by allowing parallel processing, independent storage, and distributed workload across multiple servers. Sharding introduces complexity in terms of data distribution, query routing, and consistency, but is essential for managing large-scale applications efficiently.
+
+Sharding key -  It is identifier or column which is unique and used to divide the data across multiple database servers. 
+
+
+Algorithms to divide data across multiple database servers - 
+
+Digest IO - In this each machine will store some range of data like machine 1 will store the user ids from 1 to 100 and machine 2 will store user ids from 101 to 200. This concept is called as bucketing. 
+
+It becomes extremly expensive. 
+
+Consistent hashing -  
+
+hashing is a technique to map data of arbitrary size to fixed-size addresses or keys, usually for the purpose of efficient storage and retrieval. It's particularly useful in systems where speed and constant-time access are critical.
+
+A hash function is a function that takes an input (like a file, string, or key) and returns a fixed-size binary or hexadecimal value, called a hash code or hash value.
+
+Consistent Hashing is a special type of hashing technique designed to minimize the number of keys that need to be remapped when the set of hash buckets (like servers, nodes, or partitions) changes.
+
+It's widely used in distributed systems, load balancers, distributed caches, and databases like Cassandra, DynamoDB, Redis Cluster, etc.
+
+Steps to create consistent hashing - 
+
+1) Create hash ring which will store the range of values. 
+
+2) Hash function - Create a hash function which will return hash value in range of hash ring for every input key. 
+
+3) Hash function - This hash function will take machine id and it will match this machine to the range of values on the hash ring. This machine will store the mapped values in that machine. 
+
+4) Map user id or key to the machine id.
+
+
+In reality hash ring is array of hashed values and machines mapping. 
+
+
+Example - 
+
+Consistent hashing is a special hashing technique used in distributed systems to minimize the number of keys that need to be moved when nodes (like servers or cache nodes) are added or removed.
+
+In traditional hashing using hash(key) % N, if the number of nodes N changes, almost all keys are rehashed. This causes a lot of unnecessary data movement.
+
+Consistent hashing solves this by placing both nodes and keys on a virtual circular ring, also called a hash ring.
+
+How Consistent Hashing Works
+
+Hash both servers and keys into the same numeric space, for example, 0 to 2^32 (or 0 to 360 for simplicity).
+
+Each server is assigned a position on the ring based on the hash of its ID or IP address.
+
+Each key is hashed and placed on the ring as well.
+
+To assign a key to a server, move clockwise around the ring from the key's hash until you find the first server. That server is responsible for that key.
+
+Example
+
+Suppose we have three servers:
+
+Server A hashes to 120
+
+Server B hashes to 250
+
+Server C hashes to 80
+
+Now, suppose the key "apple" hashes to 100. Going clockwise on the ring, the next server after 100 is 120, so "apple" is assigned to Server A.
+
+Key "banana" hashes to 180. The next server after 180 is 250, so it goes to Server B.
+
+Key "cherry" hashes to 300. Since 300 is past 250, it wraps around to Server C at 80.
+
+Adding a New Server
+
+Suppose we add Server D with a hash of 160.
+
+Now, only the keys between 120 and 160 need to move from Server B to Server D. All other key assignments remain unchanged.
+
+This is the main benefit of consistent hashing. It provides minimal disruption when nodes are added or removed.
+
+Removing a Server
+
+If Server A at 120 is removed, the keys that were assigned to it will now be routed to the next clockwise server, which is D at 160. Other key assignments remain unchanged.
+
+Use Cases
+
+Consistent hashing is used in distributed databases like Cassandra and DynamoDB, caching systems like Memcached and Redis Cluster, content delivery networks, and load balancers.
+
+Virtual Nodes (VNodes)
+
+To improve load distribution, each physical server can be assigned multiple positions on the ring. These are called virtual nodes. This helps avoid uneven distribution of keys when the number of servers is small.
+
+
+Cascading Failure
+
+A cascading failure occurs in a distributed system when the failure of one component triggers a chain reaction of failures in other components, eventually leading to a large part of the system becoming unresponsive or collapsing.
+
+This often happens when:
+
+A node becomes slow or unresponsive.
+
+Its traffic or workload is redirected to other healthy nodes.
+
+Those nodes become overloaded due to the extra load.
+
+They also start failing or slowing down.
+
+The cycle repeats and spreads across the system.
+
+Example:
+Imagine a distributed cache with 5 nodes. If one node crashes, all its keys must be fetched from the database and re-cached on other nodes. This sudden surge in database traffic and uneven cache load can overwhelm other nodes, leading to more crashes.
+
+Cascading failures are especially dangerous in systems that serve real-time traffic, such as microservices, content delivery networks, or payment gateways.
+
+Ways to mitigate cascading failures:
+
+Implementing rate limiting
+
+Circuit breakers (fail fast if downstream is unhealthy)
+
+Auto-scaling infrastructure
+
+Consistent hashing with load-aware balancing
+
+Consistent Hashing with Virtual Nodes (VNodes)
+
+Consistent hashing alone helps reduce remapping of keys when nodes are added or removed. However, it does not guarantee even distribution of load. Some nodes may get more keys than others, especially if the number of nodes is small or the hash distribution is uneven.
+
+To solve this, virtual nodes are introduced.
+
+Virtual nodes (VNodes) are multiple positions on the hash ring assigned to the same physical node. Instead of a node appearing only once on the ring, it appears multiple times with different hashes.
+
+How it works:
+
+Each physical node is assigned multiple virtual nodes.
+
+Each virtual node has its own position on the hash ring.
+
+When a key is hashed, it is assigned to the first virtual node clockwise from its position.
+
+That virtual node maps back to a physical server.
+
+Benefits:
+
+Ensures more uniform distribution of keys.
+
+Reduces the chance of one physical node becoming a bottleneck.
+
+Makes it easier to rebalance load when a node is added or removed.
+
+Minimizes the impact of failure by spreading load more evenly across all nodes.
+
+Example:
+Instead of having Server A at only one position, you might place it at positions 45, 120, and 300 on the ring. Similarly, Server B may appear at 60, 180, and 320.
+
+If Server A goes down, its load is not transferred to just one node, but is split across multiple servers that take over its virtual nodes, preventing overload and reducing cascading failure risk.
+
+In summary:
+
+Cascading failure is a dangerous chain reaction of node failures caused by traffic redistribution.
+
+Consistent hashing with virtual nodes helps distribute load more evenly and prevents hotspots.
+
+Together, these techniques build more resilient and scalable distributed systems.
+
+
+Hashing algorithms -
+MD5, murmurhash - This one is the fastest.
+
+Caching - 
+
+Caching is a technique used in computer systems to store frequently accessed data in a temporary storage location, so that future requests for that data can be served faster.
+
+Instead of recomputing or refetching data from a slow backend (like a database, disk, or remote server), caching stores a copy of the data in a faster memory system (like RAM) and reuses it when needed.
+
+The main goal of caching is to reduce latency, increase throughput, and improve overall system performance.
+
+Content delivery network - 
+
+CDN (Content Delivery Network) is a geographically distributed network of servers that work together to deliver digital content (like websites, videos, images, scripts, and stylesheets) faster and more reliably to users based on their location.
+
+It is a key performance and scalability technology in modern web infrastructure.
+
+Core Idea Behind CDN
+
+Instead of having all users access a central server (like your web hosting origin), a CDN stores cached copies of your content on multiple servers located around the world. These servers are called edge servers.
+
+When a user visits your website, the CDN routes the request to the nearest edge server in terms of network distance, reducing latency, bandwidth usage, and server load.
+
+
+Youtube stores video metadata in database and video on the s3 bucket. S3 bucket is based on hard disk. 
+
+1) Upload the metadata to DB 
+2) Upload video to S3.
+3) Update DB with S3 url.
+4) Upload video to CDN.
+5) Upload the cnd url to DB.
+
+
+CDN example - 
+
+A Content Delivery Network (CDN) is a distributed system of servers placed across the globe, designed to deliver web content like images, videos, JavaScript, CSS, and even entire web pages from a location geographically closer to the end user.
+
+It solves the problem of latency, which is the delay that happens when data has to travel over long distances from the origin server to the end user.
+
+The Problem Without CDN
+
+Let’s say you host your website on a single server in New York, USA. Users from New York will experience fast performance.
+But a user from Mumbai, India or Sydney, Australia will experience slower loading times because the request has to travel halfway across the world.
+
+The longer the distance, the more time it takes for:
+
+DNS resolution
+
+TCP connection
+
+HTTP requests and responses
+
+How a CDN Works
+
+CDNs solve this by replicating your content and storing it on multiple edge servers located around the world.
+
+These edge servers cache your web content and serve it to users based on proximity and network speed, not just geography.
+
+When a user requests a file (e.g., an image or a page):
+
+The user types your website URL.
+
+DNS resolves the domain to the nearest CDN edge server.
+
+That edge server checks if it already has the content cached:
+
+If yes (cache hit): It serves it directly.
+
+If no (cache miss): It fetches from the origin server, stores it, and serves the user.
+
+On future requests, the edge server will serve it from cache.
+
+Types of Content a CDN Handles
+
+Static content: HTML, CSS, JS, images, fonts, videos, downloadable files.
+
+Dynamic content (advanced CDNs): Can cache or accelerate data fetched from APIs or databases using smart routing, even for dynamic pages.
+
+Real-World Example: How CDN Works
+
+Let’s say your website www.example.com is hosted in New York.
+
+A user from Mumbai visits your site.
+
+Without CDN:
+
+The request goes all the way to New York.
+
+Takes around 300–400 ms for round-trip.
+
+Images, scripts, and videos take even longer.
+
+Result: Slow page load.
+
+With CDN (e.g., using Cloudflare or Akamai):
+
+Your site is behind a CDN.
+
+The CDN has an edge node in Mumbai.
+
+The user’s request is redirected by DNS to that Mumbai node.
+
+The edge node checks its local cache:
+
+If the content is present (cache hit), it serves it instantly (e.g., 30 ms).
+
+If not, it pulls it from the New York origin, serves it, and stores it locally for future users.
+
+Result: Faster loading, reduced latency, and lower load on your server.
+
+Benefits of Using CDN
+
+Reduced Latency
+Content is served from a node closer to the user, reducing round-trip time.
+
+Faster Load Times
+Optimizes delivery of web resources, reducing render-blocking and improving Core Web Vitals.
+
+Scalability
+Easily handles high traffic spikes during peak times or product launches.
+
+Reliability and Redundancy
+If one node goes down, traffic is automatically routed to the next closest node.
+
+Offloading Server Load
+Reduces origin server requests, saving bandwidth and CPU cycles.
+
+Security Features
+Many CDNs offer DDoS protection, web application firewalls (WAF), bot mitigation, and TLS/SSL termination.
+
+Common CDN Providers
+
+Cloudflare
+
+Akamai
+
+Amazon CloudFront (part of AWS)
+
+Google Cloud CDN
+
+Microsoft Azure CDN
+
+Fastly
+
+StackPath
+
+Use Cases of CDN
+
+E-commerce websites with global customers
+
+Video streaming platforms like Netflix or YouTube
+
+Web apps and APIs with users in different regions
+
+Gaming services to reduce lag and update time
+
+News websites needing fast load and failover
+
+CDN Caching Policies and Expiry
+
+Content can be cached for seconds, minutes, or days depending on cache-control headers or CDN rules.
+
+You can configure cache invalidation to purge outdated content.
+
+Summary
+
+A CDN reduces distance and load by caching content on edge servers close to the user. This results in faster page load, improved availability, scalability under load, and better overall user experience. It is an essential part of any modern, high-performance web application or service.
+
+CDN provideers - 
+Akamai
+Cloudfront
+Cloudflair
+Fastly
+
+Caching within the application - 
+
+Redis is single threaded server used for caching.
+
+Local cache - It is the cache which is present on application server.
+
+It will store frequently accessed data in application server so that latency can be reduced.
+
+Hit ratio in this caching is very less.
+and each server will have the seperate data stored which can cause redudancy.
+
+Local cache on application server is very volatile.
+
+
+Hit ratio = total no of cache hits / total no of requests.
+
+
+To solve these issues we will use global cache.
+
+Global cache resides between application server and the database server. This is different layer which stores the frequently accessed data from database in cache memory and reduces the latency.
+
+Global cache will have cluster of caching machines and it can be distributed also (This is verticle scalling).
+
+
+Local Cache
+--------------
+Definition:
+Local cache is a cache that resides within the memory of a single application instance. 
+Each instance maintains its own independent cache.
+
+Characteristics:
+- Stored in local memory (e.g., RAM)
+- Fastest access (no network involved)
+- Each node has a separate copy of the cache
+- Not shared across instances
+
+Use Cases:
+- Single-instance applications
+- Data that does not change frequently
+- When extremely low latency is required
+- Caching configuration values or lookup data in microservices
+
+Examples:
+- Java applications using Caffeine or Guava cache
+- Python’s functools.lru_cache
+- Spring Boot applications using @Cacheable with in-memory cache
+
+Limitations:
+- Risk of stale data due to no coordination between instances
+- Cache invalidation is difficult across nodes
+- Not suitable for distributed systems
+
+3. Global Cache
+---------------
+Definition:
+Global cache is a shared cache that is accessible by multiple application instances, 
+typically over the network. It ensures a consistent view of cached data across all nodes.
+
+Characteristics:
+- External to the application process
+- Shared and accessible by all instances
+- Involves network access (higher latency than local cache)
+- Centralized or distributed caching system
+
+Use Cases:
+- Distributed systems and microservices
+- Situations requiring consistent and synchronized cached data
+- High-availability cloud-native applications
+
+Examples:
+- Redis
+- Memcached
+- Amazon ElastiCache
+- Azure Cache for Redis
+
+Benefits:
+- Shared data view across multiple instances
+- Easier to manage and synchronize cache contents
+- Consistency in caching across services
+
+Limitations:
+- Slower than local cache due to network latency
+- Requires external infrastructure and monitoring
+- Can become a bottleneck if not scaled properly
+
+4. Comparison: Local vs Global Cache
+------------------------------------
+Location:
+- Local: within application memory
+- Global: external/shared system
+
+Speed:
+- Local: very fast (no network calls)
+- Global: slower due to network overhead
+
+Scope:
+- Local: limited to one application instance
+- Global: shared across all instances
+
+Consistency:
+- Local: possible inconsistency across nodes
+- Global: consistent and synchronized
+
+Use Case Suitability:
+- Local: simple, single-instance, or read-heavy apps
+- Global: distributed, cloud-native, scalable systems
+
+5. Hybrid Approaches
+--------------------
+Multi-Level Cache (L1 + L2):
+- L1 cache is local (in-memory)
+- L2 cache is global (e.g., Redis)
+- First check L1; if not found, fetch from L2 and store in L1
+
+Near-Cache Pattern:
+- Keeps a subset of global cache in local memory for faster access
+- Common in distributed data grid systems like Hazelcast
+
+Benefits of Hybrid Caching:
+- Low latency from local cache
+- Consistency and scalability from global cache
+
+6. Summary
+----------
+- Use local cache for performance-critical, single-instance data that doesn’t change often
+- Use global cache in distributed systems to maintain a consistent cache view
+- Combine both for high-performance and consistency in large-scale applications
+
+In Global caching hit ratio is very high as compared to the local caching. 
+
+
+Latency numbers - 
+
+https://gist.github.com/jboner/2841832
+
+
+Sticky session - 
+
+
+Sticky Session, also known as Session Affinity, is a mechanism used in load balancing where all requests from a particular client (typically a user or browser session) are routed to the same backend server for the duration of the session.
+
+This ensures that session-related data (like login info, cart contents, etc.) is consistently available on that specific server.
+
+2. Why Sticky Sessions are Needed
+
+In a load-balanced environment with multiple servers, each server is usually stateless, meaning it doesn't remember any previous requests from a user. However, some applications store session data (like user login, shopping cart, etc.) in the server memory. Without sticky sessions:
+
+A user’s request might go to a different server that doesn’t know their session
+
+This can result in session loss, forced logouts, or inconsistent behavior
+
+Sticky sessions ensure that all user interactions go to the same server, avoiding these issues.
+
+3. How Sticky Sessions Work
+
+When a client makes the first request, the load balancer selects a backend server (say Server A) and routes the request.
+
+To ensure the same server is used for future requests, the load balancer uses one of the following:
+
+Cookies:
+The load balancer sets a cookie (e.g., JSESSIONID, ROUTEID, AWSALB) in the user's browser that identifies the server. On subsequent requests, the cookie is read to route the user to the correct server.
+
+IP Hashing / Source IP Binding:
+The load balancer maps the client IP address to a server. All requests from that IP go to the same server.
+
+Session Tokens in Headers:
+Some systems pass a session token in the request header that the load balancer uses to route requests.
+
+
+Cache Invalidation - 
+
+Cache invalidation is the process of removing or updating stale data from the cache 
+so that users always get fresh and consistent data from the system.
+
+It ensures that:
+- Cached data remains consistent with the source of truth (like database)
+- Users don't see outdated information
+
+Without invalidation, cache might return stale (incorrect) results.
+
+--------------------------------------------------
+
+2. Why Cache Invalidation is Important
+--------------------------------------
+- Keeps data consistent across cache and data source
+- Prevents users from seeing outdated or incorrect data
+- Helps maintain trust and correctness in critical systems
+
+--------------------------------------------------
+
+3. Cache Invalidation Strategies
+-------------------------------
+
+There are three main strategies:
+
+A. Write-Through Cache
+-----------------------
+- Data is written to both the cache and the database at the same time
+- Ensures cache is always in sync with the database
+
+Pros:
+- Data consistency is high
+- Simplifies reads (always valid cache)
+
+Cons:
+- Write latency increases (due to double write)
+- Cache is used even when data isn't read often
+
+Use Case:
+- Read-heavy applications where consistency is critical
+
+B. Write-Around Cache
+---------------------
+- Data is written directly to the database
+- Cache is not updated during the write
+- Cache is updated only when the data is read (on a cache miss)
+
+Pros:
+- Reduces cache pollution for rarely accessed data
+
+Cons:
+- Cache misses immediately after writes
+- Data can be stale in the cache
+
+Use Case:
+- Write-heavy systems where only frequently accessed data should be cached
+
+C. Write-Behind (Write-Back) Cache
+----------------------------------
+- Data is written to the cache first
+- Then asynchronously written to the database
+
+Pros:
+- Fast writes
+- Useful for batching writes
+
+Cons:
+- Risk of data loss if cache crashes before flushing to DB
+- More complex to manage
+
+Use Case:
+- Systems tolerant to slight data loss or where performance is more important
+
+--------------------------------------------------
+
+4. Invalidation Policies (Eviction)
+-----------------------------------
+
+A. Time-to-Live (TTL)
+---------------------
+- Each cached item has an expiry time
+- After TTL, the item is automatically invalidated
+
+B. Manual Invalidation
+----------------------
+- Application explicitly removes or updates cache on certain operations (e.g., delete, update)
+
+C. LRU / LFU
+------------
+- LRU (Least Recently Used): Removes items that haven't been accessed recently
+- LFU (Least Frequently Used): Removes items accessed the least
+
+--------------------------------------------------
+
+5. Redis Invalidation Mechanisms
+-------------------------------
+
+Redis is a widely used in-memory cache. It supports both **lazy** and **eager** invalidation:
+
+A. Lazy Invalidation (Passive Expiry)
+-------------------------------------
+- Redis sets TTL (expiry time) on keys
+- It does NOT actively check and delete them
+- Keys are deleted only:
+  - When accessed (read/write)
+  - And found expired
+
+Pros:
+- Less CPU usage
+- Efficient if expired keys are rarely accessed
+
+Cons:
+- Expired keys may occupy memory until accessed
+- Data may appear stale if not accessed quickly
+
+Use Case:
+- Suitable when reads are frequent and consistency isn't critical
+
+B. Eager Invalidation (Active Expiry)
+-------------------------------------
+- Redis runs a **background task** (every 100ms by default) to randomly sample expired keys and remove them
+- Also used in combination with lazy expiration
+
+Pros:
+- Frees up memory proactively
+- Reduces chance of stale data staying in memory
+
+Cons:
+- More CPU-intensive
+- Might not catch all expired keys immediately
+
+Use Case:
+- Suitable for memory-sensitive applications needing aggressive cleanup
+
+Note:
+Redis uses a **hybrid approach**:
+- Lazy: On key access
+- Eager: Active background cleanup of a sample of expired keys
+
+--------------------------------------------------
+
+6. Summary
+----------
+
+- Cache invalidation is essential to maintain consistency between cache and database.
+- Strategies include:
+  - Write-through
+  - Write-around
+  - Write-behind
+- Invalidation can be based on TTL, manual logic, or eviction policies like LRU.
+- Redis supports:
+  - Lazy invalidation: Deletes keys only when accessed and expired
+  - Eager invalidation: Periodically scans and deletes expired keys in background
+
+01:50:00
+
+
+
+----------
+
+
+Chest + Abs
+Back  
+Triceps + abs
+Biceps 
+Shoulders + abs
+Leg
+
+
+Push and pull - 
+Chest + Triceps or Shoulders
+Back + biceps
+Shoulders or Triceps + Abs
+Chest + Biceps
+Back +biceps
+Leg + abs
+
