@@ -11958,6 +11958,139 @@ Together, these techniques build more resilient and scalable distributed systems
 Hashing algorithms -
 MD5, murmurhash - This one is the fastest.
 
+
+
+1. What is Consistent Hashing?
+------------------------------
+Consistent hashing is a technique used to distribute data across multiple nodes in 
+a distributed system such that minimal data is redistributed when nodes are added or removed.
+
+Traditional hash mod approach:
+- If we use: hash(key) % N (where N is the number of nodes),
+  then adding or removing a node changes the mapping for most keys.
+
+Consistent hashing solves this by organizing the nodes and keys in a circular hash space 
+(often called a "hash ring").
+
+--------------------------------------------------
+
+2. How Consistent Hashing Works
+-------------------------------
+- All nodes and keys are assigned a position on a circular hash ring using a hash function
+  (e.g., SHA-1 or MurmurHash).
+- Each key is assigned to the first node that appears **clockwise** after its hash.
+
+Example:
+If we have 4 nodes: A, B, C, D
+- Hash each node: hash(A), hash(B), hash(C), hash(D)
+- Place them on a circle in order of their hash
+- For a given key, find hash(key), then move clockwise to the nearest node
+
+Key Benefits:
+- When a node is added or removed, only a small portion of keys are remapped
+- System scales gracefully
+
+--------------------------------------------------
+
+3. Problem with Basic Consistent Hashing
+----------------------------------------
+Uneven distribution:
+- In practice, nodes may not be evenly spaced in the hash ring
+- Some nodes may get significantly more keys than others
+
+This leads to **load imbalance**
+
+--------------------------------------------------
+
+4. Virtual Nodes (VNodes) – Solution
+------------------------------------
+Virtual Nodes (VNodes) solve the problem of uneven load distribution.
+
+What are Virtual Nodes?
+- Instead of placing each physical node on the ring only once,
+  we place it **multiple times** using different hash values
+- Each physical node is associated with multiple virtual nodes
+
+For example:
+- Physical Node A may have VNode A1, A2, A3
+- Each VNode is hashed separately and placed on the ring
+
+How it helps:
+- Balances load more evenly among physical nodes
+- Prevents any single node from owning too much data
+- Reduces risk of hotspots
+
+When a node fails or is added:
+- Only the virtual nodes of that physical node are affected
+- Each vnode holds only a fraction of the total data
+
+--------------------------------------------------
+
+5. Steps Involved in Consistent Hashing with VNodes
+----------------------------------------------------
+
+1. Hash each physical node multiple times to create virtual nodes
+2. Place each virtual node on the hash ring
+3. For each key:
+   - Hash the key
+   - Find the nearest virtual node clockwise on the ring
+   - Route the key to the physical node that owns the virtual node
+
+--------------------------------------------------
+
+6. Example
+----------
+
+Suppose we have 3 physical nodes: A, B, C  
+And we assign 3 virtual nodes per physical node:
+
+- A1, A2, A3 → hash(A1), hash(A2), hash(A3)
+- B1, B2, B3 → hash(B1), hash(B2), hash(B3)
+- C1, C2, C3 → hash(C1), hash(C2), hash(C3)
+
+All 9 virtual nodes are placed on the ring.
+
+Now, when we hash a key:
+- Find its place on the ring
+- Traverse clockwise to find the next virtual node
+- Route the key to the physical node that owns that virtual node
+
+If node B crashes:
+- Only B1, B2, B3 need to be reassigned
+- Minimal data redistribution is needed
+
+--------------------------------------------------
+
+7. Advantages of Virtual Nodes
+------------------------------
+
+- Better load balancing
+- Easier to scale up or down
+- Failure of a node causes minimal disruption
+- Simplifies node replacement and data migration
+
+--------------------------------------------------
+
+8. Systems Using Consistent Hashing + VNodes
+--------------------------------------------
+- Apache Cassandra
+- Amazon DynamoDB
+- Riak
+- Kafka (partitions and consumer rebalancing)
+
+--------------------------------------------------
+
+9. Summary
+----------
+
+- Consistent hashing minimizes remapping of keys when nodes change
+- Virtual nodes improve load distribution across physical nodes
+- Each physical node manages multiple virtual positions on the ring
+- This approach is scalable, fault-tolerant, and used in real-world distributed systems
+
+
+
+
 Caching - 
 
 Caching is a technique used in computer systems to store frequently accessed data in a temporary storage location, so that future requests for that data can be served faster.
@@ -12339,6 +12472,7 @@ Cons:
 
 Use Case:
 - Read-heavy applications where consistency is critical
+- These are immediately consistent.
 
 B. Write-Around Cache
 ---------------------
@@ -12371,6 +12505,7 @@ Cons:
 
 Use Case:
 - Systems tolerant to slight data loss or where performance is more important
+-These are eventually consistent.
 
 --------------------------------------------------
 
@@ -12453,26 +12588,1316 @@ Redis uses a **hybrid approach**:
   - Lazy invalidation: Deletes keys only when accessed and expired
   - Eager invalidation: Periodically scans and deletes expired keys in background
 
-01:50:00
+
+If TTL is too high then we will run into stale data or data will be inconsistent. 
+
+If TTL is too low then hit ratio will be very low. 
 
 
+Cache eviction strategies - 
 
+
+1. What is Cache Eviction?
+---------------------------
+Cache eviction is the process of removing items from the cache to:
+- Free up space when the cache is full
+- Maintain the most relevant or frequently used data in memory
+
+Eviction happens when:
+- The cache reaches its maximum capacity
+- Items expire based on some policy
+
+--------------------------------------------------
+
+2. Why Eviction is Important
+-----------------------------
+- Ensures efficient use of limited memory
+- Maintains fast access to important or frequently used data
+- Removes stale or rarely used items
+
+--------------------------------------------------
+
+3. Common Cache Eviction Strategies
+-----------------------------------
+
+A. LRU (Least Recently Used)
+----------------------------
+- Removes the item that was **used least recently**
+- Assumes recently used data is more likely to be accessed again
+
+Pros:
+- Simple and effective for general-purpose caching
+- Good for workloads with temporal locality
+
+Cons:
+- Can be inefficient if access pattern is uniform or unpredictable
+
+Use Case:
+- Web caches, in-memory stores (like Redis), and application caches
+
+B. LFU (Least Frequently Used)
+------------------------------
+- Removes the item that was **used least often**
+- Maintains a counter for how many times each item is accessed
+
+Pros:
+- Retains highly popular items even if accessed long ago
+
+Cons:
+- Needs additional storage for counters
+- Difficult to adapt to changing access patterns
+
+Use Case:
+- Useful when certain data is always "hot" regardless of recency
+
+C. FIFO (First-In First-Out)
+----------------------------
+- Removes the **oldest inserted** item in the cache
+- Simple queue-based approach
+
+Pros:
+- Very simple to implement
+
+Cons:
+- Does not consider access patterns
+- May evict frequently accessed data just because it was added earlier
+
+Use Case:
+- Basic caches, or cases where freshness is not critical
+
+D. Random Replacement
+---------------------
+- Randomly removes one item from the cache
+
+Pros:
+- Extremely easy to implement
+- Avoids overhead of tracking usage
+
+Cons:
+- May evict important data
+- Not ideal for performance-critical applications
+
+Use Case:
+- Embedded systems or constrained environments
+
+E. MRU (Most Recently Used)
+----------------------------
+- Removes the item that was **most recently accessed**
+- Opposite of LRU
+
+Pros:
+- Useful in rare cases where recent data is unlikely to be reused
+
+Cons:
+- Counter-intuitive for most real-world workloads
+
+Use Case:
+- Some database systems or edge-case scenarios
+
+F. Time-Based Expiry (TTL)
+---------------------------
+- Items are evicted based on a predefined Time-To-Live (TTL)
+- Once TTL expires, the item is removed
+
+Pros:
+- Simple and deterministic
+- Prevents stale data from lingering
+
+Cons:
+- May remove useful data if TTL is too short
+- May keep useless data if TTL is too long
+
+Use Case:
+- Session management, temporary caching of responses
+
+--------------------------------------------------
+
+4. Advanced Strategies and Hybrids
+----------------------------------
+
+A. ARC (Adaptive Replacement Cache)
+-----------------------------------
+- Balances between LRU and LFU using two separate lists
+- Adapts dynamically to workload
+
+Use Case:
+- Advanced caching systems, file systems like ZFS
+
+B. CLOCK Algorithm
+------------------
+- A more efficient approximation of LRU using a circular buffer
+- Used in OS page replacement
+
+Use Case:
+- Operating systems, virtual memory management
+
+--------------------------------------------------
+
+5. Eviction in Redis
+---------------------
+Redis supports:
+- LRU
+- LFU
+- Random
+- TTL
+- Volatile variants (applied only to keys with expiry)
+
+Eviction policies in Redis include:
+- noeviction
+- allkeys-lru
+- volatile-lru
+- allkeys-random
+- volatile-random
+- allkeys-lfu
+- volatile-lfu
+- volatile-ttl
+
+--------------------------------------------------
+
+6. Summary
 ----------
 
+- Cache eviction ensures limited memory is used efficiently
+- Common strategies:
+  - LRU: remove least recently accessed
+  - LFU: remove least frequently accessed
+  - FIFO: remove oldest added
+  - Random: remove any item at random
+  - MRU: remove most recently used
+  - TTL: expire after fixed time
 
-Chest + Abs
-Back  
-Triceps + abs
-Biceps 
-Shoulders + abs
-Leg
+- Hybrid and adaptive strategies exist for more intelligent cache management
+
+Choose eviction strategy based on:
+- Access patterns
+- Memory constraints
+- Performance requirements
+- Consistency needs
 
 
-Push and pull - 
-Chest + Triceps or Shoulders
-Back + biceps
-Shoulders or Triceps + Abs
-Chest + Biceps
-Back +biceps
-Leg + abs
+---
+
+HLD Case study - 
+
+Code judge - 
+
+When we solve question on any platform, there we will see question, and code editor. 
+
+APIS for that will be - 
+
+GET /problems/{id}
+POST /problems/{id}/submit
+
+
+This problem will be stored in database - id, description, title, input date file link, output data file link.
+
+
+These input and output data files are stored on S3 file data storage. 
+
+These input file will have test cases and output file will have output of those input test cases. 
+
+When moderator creates a problem it will store the problem metadata and testcases input, output files on the application server and S3.
+
+Submitting a solution - 
+
+In this user will solve the problem and submit the solution 
+
+APIS - 
+POST /problems/{id}/submit
+
+once problem is submitted it will fetch the problem details from the DB and testcases input and output files from S3 and check the code for all input testcases. 
+
+The problem here is input and output test cases files are huge in size and fetching them each time will result in very high latency, To solve this problem we will use the global cache to store the input and output files of testcases. 
+
+For the first time it will be cache miss as files will not be available on the cache, application server will fetch the files from S3 and store it on the global cache and then run the code. Same process will run for each problem. 
+
+This partially solves our problem. As cache will be stored on the different cluster (one more hop) and it has size limitations as input and output data files can be very large (in GB). 
+
+There is another option - we can use the local cache. We will use local hard disk of the application server to cache the input and output files, This will reduce the network hop.
+
+As we will have multiple servers we will have to have some mechanism which will route the request for particular problem to the appropriate server. Each server will serve the reqeusts for few selected problems. 
+
+These requests will be routed by the consistent hashing mechanism and problem id will become our sharding key. 
+
+But using this consistent hasing mechanism will result into hotspots, the popular problems will be solved frequently and it will lead to huge load on few servers and other servers will be idle.
+
+Again the space on local machine has limited space and we can not scale this infinitely.
+
+
+We use global cache when all of our application servers shares that data and data changes very frequently.
+
+Local cache is used when data size is huge and downloading it from global cache becomes an issue.
+
+Cache invalidation in our local caching mechanism without consistent hashing - 
+
+TTL - if TTL is high then data will be stale, and TTL is low then miss rate will be high, this is not suitable option in our case.
+
+Lazy Invalidation -  
+
+In this it will check input output file metadata from database, if file is updated recently then it will give the local cache miss and fetch the file from S3 and store it on cache and start code validation. if file is not updated in database and same file is present on the local cache then it will give the cache hit and will use the same file for code validation.
+
+This file metadata will have update_at timestamp information in it or we can also store the checksum, in this it will store the hash of file content in DB and compare the hash of new file and old file and decide whether file has changed or not.
+
+Code judge and Leaderboard case study notes - 
+
+https://docs.google.com/document/d/1p5iq1hIGte7psJDPgOZuD1AJaxSJItN1yrIOScpWv78/edit?tab=t.0
+
+------------
+
+
+CAP/ PACELC theorem and Master Slave - 
+
+
+CAP - 
+
+The CAP theorem, also known as Brewer's theorem, is a fundamental principle in distributed systems that describes the trade-offs between three desirable properties:
+
+Consistency (C)
+
+Availability (A)
+
+Partition Tolerance (P)
+
+According to the CAP theorem, a distributed system can satisfy at most two out of these three properties at the same time, but not all three. Let's explore each concept in depth, understand what the theorem implies, and how it affects real-world distributed system design.
+
+1. Understanding the Three Properties
+a. Consistency
+Consistency means that all nodes see the same data at the same time. After an update operation completes, any subsequent read operation should return that updated value. In other words:
+
+Strong consistency ensures that once a write is acknowledged, all subsequent reads will reflect that write.
+
+It behaves like a single-node system, where reads and writes are atomic and synchronized.
+
+Example: In a banking system, if you transfer ₹100 from Account A to B, consistency ensures that A’s balance is immediately reduced and B’s balance is immediately increased—no matter which server you query.
+
+b. Availability
+Availability means that every request (read or write) receives a non-error response, regardless of the state of any individual node. It does not guarantee that the data is the most recent, only that the system will respond.
+
+Availability prioritizes uptime and responsiveness.
+
+Even in the face of some failures, the system continues to operate.
+
+Example: A shopping website that always shows you some product listings even if a few backend services are down is prioritizing availability.
+
+c. Partition Tolerance
+Partition tolerance means the system continues to function even if network partitions (i.e., communication breakdowns) occur between nodes in the system.
+
+In distributed systems, network failures are inevitable.
+
+A partition divides the network into subsets of nodes that cannot communicate with each other.
+
+Partition tolerance is non-negotiable in modern systems. If a system does not tolerate partitions, a single network failure could bring down the entire system.
+
+Example: Two datacenters lose connectivity due to a network failure, but both must continue serving requests from their local users.
+
+2. The CAP Theorem Statement
+Formally introduced by Eric Brewer and later proven by Gilbert and Lynch in 2002, the CAP theorem states:
+
+In the presence of a network partition, a distributed system must choose either Consistency or Availability.
+
+This leads to the idea that you can pick any two of the three, but not all three simultaneously.
+
+3. Analyzing the Trade-offs
+Case 1: CP (Consistency + Partition Tolerance)
+The system sacrifices availability.
+
+When a network partition occurs, the system will reject requests to ensure consistency.
+
+Common in systems where accuracy is more critical than uptime.
+
+Example: A distributed database like HBase or MongoDB (when configured for strong consistency).
+
+Use Case: Financial systems, banking, inventory management.
+
+Case 2: AP (Availability + Partition Tolerance)
+The system sacrifices consistency.
+
+During a partition, the system continues to serve requests but may return stale or inconsistent data.
+
+Often uses eventual consistency: updates propagate over time.
+
+Example: Couchbase, DynamoDB, Cassandra.
+
+Use Case: Social media feeds, product catalogs, DNS.
+
+Case 3: CA (Consistency + Availability)
+The system sacrifices partition tolerance, which is impractical in real distributed systems.
+
+CA systems work well only when the network is perfectly reliable (no partitions).
+
+In practice, partitions do occur, so this model is not realistic for large-scale distributed systems.
+
+Example: Traditional RDBMS running on a single machine (e.g., PostgreSQL, MySQL).
+
+Use Case: Local applications, systems without replication.
+
+4. CAP in Real-World System Design
+In modern systems, partition tolerance is usually required due to the nature of networks and distributed infrastructure. So in practice, designers must choose between consistency and availability when a partition occurs.
+
+To manage this trade-off:
+
+Systems often implement tunable consistency, where developers can choose the consistency level (e.g., quorum reads/writes).
+
+Eventual consistency is widely adopted for availability-focused applications.
+
+Consensus protocols (e.g., Paxos, Raft) are used when consistency is critical.
+
+5. Common Misconceptions
+CAP does not imply that systems cannot be consistent and available most of the time. It only states that during a partition, you must choose.
+
+It’s not a trilemma for normal operation—only when partitions occur does the limitation apply.
+
+6. Beyond CAP: PACELC Theorem
+While CAP addresses behavior during partitions, it doesn’t say anything about trade-offs during normal operation. This is where the PACELC theorem extends CAP:
+
+If there is a Partition (P), the system must choose between Availability (A) and Consistency (C); Else (E), when there is no partition, the system must choose between Latency (L) and Consistency (C).
+
+This gives a more complete view:
+
+Systems always have to trade between consistency and latency, even when no partition exists.
+
+It helps explain why some systems are eventually consistent even under normal conditions (for better latency).
+
+Summary
+CAP theorem highlights the fundamental limitations of distributed systems under network failures.
+
+You must choose Consistency or Availability in the presence of Partition Tolerance.
+
+Modern systems adopt hybrid approaches with configurable consistency levels, quorum-based reads/writes, or eventual consistency depending on their goals.
+
+Partition Tolerance is non-negotiable, so the practical decision is between C and A.
+
+1. Immediate Consistency (Strong Consistency)
+Definition:
+Immediate consistency (also called strong consistency) ensures that any read to a data item always returns the most recent write, no matter which node in the system handles the read.
+
+Characteristics:
+Once a write is acknowledged, all future reads will reflect that update.
+
+The system acts like a single, centralized database, even though it is distributed.
+
+Requires coordination between nodes to make sure all replicas are updated before confirming a write.
+
+Example:
+Imagine you transfer ₹1,000 from Account A to B:
+
+With immediate consistency, any read of either account's balance from any server will reflect the new balances immediately after the transaction.
+
+Pros:
+Guarantees correctness and accuracy.
+
+Easier to reason about the state of the system.
+
+Cons:
+Higher latency due to synchronization overhead.
+
+Lower availability during network partitions or delays.
+
+Reduced scalability because consistency requires coordination.
+
+Use Cases:
+Banking systems.
+
+Inventory management (to prevent overselling).
+
+Systems where accuracy is more important than speed.
+
+2. Eventual Consistency
+Definition:
+Eventual consistency guarantees that, in the absence of new writes, all replicas of a data item will eventually converge to the same value.
+
+There is no guarantee that a read will return the latest write immediately.
+
+Over time (milliseconds to seconds), updates are propagated asynchronously to all replicas.
+
+Characteristics:
+Reads might return stale (outdated) data shortly after a write.
+
+Useful in systems where availability and speed are more important than absolute correctness in the short term.
+
+Example:
+You post a photo on a social media app:
+
+With eventual consistency, it might show up instantly for you, but your friend may see it a few seconds later as it propagates across servers.
+
+Pros:
+High availability and responsiveness.
+
+More tolerant of network partitions.
+
+Scales well to large numbers of users and servers.
+
+Cons:
+May lead to temporary inconsistencies (stale or conflicting data).
+
+Requires conflict resolution mechanisms if concurrent writes happen.
+
+Developers must design applications to tolerate inconsistency.
+
+Use Cases:
+Social media feeds, product reviews, comment systems.
+
+DNS (Domain Name System).
+
+Distributed caches, large-scale NoSQL databases (e.g., Cassandra, DynamoDB).
+
+1. Definition of Availability
+Availability is the percentage of time a system remains operational and able to respond to user requests. It’s commonly measured as a percentage over a given time period (usually per year).
+
+Formula (simplified):
+Availability
+=
+Uptime
+Uptime
++
+Downtime
+×
+100
+Availability= 
+Uptime+Downtime
+Uptime
+​
+ ×100
+2. High Availability (HA)
+Definition:
+A highly available system is designed to ensure minimal downtime, typically with 99.9% or higher uptime. It continues to function even when parts of the system fail.
+
+Characteristics:
+Redundancy: Multiple instances of critical components (e.g., servers, databases).
+
+Failover mechanisms: Automatic switching to backup systems on failure.
+
+Load balancing: Spreads traffic across multiple nodes to reduce strain.
+
+Monitoring and alerts: Detect issues before they become outages.
+
+Geographic distribution: Services spread across multiple data centers.
+
+Uptime Levels:
+Availability	Downtime per year
+99%	~3.65 days
+99.9%	~8.76 hours
+99.99%	~52.6 minutes
+99.999%	~5.26 minutes
+
+Example:
+A payment gateway with 99.99% uptime.
+
+Amazon AWS services.
+
+Google Search.
+
+Use Cases:
+Financial transactions
+
+Healthcare systems
+
+Mission-critical infrastructure (air traffic control, telecom, etc.)
+
+3. Low Availability
+Definition:
+A low-availability system is one that experiences frequent or long periods of downtime, making it unreliable for consistent usage.
+
+Characteristics:
+Single points of failure: No redundancy or failover.
+
+Manual recovery from crashes or outages.
+
+Longer response times during issues.
+
+Lack of monitoring or automation.
+
+Effects:
+Poor user experience (e.g., timeouts, errors).
+
+Business loss (missed transactions or orders).
+
+Damaged reputation and user trust.
+
+Example:
+A local server without backup or UPS that goes offline during power cuts.
+
+Applications hosted on a single machine with no load balancing or auto-restart.
+
+Use Cases:
+Personal hobby projects
+
+Internal tools not used in real-time
+
+Legacy systems without modern failover
+
+4. Designing for High Availability
+To move from low to high availability, engineers apply several design principles:
+
+Replication: Keep multiple copies of data/services.
+
+Failover: Have standby components ready to take over.
+
+Auto-healing: Automatically replace failed parts (e.g., auto-scaling in cloud).
+
+Stateless services: Easier to restart, scale, and distribute.
+
+Backups and disaster recovery: For catastrophic failures.
+
+5. Availability vs Reliability
+These are related but different:
+
+Availability is about being up and responsive at any moment.
+
+Reliability is about performing correctly over time (i.e., fewer failures).
+
+A system can be highly available but not reliable if it responds quickly but often with errors. Similarly, it can be reliable when it's up, but not available due to frequent outages.
+
+
+ATMs are eventually consistent.
+
+In distributed system partition tolerance always will be required so we will have to choose between Consistency and Availability. 
+
+Most of the systems in the world are Partition tolerant and Available.
+
+Booking systems like stock broaker, makemytrip or ticket booking are Partition tolerant and Consistent. 
+
+If system is eventually consistent then it will have low latency and if system is highly consistent then it will have high latency. 
+ 
+PACELC Theorem - 
+ 
+If system is low consistent then it will have low latency and will be highly available, and if system is highly consistent then it will have high latency and will have low availability as it will have to reject few requests to be consistent.
+
+The PACELC theorem is an important concept in distributed systems that expands upon the limitations of the CAP theorem. While CAP focuses on how systems behave during network partitions, PACELC adds insight into system behavior even when the network is healthy. It introduces a more comprehensive framework for understanding the trade-offs between consistency, availability, and latency, depending on whether or not a partition is present.
+
+Let’s explore the PACELC theorem in detail.
+
+1. The Problem with CAP Theorem Alone
+The CAP theorem, originally proposed by Eric Brewer and later formally proven, states that in the presence of a network partition, a distributed system can choose to provide either:
+
+Consistency: All nodes see the same data at the same time.
+
+Availability: Every request receives a (non-error) response, without guarantee that it contains the latest data.
+
+But CAP only applies when a network partition has occurred — it says nothing about what trade-offs a system must make when no partition exists.
+
+In reality, distributed systems are not always under partition. Much of the time they operate in a healthy state. But even then, designers must still decide whether they want to prioritize latency or consistency.
+
+2. Introduction to PACELC Theorem
+To address this gap, Daniel Abadi proposed the PACELC theorem. This framework states the following:
+
+If a network Partition occurs (P), a distributed system must choose between Availability (A) and Consistency (C). Else (E), when the system is functioning normally (no partition), it must choose between Latency (L) and Consistency (C).
+
+This breaks system behavior into two distinct cases:
+
+When a partition happens: the system must trade consistency for availability or vice versa.
+
+When there is no partition: the system must trade latency for consistency or vice versa.
+
+This more accurately reflects the real-world design decisions that system architects face.
+
+3. The Two Phases of PACELC
+Phase 1: Behavior During a Network Partition (P)
+Just like CAP, PACELC acknowledges that network partitions can and do occur. During such failures, a system must choose:
+
+To be available: continue serving client requests, possibly with stale or inconsistent data.
+
+Or to be consistent: delay or reject some client requests until the partition is resolved, to ensure all replicas remain in sync.
+
+This is the classic CAP trade-off.
+
+Phase 2: Behavior Else (E), When the Network is Healthy
+When the system is not under partition, it still faces a critical trade-off: whether to prioritize low latency or strong consistency.
+
+If you prioritize consistency, you may need to wait for confirmation from multiple nodes before responding to a client request. This increases response time.
+
+If you prioritize latency, you may respond as soon as the nearest or fastest replica returns data — but that data may not be the most up-to-date.
+
+This trade-off exists even in the absence of failures and must be accounted for in system design.
+
+4. Implications of PACELC
+The PACELC theorem reflects the reality that consistency is often expensive not only in failure scenarios (as CAP suggests) but also during normal operation. To maintain consistency, systems may have to perform additional coordination, which introduces latency. If a system instead opts for faster responses (i.e., low latency), it might need to sacrifice consistency, for example by returning stale data.
+
+In this sense, PACELC suggests that latency is a cost of consistency, regardless of system health.
+
+It also highlights that systems are not simply "consistent or available" as CAP might imply. Rather, they often make different trade-offs in different conditions — dynamically balancing between availability, consistency, and latency.
+
+5. Real-World Interpretation
+Let’s look at how different systems reflect PACELC principles.
+
+Highly consistent systems, such as Google Spanner, opt for consistency over both availability and latency. During a partition, Spanner will reject some requests to avoid inconsistency. In normal operation, it synchronizes data across data centers using tightly synchronized clocks, introducing extra latency to ensure consistency.
+
+Highly available systems, such as Amazon DynamoDB, are designed to prioritize availability during partitions and low latency during normal operation. This means they accept temporary inconsistency, especially during failure and under high load, to maintain responsiveness and uptime. Over time, they achieve eventual consistency.
+
+This shows how PACELC more precisely classifies systems than CAP. CAP would label both DynamoDB and Cassandra as “AP” systems (favoring availability over consistency during partitions). But PACELC would further distinguish them as systems that also favor latency over consistency in healthy conditions.
+
+6. Summary of PACELC’s Value
+PACELC gives distributed system designers a more complete mental model than CAP. It recognizes that:
+
+Network partitions are not the only time consistency and availability come into conflict.
+
+Even when systems are healthy, there's a fundamental trade-off between how quickly you respond and how accurate the data is.
+
+System architects must make dual decisions: one for the partitioned case (availability vs consistency), and one for the normal case (latency vs consistency).
+
+Understanding these trade-offs allows engineers to make informed decisions based on system requirements. For example, financial systems may accept higher latency for consistent, correct transactions, while social media platforms might tolerate stale reads for faster, highly available service.
+
+Below doc has CAP and PACELC and Replication notes - 
+
+https://docs.google.com/document/d/1PuOwgCJJ1cwWavwESir-poBz4sKFPZDLD06x-vYB-iM/edit?tab=t.0
+
+
+Facebook Newsfeed case study - 
+
+https://github.com/kanmaytacker/system-design/blob/master/case-studies/02-newsfeed-answers-T.md
+
+Sharding - 
+
+Database Sharding – In-Depth Explanation
+Database sharding is a technique used in distributed databases to horizontally partition data across multiple databases or servers (called shards) to improve scalability, performance, and availability.
+
+At its core, sharding is about breaking a large database into smaller, faster, and more manageable pieces, without compromising the ability to retrieve the data when needed.
+
+1. What is Sharding?
+Sharding is a form of horizontal partitioning where each shard holds a subset of the rows from a table. Each shard has the same schema but stores different data. The application or database layer decides which shard to query based on some logic (like user ID or geographic region).
+
+For example, instead of storing 1 billion users in one database, you can split the users across 10 different databases (shards), each storing 100 million users.
+
+2. Why Sharding is Needed
+As applications grow in data size and number of users, a single database server may become a bottleneck. Common problems that lead to sharding:
+
+Storage limits: A single machine can’t store all the data.
+
+Performance degradation: Reads/writes become slow due to increased load.
+
+Throughput limitations: A single server has limited CPU, RAM, and IOPS.
+
+Scaling vertically (adding resources to a single server) becomes expensive and eventually hits a ceiling.
+
+Sharding addresses these by distributing load and data across multiple machines, allowing horizontal scaling—you can simply add more machines as needed.
+
+3. How Sharding Works
+The basic steps in sharding are:
+
+Select a sharding key: A field in the data used to decide which shard holds which data. For example, user_id, region, customer_id, etc.
+
+Define a sharding strategy: Decide how to split data across shards using the key.
+
+Route queries: When a request comes in, use the sharding logic to route the query to the appropriate shard.
+
+4. Sharding Strategies
+There are several ways to distribute data across shards:
+
+a. Range-Based Sharding
+Data is split based on ranges of the sharding key.
+
+Example:
+
+User IDs 1–1,000,000 in Shard 1
+
+User IDs 1,000,001–2,000,000 in Shard 2
+
+Pros:
+
+Simple and intuitive.
+
+Easy to query a range of data.
+
+Cons:
+
+Risk of hotspots (some shards get more traffic than others).
+
+Imbalanced shards if data distribution is skewed.
+
+b. Hash-Based Sharding
+Applies a hash function to the sharding key, then uses the hash result to decide the shard.
+
+Example:
+
+hash(user_id) % number_of_shards
+
+Pros:
+
+Better data distribution.
+
+Reduces risk of hotspots.
+
+Cons:
+
+Difficult to query ranges.
+
+Adding/removing shards is complex (requires resharding).
+
+c. Directory-Based Sharding
+Maintains a central directory or lookup service that maps keys to shards.
+
+Pros:
+
+Fully customizable data placement.
+
+Easy to handle complex distributions.
+
+Cons:
+
+The directory becomes a single point of failure or bottleneck.
+
+Higher complexity and management overhead.
+
+d. Geographic or Feature-Based Sharding
+Data is divided based on logical boundaries such as region, language, or feature type.
+
+Example:
+
+Users in Europe go to EU shard
+
+Users in Asia go to Asia shard
+
+Pros:
+
+Naturally aligned with user behavior.
+
+Improves latency if shards are geo-distributed.
+
+Cons:
+
+Uneven data distribution is likely.
+
+Doesn’t work well if users move across regions.
+
+5. Challenges of Sharding
+While sharding helps scale systems, it introduces complexity:
+
+a. Query Complexity
+Cross-shard queries become harder.
+
+Joins across shards are expensive or not supported.
+
+b. Resharding
+When data outgrows current shards or needs to be redistributed, resharding is required.
+
+Resharding involves moving data between shards, which can be resource-intensive and disruptive.
+
+c. Data Integrity and Transactions
+Multi-shard transactions are complex or avoided.
+
+Many systems sacrifice ACID guarantees for performance and scalability.
+
+d. Operational Complexity
+Backups, monitoring, and deployments must be shard-aware.
+
+Requires additional infrastructure to manage routing and balancing.
+
+
+How to Decide a Sharding Key – In-Depth Explanation
+The sharding key is a specific field or attribute in a database record used to determine which shard (or database server) will store that record.
+Choosing the right sharding key is critical because it impacts system performance, scalability, data distribution, and maintainability.
+
+1. What Makes a Good Sharding Key?
+A good sharding key should ideally satisfy the following:
+
+Evenly distributes data across shards (avoids hotspots).
+
+Minimizes cross-shard queries (improves efficiency).
+
+Stable and not likely to change frequently (avoids data migration).
+
+Correlates with query patterns (localizes reads/writes to one shard).
+
+Supports horizontal scaling (new shards can be added easily).
+
+2. Criteria for Choosing a Sharding Key
+a. Cardinality
+The key should have high cardinality (many distinct values) to ensure even distribution.
+
+b. Access Pattern
+Choose a key based on how the application reads and writes data. If most queries are by user_id, then that may be a good sharding key.
+
+c. Write Distribution
+The key should prevent write hotspots, where too many writes target the same shard.
+
+3. Sharding Key Examples Across Use Cases
+Example 1: Social Media Platform (Users and Posts)
+Use Case:
+Millions of users.
+
+Users create posts, comments, and likes.
+
+Most operations are per user (fetch posts, feed, etc.).
+
+Ideal Sharding Key: user_id
+Why?
+
+High cardinality: millions of users.
+
+Queries are user-centric (fetch user’s data).
+
+Easy to horizontally scale.
+
+Even distribution assuming users are uniformly active.
+
+Pitfall to avoid:
+
+If only a few users are highly active (e.g., celebrities), their shards can become hotspots. In such cases, consider composite keys or rate-limiting.
+
+Example 2: E-commerce Platform (Orders)
+Use Case:
+Orders table grows rapidly.
+
+Orders are mostly accessed per user.
+
+Some analytics need to scan recent orders.
+
+Sharding Key Options:
+user_id
+
+Great for retrieving a user's orders.
+
+Poor for global order analytics — needs cross-shard access.
+
+order_id with hash-based sharding
+
+Distributes evenly.
+
+Prevents hotspots.
+
+Makes it hard to query by user (requires secondary indexes or query routing).
+
+Composite Key: region + user_id
+
+Helps geo-localize data.
+
+Reduces cross-country traffic.
+
+Best choice depends on primary access pattern — if most reads are user-specific, user_id works. If most writes are massive and need even spread, order_id with a hash may be better.
+
+Example 3: Logging System
+Use Case:
+Millions of log entries per hour.
+
+Most queries are time-based (last 1 hour logs).
+
+Writes are continuous and high-volume.
+
+Ideal Sharding Key: timestamp (with ranges or bucketed time windows)
+Why?
+
+Keeps time-based queries efficient.
+
+Allows archiving or pruning of old data.
+
+But needs careful handling to avoid write hotspots (e.g., all logs for “now” go to one shard).
+
+Improvement: Use time-windowed hashing, like hash of (timestamp / 10 minutes) to balance load.
+
+Example 4: Multi-Tenant SaaS Application
+Use Case:
+Each customer (tenant) has isolated data.
+
+Tenants can be very large or very small.
+
+Access patterns are tenant-scoped.
+
+Ideal Sharding Key: tenant_id
+Why?
+
+Segregates tenant data.
+
+Enables per-tenant scaling and isolation.
+
+Supports compliance and security constraints.
+
+Challenge: Some tenants may be huge (uneven load). For large tenants, consider sub-sharding using tenant_id + customer_id.
+
+Example 5: Geo-Distributed Messaging App
+Use Case:
+Users send messages to others.
+
+Messages are fetched per conversation.
+
+Users are from different regions.
+
+Options:
+user_id – localizes to sender, but conversations involve multiple users.
+
+conversation_id – better fit if all messages in a conversation are stored together.
+
+region + user_id – useful for geo-locality, reduces latency.
+
+Best choice: conversation_id, assuming most queries are to load chat threads. To avoid hotspots, use a hashed conversation ID.
+
+4. Common Mistakes in Choosing a Sharding Key
+Low cardinality keys (e.g., gender, country) lead to uneven data distribution.
+
+Mutable keys (keys that can change, like email or phone number) make re-sharding difficult.
+
+Choosing a key that doesn’t match query patterns leads to constant cross-shard joins.
+
+Ignoring growth trends — initial key might work well with 10K users but not with 10 million.
+
+
+Master-Slave Architecture & Read Replicas – In-Depth Explanation
+In distributed database systems, master-slave architecture and read replicas are techniques used to scale reads, improve fault tolerance, and sometimes increase availability. However, they come with trade-offs around consistency, latency, and complexity.
+
+Let’s break each of these down in detail, including how high- and low-consistent master-slave setups work.
+
+1. What is Master-Slave Architecture?
+In a master-slave (or primary-secondary) setup:
+
+One node is designated as the master (or primary).
+
+One or more nodes are designated as slaves (or secondaries).
+
+Roles:
+Master: Handles all write operations (INSERT, UPDATE, DELETE).
+
+Slaves: Handle read operations and replicate changes from the master.
+
+Replication from master to slaves can be:
+
+Synchronous: Slaves are updated immediately with each master write.
+
+Asynchronous: Slaves are updated after the master has written the data (with a delay).
+
+2. What is a Read Replica?
+A read replica is a read-only copy of a database used to scale read operations. It’s a specific case of a slave in master-slave setups, optimized for high-volume reads.
+
+Key Points:
+Replicated from the master.
+
+Cannot accept writes (write attempts are either blocked or cause errors).
+
+Usually asynchronous, meaning there's a replication lag between master and replica.
+
+Useful for reporting, analytics, dashboards, and load balancing read-heavy applications.
+
+3. Benefits of Master-Slave and Read Replicas
+a. Improved Read Scalability
+Reads can be distributed across slaves/replicas, reducing the load on the master.
+
+b. Separation of Concerns
+Analytics and reporting can be done on replicas, isolating them from the critical path of application queries.
+
+c. High Availability (to some extent)
+If the master fails, a slave can be promoted to become the new master (requires failover logic).
+
+d. Backup and Maintenance Offload
+Backups can be run on replicas to avoid performance hits on the master.
+
+4. Drawbacks and Trade-offs
+a. Replication Lag
+In asynchronous setups, replicas may lag behind the master, leading to stale reads.
+
+b. Write Scalability Limitations
+Writes can only happen on the master. To scale writes, you need sharding, not just replication.
+
+c. Failover Complexity
+Handling master failure and promoting a slave requires careful coordination, and might cause downtime or data inconsistency if not done properly.
+
+d. Eventual Consistency
+Systems may show stale or outdated data temporarily because slaves haven’t yet caught up with the master.
+
+5. High vs Low Consistent Master-Slave Architectures
+The consistency level in a master-slave system depends on how writes are replicated and how reads are managed.
+
+High-Consistency Master-Slave Architecture
+Characteristics:
+Replication is synchronous: the master waits until slaves acknowledge the write before confirming it to the client.
+
+Reads are mostly directed to the master, or only sent to slaves that are guaranteed to be up-to-date.
+
+Guarantees strong consistency: once a write is acknowledged, all future reads reflect the change.
+
+Pros:
+No stale reads.
+
+Predictable system behavior.
+
+Cons:
+High latency for writes (master has to wait for slaves).
+
+Reduced write throughput.
+
+If a slave is slow or down, writes may block or fail.
+
+Use Cases:
+Financial systems, banking applications.
+
+Systems where accuracy is more important than speed.
+
+Low-Consistency Master-Slave Architecture
+Characteristics:
+Replication is asynchronous: master confirms writes immediately, slaves update later.
+
+Reads are directed to any slave, regardless of replication lag.
+
+Results in eventual consistency: there’s a window of time when some nodes have old data.
+
+Pros:
+High throughput and low latency for writes.
+
+Reads can be scaled out massively.
+
+Suitable for high-traffic systems where occasional stale data is acceptable.
+
+Cons:
+Clients may read stale or incorrect data.
+
+Conflict resolution is needed in failover or recovery scenarios.
+
+Requires developers to reason about inconsistencies.
+
+Use Cases:
+Social media timelines, user activity logs, comment systems.
+
+Analytics and metrics platforms where perfect freshness isn’t required.
+
+6. Real-World Example: MySQL Replication
+MySQL supports master-slave replication out of the box.
+
+A master writes changes to a binary log.
+
+Slaves read from this log and apply the changes.
+
+Admins can set:
+
+Asynchronous replication (default).
+
+Semi-synchronous replication, where master waits for at least one slave to acknowledge.
+
+Group replication for stronger consistency with quorum-style writes.
+
+7. Read-After-Write Consistency Problem
+In low-consistent setups, there's a common issue called read-after-write inconsistency:
+
+A client performs a write to the master and then performs a read from a slave (before replication completes), getting outdated data.
+
+Solutions include:
+
+Reading from the master for a short duration after writing.
+
+Using a “sticky” read-replica strategy (route read and write to same node temporarily).
+
+Delay reads from slaves or only allow "read your writes" on master.
+
+8. Failover in Master-Slave Systems
+When a master fails:
+
+One of the slaves is promoted to become the new master.
+
+Other slaves reconfigure to follow the new master.
+
+This may involve data loss if replication was asynchronous and not fully applied.
+
+To prevent this:
+
+Use semi-synchronous or fully synchronous replication.
+
+Employ a consensus protocol (e.g., Raft, Paxos) to safely elect a new master.
+
+Conclusion
+Master-slave architecture and read replicas are essential techniques for scaling read-heavy applications and separating concerns between operational and analytical workloads.
+
+Read replicas improve scalability but introduce challenges around consistency.
+
+The choice between high-consistent and low-consistent architectures depends on application needs:
+
+If correctness is critical, use synchronous replication and read from the master.
+
+If speed and scalability matter more than freshness, use asynchronous replication with read replicas.
+
+
+------------
+
+SQL Vs NoSQL - 
+
+To scale the database we do the sharding but this also has issues like Single point of failure, bottleneck and low throughtput.
+
+If we replicate each shard then it solves the issue of Single point of failure, bottleneck, and low throughput as reads will be handled by replicas and if master fails then replica will be promoted to the master and will start serving reads and writes. 
+
+
+Replication lag - It is the time taken to replicate the writes from the master node.
+
+ 
+ Relational database - 
+ 
+ stores data in structured format.
+ Follows acid properties.
+ 
+ Normalization - relational databases helps to avoid the data redudancy.
+ 
+ In case of ecommerce platform the product will have different parameters ex - Cloths will have color, size, style and laptop will have ram, hdd, processor etc.
+ 
+ This kind of data is not structured and it can not be stored in the Relational database. 
+ 
+ We can also store the JSON data in one column in a relation databases but again it is not possible normalize the data.
+ 
+ Scaling - Relational databases do not have out of the box sharding support. 
+ 
+ And if we shard the relational database then it nullifies the ACID properties.
+ 
+ When to use SQL - 
+ 
+ if data is structured, Scale, Read heavy system (indexing).
+ 
+ When to use NoSQL - 
+ 
+ if data is not structured or semi-structured, Large Scale, write heavy system (no indexing). Sharding is supported out of the box.
+
+
+NoSQL databases properties -  
+
+NoSQL databases are built by keeping horizontle scalling in mind. 
+
+ 1) Basically Available - It means database accesibility is available at all the times but in sudden surge in traffic a system might prioritize certain workflows compared to others.
+
+2) Eventually Consistent.  
+3) Horizontle scalling - out of the box support.
+4) Denormalised.
+ 
+ 
+ Types of NoSQL databases - 
+ 
+ 1) Key-Value -
+ 
+ {
+ "name":"Sarthak"
+ }
+ 
+ This is hashmap kind of structure and both the keys and values are stored as strings. 
+ 
+ Redis, Memcache, DynamoDB are the examples of key value database.
+ 
+2) Document - This can store the nested key value pairs (key value pairs inside other key values).
+
+This database is an extended form of the key value database.
+
+MongoDB, CouchBase, CockroachDB, Elastic Search etc.
+
+3) Columnar (wide column database) - in this data is stored in columns instead of rows. 
+
+This is used for analytics purpose as we only will have to fetch the data from single row. 
+
+Cassandra, clickhouse, HBase are the examples of columnar database. 
+
+Redis hands on practice - https://github.com/kanmaytacker/system-design/blob/master/demos/nosql/redis.md
+
+
+Redis stores values in volatile memory and also in disk if configured. 
+
+It will first store data in RAM in key value format and if we add configuration in redis.conf then it will store these values from RAM in file called dump.rdb and this file will be updated from time to time as configured in the configuration. 
+When system restarts then redis will get all data from dump file and store it in the RAM for faster access. 
+
+dump.rdb file will be stored in hard disk.
+
+This process of storing data from RAM to file is known as snapshot.
+
+There are two ways in redis to store the data from RAM to file - 
+1) Save - This is blocking call. It blocks the request from user if it comes while updating data in the file.
+
+2) BGSAVE - This updates data in background and it is non blocking call.
+
+when to use - 
+
+RDBMS - Structured data, ACID properties, Read Heavy (indexing), Hard to Scale. 
+
+NoSQL - Semi structured, BASE, Write Heavy(Indexing), Supports out of the box sharding and scale.
+
+
+Twitter - hash tags 
+
+-> The most popular and recent tweets for a hashtags, for this feature write throughput should be very high and in this case we can not use RDBMS.   
+
+To store most recent tweets for a hashtags we will use key value NoSQL database. 
+
+And to store all tweets for each hashtag we will use columnar database as In this we will store all the tweets of one hashtag in one column and its easy to fetch. 
+
+
+Sport Match live score - 
+
+This system will be write heavy. In this we can use key value database.  
+
+
+Any system will have multiple databases for seperate feature so it will scale and handle the traffic efficiently. 
+
+
+Consistent hashing + Replication - 
+
+In this on hash ring for each machine or node there will be replication nodes which will duplicate data of master node and serve the read requests. In this if master node goes down then it will promote one of the slave node to master node. and if one of the slave node crashes then next slave node will serve the read requests. 
+
+When one machine crashes it will promote other machine this results into less data movement from one master node on hash ring to other master node on hash ring. 
+
+Leader election can be done by using zoookeeper. 
+
+Consistent hashing is already implemented by all databases.
+
+
+Database orchestration - Zookeeper helps in database orchestration. 
+
+
+There will be standby machines which will replace the crashed machine as soon as it happens. First data will be replicated in the new machine and then it will start serving the requests. 
+
+The standby machine is also called as cold standby and the standby machine which is in sync with master node data is called hot standby. Hot standby will start serving requets instantly.
+
+Q - What happens to system consistency as the sum of "R" and "W" (R+W) increases in a Multi-Master database system?
+
+
+Ans - system consistency improves.
+
+ In multi-master systems, as R+W increases, more nodes participate in read/write operations, improving data consistency across the system. While this increases database operations, it ensures better data synchronization, crucial for applications like stock trading where up-to-date information is vital.
+ 
+ 
+ Q - In a Multi-Master distributed database system, what does "R" represent in the context of system consistency?
+ 
+ Ans - The minimum number of machines from which data must be read for a consistent query.
+ 
+ Q - In a Multi-Master distributed database system, what is the relationship between "R," "W," and "X"?
+ 
+ Ans - R and W must be less than or equal to X.
+ 
+ R - Read, W - Write and X - No of nodes.
+ 
+ 
+
+
+------------
+
+Monday - chest + Abs
+Tuesday - Biceps + Abs
+Wednesday - Shoulders + Abs.
+Thursday - Back + Abs.
+Friday - Triceps + Abs.
+Saturday - Legs + Abs.
+
+--------
+
+Naam Jap.
+Meditation.
+Write down your goal.
+Switch off your phone.
+Follow Do, Will do, What we achieved today, Regret - write down this daily.
+
+---------------
+
+
+
+Namaste Javascript - Akshay saini
+
+LLD + HLD by Shrayansh Jain
+
+SQL by Ankit Bansal
+
+Java & Spring Boot by Shreyansh Jain
+
+Frontend Machine Coding & System Design by Piyush Agarwal
+
+System Design by Gaurav Send
+Desigining Microservices by Arpit Bhayani
+
+Mern Stack project Playlist by Kishan Shah
+Mern Stack projects playlist by Geeksforgeeks
+
+
+----------------
+
+
+Magicpatterns to generate UI designs.
+
+
+Prompt - Do not make any changes, until you have 95% confidence that you know what to build ask me follow up questions untill you have that confidence.
+
 
