@@ -13851,7 +13851,605 @@ Ans - system consistency improves.
  
  R - Read, W - Write and X - No of nodes.
  
+----------
  
+Case Study - Type Ahead 
+
+Get clarity from the interviewer about the problem statement. 
+
+Ask clarifying questions about the problem statement, functional requirement, non functional requirements ( Performance, latency, scale, no of active users, Read heavy or write heavy, highly consistent or highly available), Scale estimations.
+
+Then go for design - first go for brute force solution then improve on it. 
+
+
+Design a type ahead search - 
+
+Functional Requirements - 
+
+For partial query give the typeahead suggestions.
+
+Suggestions should be popular. 
+
+Top 5 suggestions should be returned. 
+
+
+Do not suggest features randomnly and also you will have to figure out implement solution for that. List of features should come from an interviewer not from you.
+
+
+Once user enters more than 3 characters, user should get the suggestions.
+
+
+Clear all of your doubts by asking questions.
+
+
+We can store count of search terms, like how many times particular term is searched. even if this this count is not accurate it will still work, so for this feature we can have eventual consistency and stale data.
+
+
+But this system should be highly available. 
+
+PACELC - In this we are prioritizing availability and low latency like less than 200ms.
+
+Scale estimations - 
+
+A percentile tells you the value below which a given percentage of observations in a group falls.
+
+For example:
+
+P50 (50th percentile) → 50% of requests are faster than or equal to this time. This is the median.
+
+P95 (95th percentile) → 95% of requests are faster than or equal to this time, and 5% are slower.
+
+P99 → 99% of requests are below this threshold; used to highlight rare but significant slowdowns.
+
+The scale of data will helps us in deciding type of database to use, to use sharding or not, Replication etc.
+
+DAU - daily active users - 
+
+Total users are 5 billion out of these only 20% are DAU = 1 Billion.
+
+
+Total number of searches per day = DAU * Average_no_of_searches_per_user_per_day = 1 Billion * 20 = 20 Billion.
+
+
+Per second we will get 2 lakh searches. 
+
+For each search we will have 5 to 7 calls to system. 
+
+so we will get 2 Million calls to the system per second. 
+
+Every day we will get 2 Billion write calls as we will be storing the frequency of the search terms.
+
+If average size of each search term is 20 bytes then per day data size will be = 20 bytes * 2 Billion = 40 GB per day.
+
+so for whole year we will get = 40 * 365 = 14,600 GB = 150 TB approx.
+
+Considering data size we will need sharding. 
+
+
+APIs - 
+
+Read - getSuggestions
+Write - logSearch
+
+for every search we are reading at least 10 times. So this system will be read heavy and also we will have to optimize the writes.
+
+
+To store the count of each searched term if we use hashmap or database kind of structure it will be very slow to fetch the data. 
+
+
+Redis can handle 1 lakh writes per second and 10 lakhs reads per second.
+
+Type ahead notes - 
+
+https://docs.google.com/document/d/1vyXOphd6pe2Lrt-9IC4Grkjrd3rBqoLVghxOmxLWXjo/edit?tab=t.0
+
+
+We can use the trie to store the character in each node and next character of the term can be stored in child node of current node. For returning the results we will return the entire subtree of the node which is matching the searched term.
+
+Trie is very efficient for prefix searches. 
+
+But trie has huge memory requirement and just to generate the top 5 suggestions we will have to navigate the whole subtree. 
+
+No real world database supports trie approach.
+
+It is not possible to shard the trie with even data distribution as we will shard based on characters and this will cause the uneven data distribution.
+
+We can also take hash of characters and then shard based on the hash.
+
+In trie we will have to update the count of all prefix characters as we get the search for that term 
+
+Read and write - 
+
+Our system is not only read heavy it is also write heavy, there is no database which supports read and write heavy operations. We can reduce the no of writes by using caching, and update the database in batch. Like we will keep updating the count of searched terms in cache and then update it in the database asynchronously in batches after some threshold crosses ( ex count of likes - keep it updating on cache and update it on the database once it crosses some threshold every time), This will reduce the write load on database. 
+
+So in this case we will use Relational database as now our system is read heavy.
+
+----
+
+NoSQL internals - 
+
+Why is storing data in a NoSQL database is harder?
+
+The data size in NoSQL is not fixed like Relational database. 
+
+in relational database we can preallocate the space, perform indexing, directly jump from one data point to another very efficiently because datasize is predictable. 
+
+Storage engine for MySQL is InnoDB.
+
+Wired Tiger is storage engine of MongoDB.
+
+
+Case study - key value database -
+
+This will have get(key), set(key, value) apis. 
+
+data will be stored in key and value format and it will be stored in csv file.
+
+TC - 
+
+get(key) - O(n)
+set(key, value) - o(n) - as need to check if data is already present or not.
+
+
+Solution 2 - optimise the set operation. 
+
+insert happens in constant time but update takes time. 
+
+to optimse we will append the each input data to the file even though the record already exists. This concept is called as Write ahead logging and this optimizes the write and updates ( O(1) ).
+
+This can use more memory as it may store the duplicate records. 
+
+
+Now to remove duplicate entries and compact the space used by the file we can use compaction. The compaction job will run periodically and It will create new file and store the latest data for all entries and remove old entries. This will improve the space complexity of the file.
+
+If file is very large then compaction will be done in chunks. 
+
+
+Solution 3 - Optimizing the read queries - 
+
+We will read data from the end of the file from write ahead log file, so we will get the latest data always.
+
+To optimise the reads we will store the key and memory address of the value locations of those keys in hashmap. And read the data from this hashmap. Now reads will have time complexity of O(1). This hashmap will be stored in the memory not in disk.
+
+SQL internal notes - 
+
+https://github.com/kanmaytacker/system-design/blob/master/notes/no-sql-internals.md
+
+NoSQL update problem notes - 
+
+https://docs.google.com/document/d/1PXT_e4JYdME7Ezcmmy6jGbxxIZFV6fhVoNS2-nX-H74/edit?tab=t.0
+
+
+Log structured merge tree - 
+
+
+
+
+
+
+An LSM Tree (Log-Structured Merge Tree) is a data structure designed for efficient write performance, especially when handling large-scale, high-throughput systems. It is commonly used in NoSQL database engines such as Cassandra, RocksDB, LevelDB, and HBase. The core idea behind an LSM Tree is to batch writes in memory and then persist them to disk in a sequential, sorted manner, minimizing the costly random I/O operations that are typical in traditional B-Tree-based systems.
+
+What Problem Does LSM Tree Solve
+
+Traditional databases often use B-Trees or B+ Trees to store and retrieve data. These structures are efficient for read-heavy workloads but become a bottleneck for write-heavy workloads due to random disk I/O during insertions and updates. LSM Trees were developed to address this problem by turning random writes into sequential writes and by delaying the actual persistence of data to disk until it can be batched.
+
+This strategy significantly improves performance in systems where writes are much more frequent than reads, or where maintaining fast write latency is critical.
+
+Basic Structure of an LSM Tree
+
+An LSM Tree consists of multiple components that manage data in both memory and disk:
+
+MemTable (Memory Table)
+
+This is an in-memory, sorted data structure (often implemented as a skip list or a balanced tree).
+
+All incoming writes are first written to the MemTable.
+
+This allows for fast in-memory insertions and updates.
+
+Write-Ahead Log (WAL)
+
+Before inserting data into the MemTable, it is appended to a write-ahead log.
+
+This log ensures durability. In case of a crash, the system can recover data from the WAL.
+
+SSTables (Sorted String Tables)
+
+When the MemTable reaches a certain size, it is flushed to disk as an immutable, sorted file called an SSTable.
+
+SSTables are stored in levels or tiers on disk.
+
+They are optimized for sequential I/O and maintain sorted order.
+
+Compaction Process
+
+Over time, multiple SSTables accumulate. To avoid performance degradation, a background process called compaction merges multiple SSTables.
+
+During compaction, overlapping entries are reconciled, deleted data is purged, and duplicate keys are removed.
+
+Compaction ensures that lookup time remains reasonable by reducing the number of files that must be searched.
+
+Write Path in LSM Tree
+
+A write request arrives with a key-value pair.
+
+The write is appended to the WAL for durability.
+
+The data is inserted into the MemTable.
+
+If the MemTable exceeds its size limit, it is flushed to disk as a new SSTable.
+
+Background compaction processes may merge SSTables to keep the system efficient.
+
+Read Path in LSM Tree
+
+A read request first checks the MemTable.
+
+If the key is not found, the system searches through SSTables starting from the newest to the oldest.
+
+To optimize this search, Bloom filters are often used with each SSTable to check if a key might be present before performing disk I/O.
+
+Indexes and metadata help speed up the search within SSTables.
+
+Compaction Strategies
+
+Different compaction strategies determine how SSTables are merged:
+
+Size-Tiered Compaction
+
+SSTables of similar sizes are grouped and merged.
+
+Used in systems like Apache Cassandra.
+
+Leveled Compaction
+
+SSTables are organized into levels with progressively larger size limits.
+
+SSTables in a level do not overlap, which reduces the number of files to search during reads.
+
+Used in LevelDB and RocksDB.
+
+Time-Window Compaction
+
+Data is grouped based on time intervals, typically used in time-series databases.
+
+Helps optimize for data that is read or deleted in time-based patterns.
+
+Benefits of LSM Trees in NoSQL Databases
+
+High Write Throughput
+
+Since writes are batched in memory and written to disk sequentially, write operations are extremely fast compared to traditional B-Tree systems that perform random I/O for each write.
+
+Efficient Use of Disk I/O
+
+LSM Trees minimize random writes to disk, which are expensive, and instead rely on sequential I/O, which is much faster.
+
+Compression and Compaction
+
+Immutable SSTables can be compressed and periodically merged, reducing disk space and improving read performance.
+
+Scalability
+
+LSM Trees are well-suited for large-scale data systems, particularly those dealing with append-heavy workloads, like logging systems, time-series databases, and distributed databases.
+
+Trade-offs and Challenges
+
+Read Amplification
+
+Since data might exist in multiple SSTables, and the MemTable, a single read may need to check several locations. Compaction reduces this effect, but it cannot be eliminated entirely.
+
+Write Amplification
+
+Data is written multiple times throughout its lifecycle. First to the WAL, then to the SSTable, and potentially multiple times during compaction. This increases the I/O workload.
+
+Compaction Overhead
+
+Compaction is an I/O-intensive process. If not managed properly, it can affect system performance and lead to latency spikes.
+
+Latency Variability
+
+Reads and writes may experience latency variability due to background compaction processes and disk I/O spikes.
+
+How LSM Tree is Used in Popular NoSQL Systems
+
+Apache Cassandra
+
+Cassandra uses LSM Trees for its storage engine. Each column family has its own MemTable and SSTables. Compaction strategies are pluggable and configurable.
+
+RocksDB
+
+RocksDB is a high-performance embedded key-value store developed by Facebook. It is a direct descendant of LevelDB and uses a leveled compaction strategy by default.
+
+LevelDB
+
+A key-value store developed by Google, LevelDB uses LSM Trees and leveled compaction. It is lightweight and suitable for embedded systems.
+
+HBase
+
+HBase, built on top of Hadoop and HDFS, uses MemStores (MemTables) and HFiles (SSTables). It also incorporates compaction and Bloom filters for performance.
+
+Summary
+
+An LSM Tree is a disk-friendly, write-optimized data structure that is particularly well-suited for NoSQL systems that handle massive volumes of writes. It works by writing data to memory first, and then flushing it to disk in immutable, sorted files called SSTables. Background compaction helps merge and reorganize data to maintain read efficiency. The LSM Tree's design trades some read complexity for drastically improved write performance, making it ideal for workloads where write throughput is a primary concern.
+
+what happens to the MemTable when a machine storing the data reboots?
+
+The MemTable is reconstructed by replaying Write-Ahead Logs (WAL).
+
+What is the purpose of the in-memory index in a NoSQL database's SSTable?
+
+To facilitate binary searches in the file
+
+
+
+
+
+Bloom filter - 
+
+
+A Bloom filter is a space-efficient probabilistic data structure that is used to test whether an element is a member of a set. It is primarily used in scenarios where space is at a premium and occasional false positives are acceptable, but false negatives are not.
+
+This means:
+
+If the Bloom filter tells you an element is not present, it is definitely not present in the set.
+
+If it tells you the element might be present, there is a small probability that this is a false positive.
+
+In other words, Bloom filters guarantee no false negatives, but they may return false positives.
+
+Core Concepts and How Bloom Filter Works
+
+Bit Array Initialization
+
+A Bloom filter uses a bit array of fixed size m, where all bits are initially set to 0. This array is the only structure used to track the existence of elements.
+
+Hash Functions
+
+The Bloom filter uses k different, independent hash functions. Each hash function takes an input and maps it uniformly to one of the positions in the bit array — from 0 to m-1.
+
+Insertion Operation
+
+To insert an element into the Bloom filter:
+
+The element is passed through all k hash functions.
+
+Each hash function returns a position (index) in the bit array.
+
+The bits at each of these k positions are set to 1.
+
+Since multiple elements can hash to the same position, some bits may already be set to 1 due to previous insertions.
+
+Query Operation
+
+To check if an element is present in the Bloom filter:
+
+The element is hashed again using the same k hash functions.
+
+The bits at each of the k computed positions are checked.
+
+If any one of them is 0, the element is definitely not in the set.
+
+If all of them are 1, the element may be in the set.
+
+This is what makes Bloom filters probabilistic. There can be a case where the bits are set by other elements, leading to a false positive.
+
+Advantages of Bloom Filter
+
+Extremely space-efficient
+
+It can represent large sets using very little memory compared to storing all elements.
+
+Fast insertion and query
+
+Both operations take constant time O(k), where k is the number of hash functions.
+
+No need to store actual elements
+
+The Bloom filter only uses a bit array and does not require keeping the actual data.
+
+Scales well with data
+
+Especially useful in read-heavy or write-heavy systems where latency and memory use are critical.
+
+Disadvantages of Bloom Filter
+
+False positives
+
+Bloom filters may return that an element is in the set when it is not. This is called a false positive.
+
+Cannot delete elements (in standard Bloom filter)
+
+Once bits are set, unsetting them could affect the membership of other elements. However, some variants like Counting Bloom Filters solve this by maintaining counters instead of bits.
+
+Efficiency degrades with more elements
+
+As more elements are added, the probability of false positives increases because more bits are set to 1.
+
+Use Cases of Bloom Filter
+
+Databases and Key-Value Stores
+
+In systems like Cassandra, LevelDB, RocksDB, and HBase (which use LSM trees), Bloom filters are used to avoid unnecessary disk reads. When searching for a key, the Bloom filter helps decide whether a particular on-disk file (SSTable) could contain the key. If the Bloom filter says the key is not in that file, the database skips reading it from disk.
+
+Caching Systems
+
+Bloom filters are used to check if an item is in the cache before attempting to fetch it from the backend. This prevents cache pollution and improves performance.
+
+Web Security
+
+Used by browsers to maintain compact lists of malicious URLs. If the URL is not in the Bloom filter, the browser can safely skip further checks.
+
+Spell Checkers
+
+Used to quickly test if a word is likely valid, reducing the need for full dictionary lookups.
+
+Distributed Systems
+
+Useful in membership testing in distributed hash tables and content delivery networks.
+
+False Positive Rate and Trade-offs
+
+The false positive rate of a Bloom filter depends on:
+
+m: size of the bit array
+
+n: number of inserted elements
+
+k: number of hash functions used
+
+The more bits you allocate and the more hash functions you use, the lower the false positive rate, up to a point. However, increasing k also increases the time to insert and query.
+
+The optimal number of hash functions is:
+
+ini
+Copy
+Edit
+k = (m / n) * ln(2)
+And the false positive probability (roughly) is:
+
+ini
+Copy
+Edit
+p = (1 - e^(-kn/m))^k
+This means that the probability of a false positive increases as more elements are inserted or if the bit array size m is small relative to the number of elements n.
+
+Variants of Bloom Filter
+
+Counting Bloom Filter
+
+Instead of a bit array, it uses an array of counters. Allows deletions by decrementing the counters.
+
+Scalable Bloom Filter
+
+Dynamically grows the size of the Bloom filter as more elements are added, keeping the false positive rate bounded.
+
+Compressed Bloom Filter
+
+Compresses the bit array for transmission over networks.
+
+Summary
+
+A Bloom filter is a fast, memory-efficient, probabilistic data structure used to test set membership. It is widely adopted in large-scale data systems, especially NoSQL databases, for optimizing read paths by avoiding unnecessary disk access. It works well in environments where false positives are acceptable but false negatives are not. Its design makes it especially suitable for high-throughput, low-latency systems.
+
+
+
+
+
+
+----------------
+
+Case study - messaging - 
+
+Notes - 
+
+https://docs.google.com/document/d/1mA8puhUUIYPTFbAURF53bNK3PPV5eOJpr_ttQkZjwGw/edit?tab=t.0
+
+
+https://github.com/kanmaytacker/system-design/blob/master/case-studies/03-messenger-questions.md
+
+
+User should be able to send messages to other user.
+
+User should be able to see recent messages.
+
+User should be able to see rececived messages.
+
+
+
+getRecentConversation( userId)
+
+getMessages( conversation_id, sender_id, limit, offset) - limit and offset for paginating the response and conversation_id is the unique id which identifies the conversation between two users.
+
+sendMEssage( conversation_id, sender_id, message)
+
+
+Cardinality between conversation and messages - one conversation can have many messages and one message can be part of only one conversation.
+
+
+500 million are the daily active users of the facebook.
+
+on average each user will have 5 no of conversations.
+
+Average no of messages in each conversation are 10. 
+
+500 Million * 5 * 10 = 25 Billion messages per day. 
+
+average size of each 
+Each message will have -
+
+message id - 8 bytes
+conversation id - 8 bytes
+sender id - 8 bytes
+receiver id - 8 bytes
+message - approx 170 bytes
+
+so total each message size will be = 200 bytes.
+
+
+25 Billion * 200 = 5 TB of data each day. 
+
+
+5 TB * 365 * 10 = 18250 TB = 18.25 PB.
+
+
+This system is write and read heavy. To handle this situation we will have to either handle reads or writes seperately without database. In this case we will reduce the number of reads, by using caching like mechanism.
+
+
+This system should be highly consistent, but this will increase the latency, so to reduce the latency we will have to compromise the consistency. 
+
+How to avoid sending duplicate messages - 
+
+if user 1 sends a message with id m1 and it does not receive the acknowledgement from the server that this message is received, in this case system will send same message again, this scenario will result into sending one message multiple times. 
+
+To avoid this duplicate message it uses the concept of idempotency. 
+
+Idempotency means for the same input one must receive the same output. 
+
+when front end will send the message id with the message, even if front end sends one message multiple times then backend will check if the message with same message id is already sent to the receiver, if it is already sent then it will not resend the same message to the receiver and it will send the acknowledgement to the sender that this message is received by the receiver. 
+
+
+Sharding key - 
+
+In this we can have user_id or conversation_id based sharding.
+
+
+conversation id already has user ids of sender and receiver. conversation_id = senderId_recevierId.
+
+so out of these two which key will reduce the no of hops in each operation (read and write).
+
+ 
+Q - In the context of sharding strategies for messaging systems, which use case is best suited for shard-by-user-id and shard-by-conversation-id approaches, respectively?
+
+Shard by user id: Messenger, Shard by conversation id: Slack.
+
+groups are created in slack, not in messanger.
+
+Q - In a messaging system, which design approach is preferable for handling message sending to ensure high consistency?
+
+Write to the recipient's database first, then the sender's.
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+
 
 
 ------------
