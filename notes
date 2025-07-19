@@ -14430,9 +14430,106 @@ Q - In a messaging system, which design approach is preferable for handling mess
 Write to the recipient's database first, then the sender's.
 
 
+Sharding - 
+
+by user id - 
+
+Each shard will store the messages of each user. 
+
+shard 1 - 
+This shard stores below information - 
+
+Stores user 1 information. 
+
+Conversation user 1 and user 2. 
+
+Last message and last message timestamp.
+
+Participants of the conversations (user ids).
+
+Messages from user 1. 
+
+
+Shard 2 - 
+
+This shard stores below information - 
+
+Stores user 2 information. 
+
+Conversation of user 1 and user 2. 
+
+Last message and last message timestamp.
+
+Participants of the conversations (user ids).
+
+Messages from user 2. 
+
+
+In this kind of sharding for below apis - 
+
+getMEssages(user1_user2, user1) - This api will have only one hop to fetch the messages of user 1. 
+
+
+Now for above sharding strategy - 
+
+1) getConversation(conversation_id) - for this we need to query only one shard. 
+
+2) getMessages(conversation_id, user_id) - for this also we need to query only one shard. 
+
+3) sendMessage( conversation_id, message) - for this we will have to write data on two shards. 
 
 
 
+Sharding by conversation id  - 
+
+Each shard will store the conversation based on conversation id. 
+
+Apis - 
+
+1) getMessages(conversation_id, user_id ) - for this we will have to hop only once. One read.
+
+
+2) sendMessage(conversation_id, sender_id, message) - 
+
+for this we will have to perform one write.
+
+3) getConversations( A ) - for this we will have to query all the shards, N shards.
+
+This approach has more TC than user_id based sharding. 
+
+
+In case of group messages - 
+
+sharding - 
+
+By user id - 
+
+getConversations - need to query only one shard.
+getMessages - need to query only one shard.
+sendMessage - need to write to N shards.
+
+By conversation_id - 
+
+getConversations - need to query N shards.
+getMessages - need to query only one shard.
+sendMessage - need to write to only one shard.
+
+From this observations if requirement is for one to one messaging the we will use user_id as a sharding key.
+
+If the requirement is for groups then we will use conversation_id as a sharding key.
+
+
+
+in a one to one send message scenario sendMessage() api will write to two different shards. 
+
+and Group scenario sendMessage() api will write to N no of shards. 
+
+this writing to multiple shards will result into the high latency for write operation. Now if we have high latency then we will get High consistency and if we get low latency then we will get low consistency. 
+
+optimization - When we get the write request we will write it to the first shard (to sender) and return the success response to the user and then asynchronously write those writes to the remaining shards. But receiver will receive the message after some time and this will result into increased latency for receiver if asynchronous updates are taking time. 
+
+
+Optimization - When we get the write request we will write it to the receiver shard and return the success response to the sender and then asynchronously write those writes to the sender shard. In this case even if the sender shard takes time to get the updates from receiver shard asynchronously that is okay from users perspective, this will result into eventual consistency and very low latency. 
 
 
 
