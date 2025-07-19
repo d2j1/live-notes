@@ -14532,6 +14532,17 @@ optimization - When we get the write request we will write it to the first shard
 Optimization - When we get the write request we will write it to the receiver shard and return the success response to the sender and then asynchronously write those writes to the sender shard. In this case even if the sender shard takes time to get the updates from receiver shard asynchronously that is okay from users perspective, this will result into eventual consistency and very low latency. 
 
 
+As per our estimation earlier we will get 40 billion new messages every day and 400, 000 messages per second, and twice the reads around 800, 000 reads per second.
+
+
+As this system is read and write heavy we need to decompose one of the operation so that it will reduce the load on the system. This can be done by using caching mechanism to handle the reads.
+
+And now we have very high write throughput so we can not use relational database, we will have to go with NoSQL database. Facebook uses Casandra to store these messages data. 
+
+The caching mechanism will have very high read throughput, So we will use the global distibuted cache.
+
+
+
 
 
 
