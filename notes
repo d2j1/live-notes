@@ -14541,21 +14541,1648 @@ And now we have very high write throughput so we can not use relational database
 
 The caching mechanism will have very high read throughput, So we will use the global distibuted cache.
 
+We can also use local caching and have sticky sessions and stateful servers. 
+
+
+------------------------------
+
+DSA- Contest - Arrays and Bit manipulation - 
+
+
+Decreasing Dishes - 
+
+Given an array of N positive integers representing the weights of ingredients in a dish. Find the maximum possible sum of a subarray with decreasing weights.
+
+Solution- 
+
+maximum possible sum of a subarray means use kadane's algorithm.
+
+BF - find all subarrays and for each subarray check if all elements of the array are decreasing or not. only if they are decreasing sum them and keep track of max.
+
+how to check if a given array is decreasing? next element should be less than current element while traversing from left to right.
+
+
+Code - 
+
+
+boolean is Dec(int[] A, int L, int R){
+
+for( int i=L=1; i <= R; i++){
+
+if(A[i-1] <= A[i]){
+return false;
+}
+}
+
+return true;
+}
 
 
 
 
+public int solve(int[] A){
+
+
+int n = A.length;
+
+for( int l =0; l<n; l++){
+
+for( int r=l; r <n; r++){
+
+if( isDec( A, l, r) ) {
+
+if( isDec(A, l, r) ){
+
+int total =0;
+
+for( int i=l; i <= r; i++){
+
+total +=A[i];
+}
+
+ans = Math.max(ans, total);
+
+}
+}
+}
+
+return ans;
+
+}
+
+
+Optimization - use kadanes algorithm - 
+
+
+total =A[0];
+mtotal = A[0];
+
+for( i from 1 to n-1) {
+
+if(A[i-1] <= A[i]){
+
+total =0;
+}
+
+total += A[i];
+mtotal = max(mtotal, total);
+}
+
+return mtotal;
+
+code - 
+
+int n = A.length;
+
+int total = A[0];
+int mtotal = A[0];
+
+for( int i=1; i< n; i++){
+
+if( A[i-1] <= A[i] ) {
+total =0;
+}
+
+total += A[i];
+
+mtotal = Math.max( mtotal, total);
+}
+
+return mtotal;
+}
+
+
+Q - Benjamin and AND - 
+
+BEnjami is tasked with desigining a digital lock system for high security vault. The lock mechanism relies on an array of N integers, each representing a unique code that can unlock the vault. To ensure the lock's reliability, Benjamin needs to evaluate various security patterns based on specific bit positions.
+
+He has a set of Q security checks, each represented by an integer in the array B. For each security check B[i], Benjamin must find how many pairs of codes from the array A have the B[i]-th bit set to 1 in their bitwise AND result. This process helps benjamin verify that the lock system meets the security requirements and operates as intended. 
+
+Note - it is guaranteed that the ans will fit in 32 bits.
+
+Hint - look at the binary representation of the numbers.
+
+Solution  - 
+
+BF - 
+
+code - 
+
+int N = A.length;
+int ans = new int[Q.length];
+
+for( int q=0; q < Q.length; q++){
+int bit = Q[q];
+pairs =0;
+
+
+// find all the pairs for which this bit is set.
+
+for( int i =0; i< N; i++){
+
+for( int j=i+1; j <N; j++){
+
+int op = A[i] & A[j];
+
+if( (op & (1 << bit)) >0) {
+pairs++;
+}
+}
+}
+
+ans[q] = pairs;
+
+}
+
+return ans;
+
+
+when will the bitwise AND of the pair be 1 at any bit? when  both the bits are 1.
+
+Idea - for every bit in query find the count of set bits at the given bit-th position, if C is the count of ones then ans will be = C * (C-1) /2.
+
+
+code - 
+
+int[] ans = new inr[A.elngth];
+
+for( int q=0; q< Q.length; q++){
+
+int bit = Q[q];
+int ones = 0;
+
+
+for( int val: A) {
+
+if( (val & ( 1 << bit)) > 0){
+ones--;
+}
+}
+
+long t = ones;
+long temp = (ones * (ones-1))/2;
+ans[q] = (int) temp;
+
+}
+
+return ans;
 
 
  
+TC - O(Q * N)
+
+------------------
+
+Case study - Elastic search, Zookeeper
+
+
+SQL and NoSQL can not perform full text searching. 
 
 
 
+Elasticsearch is a distributed, RESTful, open-source search and analytics engine designed for horizontal scalability, real-time search, and high performance. It is built on top of Apache Lucene, a powerful full-text search library, and provides a highly scalable and easy-to-use interface for indexing and searching large volumes of data.
+
+Below is a detailed explanation of Elasticsearch, including its architecture, core concepts, how it works internally, and common use cases.
+
+1. Core Purpose of Elasticsearch
+Elasticsearch is designed to:
+
+Index and store large amounts of structured, semi-structured, or unstructured data
+
+Allow very fast full-text search on that data
+
+Support powerful queries, filtering, and analytics in real time
+
+Scale easily across multiple nodes
+
+It is widely used for:
+
+Search engines (e.g., product search, document search)
+
+Logging and monitoring systems (e.g., log aggregation using ELK stack)
+
+Analytics dashboards (e.g., user behavior analysis)
+
+Security and event monitoring
+
+2. Key Concepts and Terminology
+Cluster
+A cluster is a collection of one or more Elasticsearch nodes (servers) that together hold all the data and provide distributed indexing and search capabilities.
+
+Node
+A node is a single instance of Elasticsearch running on a machine. It stores data and participates in the cluster operations like indexing and searching.
+
+Index
+An index is like a database in a relational system. It contains documents and is the highest-level namespace for data.
+
+Document
+A document is a JSON object that contains the actual data to be indexed. Each document has a unique ID and is stored in an index.
+
+Example:
+
+json
+Copy
+Edit
+{
+  "title": "Elasticsearch Introduction",
+  "author": "John Doe",
+  "tags": ["search", "data", "lucene"]
+}
+Field
+A document is made up of fields (key-value pairs). Each field can have its own data type and analysis pipeline.
+
+Shard
+Elasticsearch splits each index into shards to distribute data across nodes. Each shard is a self-contained Lucene index.
+
+Replica
+Each shard can have one or more replicas for fault tolerance and to improve query throughput.
+
+3. How Data Is Indexed
+You send a JSON document to an Elasticsearch index.
+
+The document goes through analyzers which:
+
+Tokenize the text
+
+Lowercase it
+
+Remove stop words
+
+Apply stemming
+
+The output tokens are used to build an inverted index.
+
+The inverted index maps each term to the documents in which it appears.
+
+Elasticsearch stores both the full document (for retrieval) and the index (for searching).
+
+4. How Search Works
+A query is sent (e.g., match, term, bool, etc.).
+
+Elasticsearch analyzes the query string using the same analyzers as indexing.
+
+The analyzed tokens are matched against the inverted index.
+
+All matching documents are retrieved.
+
+A relevance score is computed for each document (using BM25).
+
+Results are sorted and returned with metadata (like score, highlights).
+
+5. Text Analysis in Elasticsearch
+Text fields go through an analysis pipeline:
+
+Tokenizer splits text into tokens.
+
+Token filters normalize, remove stop words, or apply stemming.
+
+Character filters clean up the text before tokenization.
+
+This process ensures that both indexing and search use the same logic.
+
+6. Distributed Architecture
+Each index is divided into primary shards.
+
+Each primary shard can have replica shards for redundancy.
+
+Elasticsearch automatically balances shards across nodes.
+
+When you index a document, it is routed to a shard based on its ID.
+
+When you search, Elasticsearch queries relevant shards in parallel and merges results.
+
+7. Query Types
+Elasticsearch supports many query types:
+
+match: Full-text search with analysis
+
+term: Exact match (no analysis)
+
+range: Numeric or date ranges
+
+bool: Combine queries with must, should, must_not
+
+wildcard, prefix, fuzzy: Pattern and approximate matching
+
+aggregation queries: For statistical summaries (group by, count, avg, etc.)
+
+8. Elasticsearch vs Traditional Databases
+Elasticsearch is optimized for search, not for transactions or relational joins.
+
+It offers eventual consistency rather than ACID transactions.
+
+It’s built for horizontal scaling, handling huge datasets across multiple machines.
+
+9. Elasticsearch and the ELK Stack
+Elasticsearch is part of the ELK stack:
+
+Elasticsearch: The search and analytics engine.
+
+Logstash: Ingests, transforms, and forwards data to Elasticsearch.
+
+Kibana: Visualization and dashboard tool for Elasticsearch data.
+
+This stack is used extensively in observability platforms, log management, and real-time monitoring systems.
+
+10. Use Cases
+Search engines: Fast product, document, or media search
+
+Log and event analysis: System logs, application logs, error tracking
+
+Monitoring dashboards: Real-time metrics and KPIs
+
+Security analytics: Intrusion detection, threat monitoring
+
+Recommendation systems: Based on content similarity or user behavior
+
+11. Advantages of Elasticsearch
+Real-time indexing and searching
+
+High scalability with automatic sharding and replication
+
+Flexible full-text search capabilities
+
+RESTful API and JSON-based queries
+
+Integrates well with big data systems and tools
+
+12. Limitations
+Not ACID-compliant for transactional use cases
+
+Requires careful planning for schema design and memory management
+
+Needs regular monitoring for node failures, shard allocation, and disk usage
+
+Heavy write loads can affect performance unless optimized
+
+
+
+
+
+Creating an inverted index in Elasticsearch involves a series of processing steps that convert raw text into a searchable structure. This process is called text analysis, and it transforms a block of text into a list of searchable tokens. Elasticsearch uses this during both indexing and searching.
+
+Here are the detailed steps involved in creating an inverted index:
+
+1. Document Parsing
+
+The first step is extracting fields from a document. Elasticsearch stores documents as JSON objects with key-value pairs. Each field (like title, body, tags) can be analyzed separately.
+
+For example, a document:
+
+json
+Copy
+Edit
+{
+  "title": "Introduction to Elasticsearch"
+}
+The value "Introduction to Elasticsearch" in the "title" field will be analyzed.
+
+2. Tokenization
+
+Tokenization is the process of breaking down a stream of text into individual terms or tokens.
+
+For example:
+Input text: "Introduction to Elasticsearch"
+
+Tokenization will produce: ["Introduction", "to", "Elasticsearch"]
+
+Tokenizers split text based on spaces, punctuation, and other rules. The default tokenizer in Elasticsearch is the Standard Tokenizer, which follows the Unicode Text Segmentation algorithm.
+
+3. Lowercasing (Normalization)
+
+Normalization includes converting all tokens into a standard form. A common normalization step is lowercasing, which ensures that "Elasticsearch", "elasticsearch", and "ELASTICSEARCH" are treated the same.
+
+Tokens before normalization: ["Introduction", "to", "Elasticsearch"]
+Tokens after normalization: ["introduction", "to", "elasticsearch"]
+
+4. Stop Words Elimination
+
+Stop words are commonly used words such as "a", "an", "the", "is", "to", etc., which are often filtered out as they do not carry meaningful information for search queries.
+
+In the example above, the token "to" might be removed.
+
+Tokens before stop word removal: ["introduction", "to", "elasticsearch"]
+Tokens after stop word removal: ["introduction", "elasticsearch"]
+
+Stop word filtering is optional and can be configured. Removing them improves index size and search performance, but in some use cases (like natural language queries), keeping them may be important.
+
+5. Text Reduction – Stemming and Lemmatization
+
+These steps reduce tokens to their root form.
+
+Stemming: It is a crude process that chops off prefixes or suffixes from words.
+
+Example:
+
+"running", "runner", "ran" → "run"
+
+Common stemmers used in Elasticsearch include PorterStem, KStem, and Snowball.
+
+Lemmatization: It is a more sophisticated approach that converts a word to its base or dictionary form using vocabulary and grammar.
+
+Example:
+
+"was" → "be"
+
+"mice" → "mouse"
+
+Elasticsearch supports lemmatization via plugins or integration with external analyzers like those in OpenNLP or spaCy, as it is not part of the default analysis pipeline.
+
+Stemming is more common in Elasticsearch because it is faster and built-in.
+
+6. Building the Inverted Index
+
+After tokenization, normalization, stop word removal, and stemming, the remaining terms are mapped into an inverted index.
+
+An inverted index maps each term to the documents (and positions) in which it occurs.
+
+Example inverted index:
+
+"introduction" → doc1, doc4
+
+"elasticsearch" → doc1, doc2, doc4
+
+Each token is associated with:
+
+Document IDs where it occurs
+
+Positions within each document (for phrase queries)
+
+Term frequencies and other metadata
+
+This inverted index allows Elasticsearch to quickly retrieve documents that match a query.
+
+7. Optional Enhancements
+
+Depending on the use case, the analyzer can be extended with additional filters like:
+
+Synonym filters (e.g., "tv" and "television" treated the same)
+
+Accent folding (e.g., "café" → "cafe")
+
+Edge n-gram or shingle filters for partial and phrase matching
+
+Custom tokenizers for domain-specific needs
+
+
+Searching - 
+
+
+In Elasticsearch, search works by analyzing the query input and matching it against the inverted index that was created during indexing. The process involves several detailed steps that make it fast and accurate for full-text search.
+
+Here’s a step-by-step explanation of how search works in Elasticsearch:
+
+1. User Sends a Search Query
+
+A user sends a search request to Elasticsearch, typically using REST API. The query can be a simple keyword search or a complex structured query using the Query DSL (Domain-Specific Language).
+
+Example:
+
+json
+Copy
+Edit
+GET /books/_search
+{
+  "query": {
+    "match": {
+      "title": "Elasticsearch introduction"
+    }
+  }
+}
+This tells Elasticsearch to search for documents in the books index where the title field matches the query "Elasticsearch introduction".
+
+2. Query Parsing and Analysis
+
+Before searching the index, the input query goes through the same analysis pipeline used during indexing, so that both are processed in a consistent way.
+
+Steps involved:
+
+Tokenization: "Elasticsearch introduction" → ["elasticsearch", "introduction"]
+
+Lowercasing: Ensures case-insensitivity
+
+Stop word filtering: Removes common stop words if configured
+
+Stemming or lemmatization: Reduces tokens to root forms if enabled
+
+This produces a list of tokens that will be searched in the inverted index.
+
+3. Search in the Inverted Index
+
+The resulting tokens from the query are then looked up in the inverted index.
+
+Each token maps to a list of documents that contain that token.
+
+Example:
+
+"elasticsearch" → doc1, doc2, doc5
+
+"introduction" → doc1, doc4
+
+Elasticsearch merges the results from both tokens using set operations. The way it combines results depends on the type of query (AND, OR, phrase match, etc.).
+
+For example:
+
+If it's a match query (default operator is OR), documents containing either term will be returned.
+
+If the operator is set to and, only documents that contain both tokens will be matched.
+
+4. Document Scoring (Relevance Calculation)
+
+Each document that matches the query terms is given a relevance score, which determines how well the document matches the query. The scoring is based on a function called BM25 (a ranking function derived from probabilistic information retrieval).
+
+Key factors in scoring:
+
+Term frequency: How often the term appears in the document.
+
+Inverse document frequency (IDF): How rare the term is across all documents. Rare terms boost relevance.
+
+Field length: Shorter fields get higher relevance if the term occurs in them.
+
+BM25 formula combines these factors to calculate a numeric score for each document.
+
+Higher score = more relevant.
+
+5. Ranking and Sorting
+
+Once all matching documents have been scored, they are ranked in descending order of their relevance score.
+
+Elasticsearch then returns the top N results (default is 10), along with their scores and metadata.
+
+You can also customize sorting based on fields (e.g., by date, price, rating) instead of relevance score.
+
+6. Highlighting (Optional)
+
+If requested, Elasticsearch can highlight matching terms in the response. This is helpful for displaying matched snippets in UI.
+
+For example:
+
+json
+Copy
+Edit
+{
+  "highlight": {
+    "fields": {
+      "title": {}
+    }
+  }
+}
+The output will contain highlighted sections like:
+"title": "Elasticsearch <em>introduction</em>"
+
+7. Result Aggregation (Optional)
+
+Elasticsearch can also perform aggregations (like SQL GROUP BY) to calculate statistics or summaries along with search results.
+
+Example:
+
+Count documents per category
+
+Average price of products
+
+Histogram over time
+
+This is especially useful in dashboards and analytics.
+
+
+TF-IDF (Term Frequency - Inverse Document Frequency) is a key concept used in Elasticsearch for calculating the relevance score of documents during search. It helps determine how important a word is in a document relative to all documents in the index.
+
+TF-IDF is a statistical measure used in information retrieval to rank documents based on the relevance of query terms. It plays a central role in the default scoring algorithm of Elasticsearch (especially before BM25, which evolved from TF-IDF but retains the core idea).
+
+Let’s break it down in the context of Elasticsearch:
+
+1. Term Frequency (TF)
+This measures how often a term appears in a document.
+
+Formula:
+
+typescript
+Copy
+Edit
+TF = (Number of times term t appears in a document) / (Total number of terms in the document)
+In Elasticsearch:
+
+A term that appears more often in a document is considered more relevant to that document.
+
+However, to avoid bias toward longer documents, TF is often normalized or dampened (e.g., using a logarithm or square root).
+
+Example:
+
+"elasticsearch" appears 5 times in Document A and 1 time in Document B.
+
+All else being equal, Document A will get a higher score for that term.
+
+2. Inverse Document Frequency (IDF)
+This measures how rare or informative a term is across all documents.
+
+Formula:
+
+ini
+Copy
+Edit
+IDF = log_e(Total number of documents / Number of documents containing the term)
+In Elasticsearch:
+
+Rare terms (like "elasticsearch", "neural", "shard") have higher IDF, meaning they are more meaningful when they appear.
+
+Common terms (like "the", "and", "is") have low IDF, sometimes approaching zero.
+
+IDF ensures that frequently used terms across many documents don’t overly influence the scoring.
+
+3. TF-IDF Score
+The TF-IDF score for a term in a document is calculated by multiplying the term’s TF and IDF values:
+
+ini
+Copy
+Edit
+TF-IDF = TF * IDF
+Higher TF-IDF means the term is important for that document and not common across all documents.
+
+4. Use in Elasticsearch
+During search:
+
+The query terms are analyzed into tokens.
+
+For each token, Elasticsearch calculates the TF-IDF score for every document that contains that term.
+
+If multiple query tokens are present in a document, the scores are combined.
+
+Documents are ranked based on the final relevance score.
+
+Though Elasticsearch now uses BM25 as the default scoring algorithm, it is conceptually similar to TF-IDF, but improves upon it by:
+
+Handling term saturation (more realistic gain for repeated terms).
+
+Introducing document length normalization more effectively.
+
+Elastic search shards the data based on document_id and Inverted index. and it does not use consistent hashing, it uses modulo hashing. 
+
+In modulo hashing - Shard_id = hash(document_id) % no_of_shards.
+
+In modulo hashing no of shards are fixed and if we change the no of shards then it leads to the rehashing which is expensive operation.
+
+Elastic search follows master slave architecture for each shard.
+
+Elastic search is eventually consistent.
+
+
+When Elasticsearch searches over multiple shards — especially when the same data is present on multiple shards (due to replication) — it uses a well-defined process to ensure that:
+
+The search is fast and distributed.
+
+The data returned is accurate.
+
+The system remains resilient and scalable.
+
+Let’s break this down step by step to understand how Elasticsearch handles searches across multiple shards, especially when those shards contain replica data.
+
+1. Primary and Replica Shards
+When you index a document into Elasticsearch:
+
+It is stored in a primary shard.
+
+Elasticsearch also makes replica copies of each primary shard, and these are stored on different nodes.
+
+This means the same document can exist in multiple shards — the primary shard and its replicas.
+
+For example, if you have:
+
+1 index
+
+3 primary shards
+
+1 replica per shard
+
+You end up with 6 shards: 3 primary and 3 replica shards. Each replica is a copy of its corresponding primary.
+
+2. How Elasticsearch Chooses Shards to Search
+When you issue a search request, Elasticsearch must query every shard that holds data for that index. But it doesn't query both the primary and its replicas. Instead:
+
+Elasticsearch queries only one copy of each shard — either the primary or one of its replicas.
+
+The choice of whether to use a primary or replica is made randomly or based on load balancing across the cluster.
+
+This reduces load and improves query performance by distributing requests evenly.
+
+So, if data exists on multiple shards due to replication, only one copy is queried per shard group, not all.
+
+This is known as the fan-out search.
+
+3. Fan-Out Search Process
+Let’s say your index has 3 primary shards with 1 replica each, making a total of 6 physical shards. Here's what happens when a search query is issued:
+
+The coordinating node (which receives the search request) determines all the shards that need to be searched.
+
+For each logical shard (primary + replicas), one copy is selected.
+
+The coordinating node sends the query to the selected shards in parallel.
+
+Each shard executes the query independently and returns partial results.
+
+The coordinating node merges the partial results into a final result set, sorts and ranks them based on relevance (score), and returns the top results to the client.
+
+Only one shard from each shard group (primary + replicas) is queried:
+
+pgsql
+Copy
+Edit
+Shard Group 1: primary or replica
+Shard Group 2: primary or replica
+Shard Group 3: primary or replica
+4. Why Not Query All Copies?
+Querying both the primary and replica for the same data would:
+
+Waste resources (duplicate work)
+
+Increase response time
+
+Not improve accuracy, since both contain the same data
+
+Therefore, Elasticsearch intelligently chooses one shard per group, achieving efficiency, redundancy, and scalability.
+
+5. Handling Failures
+If a primary shard is unavailable (e.g., the node is down):
+
+Elasticsearch automatically routes the request to a replica.
+
+This ensures high availability of search even during failures.
+
+6. Search Across Multiple Indices
+If your query targets multiple indices, Elasticsearch repeats the above logic for each index, querying one shard per group per index.
+
+For example, if you search across 2 indices, each with 3 primary shards and 1 replica:
+
+A total of 6 shard groups are involved.
+
+Elasticsearch selects 1 shard from each group (either primary or replica).
+
+It performs 6 parallel shard-level queries.
+
+Elastic search notes - 
+
+https://docs.google.com/document/d/1tB4dQen8Bk8aiWW3WmnOX1NsQTxJ2kG_Pb54C-Ijg38/edit?tab=t.0
+
+---------------------------
+
+
+
+All HLD notes - 
+
+https://docs.google.com/spreadsheets/d/1Zed_C4BHrF2LFer1ZVpQivIU947KvWnRzR9EL1iNv_k/edit?gid=2034634504#gid=2034634504
+
+
+---------------------
+
+ Maths: Modular Arithmetic & GCD
  
-
-
-
+ Range of A%m = 0 to m-1.
  
+ we use % to limit the range.
+ 
+ Properties - 
+ 
+ (a+b)%m = (a%m + b%m ) % m.
+ 
+ 
+ 2) ( a-b) % m = (a%m - b%m + m) %m
+ 
+ 
+ 3) (a+m)%m = a%m
+ 
+ 4) a^b %m = ( ( a%m) ^b ) %m.
+ 
+ 
+ Q - Given N array elements. Find the count of pairs (i, j) such that ( arr[i] + arr[j]) % m =0.
+ 
+ Note - i != j and pair( (j,i) is same as pair.
+ 
+ 
+BF - 
+
+pairs =0;
+
+for i from o to n-1 {
+for j from i+1 to n-1 {
+
+if( (A[i] + A[j]) % m == 0 ){
+pairs++;
+}
+}
+}
+
+TC - O(n^2)
+SC - O(1)
+
+idea 2 - ( A[i] + A[j] ) % m == 0
+
+( A[i] % m + A[j] % m ) % m == 0
+
+now A[i] % m will give ans in range 0 to m-1.
+
+So the entire expression will give value in range = ( [ 0 to 2m -2 ] ) % m == 0
+
+multiples of m in the above range will be 0 and m.
+
+Take modulas of all elements of an array by m.
+
+ freq[n] = {0};
+
+for( i from 0 to n-1) {
+
+val = A[i] % m;
+need = -1;
+
+if( val == 0 ) {
+need =0;
+}
+else {
+need = m - val;
+}
+
+ans += freq[need];
+freq[val]++;
+
+}
+
+return ans;
+
+
+SC - O(m) - as elements are limited to m only.
+
+TC - O(m+n) - here m is time taken to initialize the freq array with 0.
+
+
+GCD - Greatest common divisor or Highest common factor.
+
+GCD (20, 65) = 
+
+factors of 20 - 1, 2, 4, 5, 10, 20
+factors of 65 - 1, 5, 13, 65
+
+here 5 is the greatest common factor between 20 and 65.
+
+GCD (0, -10) = 
+
+0 = 1, 2, 3, 4, 5,6 ... infinity
+-10 = -10, -5, -2, -1, 1, 2, 5, 10
+
+so ans here will be 10.
+
+GCD (0, 8) = 
+
+0= 1, 2, 3, 4, 5, 6 ... infinity.
+8 = 1, 2, 4, 8.
+
+here ans will be 8.
+
+
+Properties of GCD -
+
+1) gcd(A,B) = gcd(B,A)
+
+2) gcd(0,A) =A
+
+3) gcd(A,B,C) = gcd( gcd(A,B), c) or gcd(A, gcd(B, C)) or gcd( B, gcd( A, C))
+
+4) gcd( A,B) = gcd (A-B, B) where A >= B > 0.
+
+gcd( 23, 5) = gcd( 23-5, 5) gcd(18, 5) = gcd(18-5, 5) = gcd(13, 5) = gcd(13-5, 5) = gcd(8, 5) = gcd( 8-5, 5) = gcd(3, 5).
+
+5) Euclidean algorithm - 
+
+gcd(A, B) = gcd( A%B, B)  = gcd(B, A%B).
+
+
+Q - gcd function - 
+
+int gcd(int a, int b) {
+
+if( b==0) return a;
+
+return gcd(b, a%b);
+}
+
+TC - O(log( min( a, b)))
+SC -  O(log( min( a, b)))
+
+
+
+Q - given an array, find the GCD of the entire array.
+
+code -
+
+ans = [0]
+
+for( i from 0 to n-1){
+ans = gcd(ans, A[i]);
+}
+
+return ans;
+
+TC - O( N * log(max))
+SC - O(log(max))
+
+
+Q - Delete one 
+
+Given an array, find maximum GCD value after deleting one of the element from array.
+
+BF - 
+
+ans =1;
+
+for( d from 0 to n-1) {
+
+x =0;
+
+for( i from 0 to n-1){
+
+if( i==d) continue;
+
+x = gcd(A[i],x);
+
+}
+
+ans = max( ans, x);
+
+}
+
+return ans;
+
+
+TC - O(n * n * log(max_element))
+
+SC - O(log(max_element))
+
+
+Optimization - 
+
+
+Create prefix and suffix gcd array.
+
+pfgcd[N]
+
+pfgcd[0] = A[0]
+
+for( i from 1 to n-1 ) {
+
+pfgcd[i] = gcd( pfgcd[i-1], A[i]);
+
+}
+
+
+sfgcd[N]
+
+sfgcd[n-1] = A[n-1];
+
+for( i from n-2 to 0 ){
+
+sfgcd[i] = gcd( sfgcd[i+1], A[i]);
+
+}
+
+
+for( i from 0 to n-1) {
+
+// left gcd
+lfgcd =0
+
+// right gcd
+rgcd = 0
+
+if( i>0) {
+
+lfgcd = pfgcd[i-1];
+
+}
+
+if( i < N-1) {
+
+rgcd = sfgcd[i+1] 
+
+}
+
+ans = max( ans, gcd ( lfgcd, rgcd));
+
+}
+
+return ans;
+
+TC - O( 3 * n log(max))
+SC - (n + n)
+
+------------------
+
+HLD - Zookeeper & S3
+
+Application servers need to be aware about the master node of the database servers or other servers and this master node can change from time to time. 
+
+Zookeeper is used for - 
+
+1) Configuration management
+2) State tracking
+
+Zookeeper is strongly consistent system. 
+
+Zookeeper provides two nodes - 
+
+1) Persistent - 
+2) Ephemeral - volatile memory
+
+Introduction to ZooKeeper
+
+ZooKeeper is a centralized service for maintaining configuration information, naming, providing distributed synchronization, and group services in distributed systems. It is used by distributed applications to coordinate and manage cluster state consistently.
+
+ZooKeeper provides a hierarchical namespace similar to a filesystem where each node is called a znode. These znodes are used to store small amounts of data and metadata.
+
+ZooKeeper ensures high availability, consistency, and synchronization across distributed systems.
+
+2. Key Features
+
+High availability: ZooKeeper runs on a cluster of nodes called an ensemble. It can tolerate failures of a minority of nodes.
+
+Consistency: Updates are atomic and consistent across the ensemble.
+
+Watch mechanism: Clients can set watches to get notified when data changes.
+
+Simple data model: Hierarchical namespace like a file system.
+
+3. Data Model
+
+ZooKeeper's data model resembles a file system with the following properties:
+
+Each node in the hierarchy is called a znode.
+
+Znodes are identified by a path (e.g., /app/config/db).
+
+Znodes can hold a small amount of data (usually less than 1 MB).
+
+Znodes can have children (like directories).
+
+Znodes support versioning. Each update changes a version number.
+
+There are three types of znodes:
+
+Persistent znode: Exists until deleted explicitly.
+
+Ephemeral znode: Exists until the session that created it ends.
+
+Sequential znode: A unique, monotonically increasing suffix is added when created.
+
+4. Watches
+
+ZooKeeper clients can register watches on znodes to get notified when a change occurs.
+
+Watch triggers only once.
+
+Clients must re-register if they want continuous notifications.
+
+Watch events include: NodeCreated, NodeDeleted, NodeDataChanged, and NodeChildrenChanged.
+
+Watches are a powerful mechanism for building event-driven applications.
+
+5. Sessions
+
+ZooKeeper maintains a session with each client. The session has the following properties:
+
+Created when the client connects.
+
+Has a timeout – if ZooKeeper does not hear from a client within this timeout, the session expires.
+
+Ephemeral znodes created by a client are tied to its session – they disappear on session expiry.
+
+Session IDs are unique and used for identification.
+
+6. Atomic Broadcast Protocol (ZAB)
+
+ZooKeeper uses a consensus protocol called ZAB (ZooKeeper Atomic Broadcast) for coordination.
+
+Key roles:
+
+Leader: Handles write requests and proposes changes.
+
+Followers: Accept proposals and respond to read requests.
+
+ZAB ensures:
+
+Total order broadcast: All nodes process messages in the same order.
+
+Atomicity: Either all nodes apply an update or none do.
+
+Durability: Once a change is committed, it survives crashes.
+
+ZAB operates in two phases:
+
+Leader election and recovery
+
+Broadcast and commit proposals
+
+7. Read and Write Operations
+
+Read operations (like getData) can be served by any follower.
+
+Write operations (like setData, create, delete) are forwarded to the leader, who proposes them to followers.
+
+Write operations go through the ZAB protocol to ensure consistency across all nodes.
+
+8. Leader Election
+
+ZooKeeper handles automatic leader election among its ensemble nodes.
+
+On startup or failure, nodes vote for a new leader.
+
+Election is based on node ID and transaction history (last zxid).
+
+The node with the most recent and highest zxid becomes the leader.
+
+Applications can use ZooKeeper to perform leader election among services using ephemeral and sequential znodes.
+
+9. Use Cases of ZooKeeper
+
+Configuration management: Store dynamic configurations for distributed services.
+
+Service discovery: Maintain a registry of available services and endpoints.
+
+Leader election: Choose a leader among distributed components.
+
+Distributed locks: Implement locking using ephemeral sequential znodes.
+
+Cluster membership tracking: Track which services are currently alive.
+
+10. Quorum
+
+ZooKeeper works on a quorum-based approach for consistency.
+
+For an ensemble of N nodes, a quorum is majority (N/2 + 1).
+
+A quorum must agree on any state change.
+
+Even if some nodes fail, as long as a quorum exists, ZooKeeper will work correctly.
+
+11. ZooKeeper Ensemble
+
+A ZooKeeper ensemble is a group of servers that collectively provide service.
+
+Minimum 3 nodes are recommended for production to tolerate one failure.
+
+Each server maintains a full copy of the data tree and participates in consensus.
+
+
+Scenario: High Availability Application with Leader Election and Dynamic Configuration
+
+You have a system that includes:
+
+Multiple Application Servers (e.g., Microservices A, B, C)
+
+A Database Cluster (e.g., PostgreSQL or MySQL Replication)
+
+A ZooKeeper Ensemble (3 or 5 nodes)
+
+Clients make HTTP requests to the application servers.
+
+Problem Statement:
+
+You want one application server to act as the Primary/Leader to perform write-heavy tasks (e.g., background jobs, cache invalidation).
+
+The other servers act as Followers and only serve read or lightweight tasks.
+
+You want live configuration updates (e.g., DB credentials, feature toggles) to be shared across all servers without restarting.
+
+You want to ensure that only one service writes to the primary database, even if servers go up/down.
+
+ZooKeeper Solves This Using:
+
+Leader Election
+
+Ephemeral Nodes
+
+Watchers
+
+Configuration Storage
+
+Cluster Membership Tracking
+
+1. Leader Election Using Ephemeral Sequential Znodes
+Each application server, on startup, connects to ZooKeeper and creates an ephemeral sequential znode under path /election.
+
+Example:
+
+/election/node-0000001
+
+/election/node-0000002
+
+/election/node-0000003
+
+ZooKeeper automatically appends the sequential number.
+
+Now each server checks who has the lowest numbered znode. That server becomes the leader.
+
+Why ephemeral? Because if that server crashes or disconnects, its znode disappears, and ZooKeeper can trigger a new leader election automatically.
+
+Servers also watch the node just before them in the list, so if it goes away, they try to become leader.
+
+2. Writing Configurations in ZooKeeper
+A node like /config/db_url can be created in ZooKeeper with value:
+
+bash
+Copy
+Edit
+jdbc:postgresql://primary-db-host:5432/mydb
+Each application server reads this configuration on startup.
+
+They also set a watch on this znode, so if the value changes (say the DB host changes during failover), all servers get notified and reload the configuration dynamically without restart.
+
+3. Coordinating Database Writes
+Only the leader application server performs writes to the DB (e.g., user registration, bulk updates).
+
+Followers either serve read-only or forward write requests to the leader.
+
+This is enforced by:
+
+Leader writes to DB
+
+Others forward to leader
+
+ZooKeeper maintains who the leader is in /election/leader path or by checking who has lowest znode.
+
+4. Handling Failures
+Let’s say the leader application server crashes.
+
+Since its ephemeral node is deleted, the next server in line detects this (due to its watch) and becomes the new leader.
+
+It begins writing to DB and performs leadership tasks.
+
+This ensures no manual intervention is required.
+
+5. Keeping Track of Active Servers
+Each server, on boot, creates an ephemeral node under /members/.
+
+Example:
+
+/members/app1
+
+/members/app2
+
+/members/app3
+
+ZooKeeper now holds the live list of all available servers. Load balancers or service discovery tools can use this list to route traffic only to live servers.
+
+Once a server crashes or disconnects, its znode disappears.
+
+Final Directory Structure in ZooKeeper:
+bash
+Copy
+Edit
+/election
+    /node-0000001 (Leader)
+/config
+    /db_url → jdbc:postgresql://primary-db-host:5432/mydb
+/members
+    /app1
+    /app2
+    /app3
+Benefits of Using ZooKeeper in This Setup:
+Automatic Leader Election with failover.
+
+Configuration Management with live reloading.
+
+Service Discovery via ephemeral znodes.
+
+No Split Brain – Only one leader at a time.
+
+High Availability – ZooKeeper tolerates partial failures.
+
+
+ZooKeeper knows whether a server (client) is live or not using the concept of sessions with heartbeats. Here's how it works in detail:
+
+1. ZooKeeper Session and Heartbeats
+
+When a client (e.g., application server, Kafka broker, etc.) connects to the ZooKeeper ensemble, a session is established.
+
+This session is associated with a session ID and a session timeout value (e.g., 10 seconds).
+
+The client sends periodic heartbeats (pings) to ZooKeeper within this timeout interval.
+
+If ZooKeeper does not receive a heartbeat within the session timeout, it assumes the client is dead or unreachable and takes appropriate actions.
+
+2. Ephemeral Znodes and Session Tracking
+
+Clients often create ephemeral znodes to indicate that they are live.
+
+These znodes are tied to the client's session.
+
+If the session ends (due to timeout or disconnect), all ephemeral znodes are automatically deleted by ZooKeeper.
+
+So, ZooKeeper doesn't just check a heartbeat — it uses the session mechanism to:
+
+Maintain the client’s liveness.
+
+Clean up resources (ephemeral nodes) if the client dies.
+
+3. When is a Server Marked as Dead
+
+ZooKeeper marks a server as dead in these scenarios:
+
+The client crashes (no more heartbeats).
+
+The network between client and ZooKeeper fails.
+
+The client explicitly closes the session or disconnects.
+
+The garbage collector in the client freezes the process for too long and heartbeats stop.
+
+The client's event loop or network thread is blocked, and it cannot send heartbeats.
+
+Once the session timeout elapses with no heartbeat:
+
+The server's session is invalidated.
+
+All ephemeral nodes created by that client are deleted.
+
+Watches set on those nodes trigger events for other clients to react (e.g., elect a new leader).
+
+4. Client Library Role (e.g., ZooKeeper Java client)
+
+The client library handles heartbeat pinging automatically in the background.
+
+You don’t need to manually send heartbeats.
+
+It uses a TCP connection (persistent socket), and failure in maintaining this connection signals issues.
+
+5. Session Timeout and TickTime
+
+ZooKeeper’s liveness detection depends on two key configuration values:
+
+tickTime: Basic time unit (e.g., 2000 ms). Used for heartbeat interval.
+
+sessionTimeout: Usually a multiple of tickTime (e.g., 6 * tickTime = 12 seconds).
+
+If the client fails to respond or send heartbeat pings within sessionTimeout, the server considers it dead.
+
+
+Leader elction - 
+
+Part 1: Watches and Notifications in ZooKeeper
+ZooKeeper clients can set a watch on a znode to get notified when that znode changes.
+
+What is a Watch?
+
+A watch is a one-time trigger that lets a client know when:
+
+A znode is created
+
+A znode is deleted
+
+A znode’s data is updated
+
+A znode’s children list changes
+
+Use Case in Leader Election:
+
+Each server (client) trying to become leader:
+
+Creates an ephemeral sequential node under a path like /election.
+
+Example nodes: /election/node-0000001, /election/node-0000002, ...
+
+Each client checks who has the lowest sequence number.
+
+The one with the lowest number becomes the leader.
+
+Others set a watch on the znode immediately before them in the sequence.
+
+What happens when the leader (lowest node) dies?
+
+Its ephemeral znode gets deleted (session ends due to no heartbeat).
+
+ZooKeeper triggers the watch event on that znode.
+
+The client watching it gets notified and re-checks the list.
+
+If it's now the lowest numbered znode, it becomes the new leader.
+
+This watch mechanism makes ZooKeeper reactive and dynamic — no polling needed.
+
+Part 2: How ZooKeeper Elects a New Leader
+ZooKeeper supports two kinds of leader election:
+
+Internal Leader Election: Used by ZooKeeper itself for its ensemble (used by ZAB protocol).
+
+Application-level Leader Election: Used by your app (e.g., to choose one app server as leader).
+
+Let’s discuss both.
+
+Internal Leader Election in ZooKeeper Ensemble (ZAB Protocol)
+Used when:
+
+A ZooKeeper node crashes or starts up.
+
+The ensemble needs to elect a new leader node among themselves (ZooKeeper servers).
+
+Election Process:
+
+Each ZooKeeper server sends a vote: (myID, lastZxid).
+
+myID = unique server ID
+
+lastZxid = last transaction ID it knows
+
+The server with the highest zxid (most up-to-date) wins.
+
+If zxids are equal, the server with the highest ID wins (tie-breaker).
+
+Once a quorum of servers agrees on the same vote, that server becomes the leader.
+
+The new leader synchronizes state with followers using the ZAB protocol.
+
+Only the leader handles write requests from clients. Followers can serve reads.
+
+Application-Level Leader Election Using Ephemeral Sequential Nodes
+Your application can use ZooKeeper to elect a leader among service instances.
+
+How it works:
+
+All servers (clients) connect to ZooKeeper.
+
+Each server creates an ephemeral sequential node under a known path:
+
+lua
+Copy
+Edit
+zk.create("/election/node-", myData, EPHEMERAL_SEQUENTIAL)
+ZooKeeper assigns them paths like:
+
+/election/node-00000001
+
+/election/node-00000002
+
+/election/node-00000003
+
+Each client:
+
+Gets the full list of children under /election.
+
+Sorts them to find the one with the lowest suffix.
+
+If your node is the lowest, you become leader.
+
+Otherwise, set a watch on the node just before yours in the sorted list.
+
+When the node before yours is deleted (because that server crashed or disconnected):
+
+You get a watch event.
+
+You check again. If you're now the lowest, you become the new leader.
+
+This ensures automatic leader handoff with no race conditions.
+
+Example:
+Assume the following nodes under /election:
+
+bash
+Copy
+Edit
+/election/node-00000001  → AppServer A
+/election/node-00000002  → AppServer B
+/election/node-00000003  → AppServer C
+A is leader (lowest number).
+
+B watches A.
+
+C watches B.
+
+If A crashes:
+
+ZooKeeper deletes node-00000001
+
+B is notified via watch.
+
+B checks again, finds itself now lowest → becomes leader.
+
+C now watches B.
+
+If B also dies, C becomes leader.
+
+This chain of watches is more efficient than all nodes watching the leader.
+
+
+When ZooKeeper dies (or more accurately, when the ZooKeeper ensemble becomes unavailable), application servers will automatically detect it through session management and connection failure detection provided by the ZooKeeper client library.
+
+Here’s a detailed explanation of what happens and how the application knows:
+
+1. ZooKeeper Clients Maintain a Persistent TCP Connection
+Each application server (ZooKeeper client) maintains a persistent TCP connection to one of the ZooKeeper servers.
+
+If that server goes down, the client will try other servers in the ensemble (as long as a quorum is available).
+
+If all servers are unavailable, or the quorum is lost, then the client cannot maintain a valid session.
+
+2. Session Timeout Triggers Detection
+Each client session has a configured session timeout (e.g., 10 seconds).
+
+The client sends heartbeat pings to ZooKeeper.
+
+If the client fails to receive responses from ZooKeeper servers within the timeout, it considers the session expired.
+
+This causes the client to:
+
+Enter a Disconnected or Expired state.
+
+Raise a connection loss event (via a callback or listener).
+
+Automatically reconnect when servers come back (if session hasn't yet expired).
+
+So the client doesn't need to poll. The ZooKeeper library handles this.
+
+3. Application Server Gets Notified via Watchers or Event Callbacks
+The client library (e.g., Apache ZooKeeper Java client or Curator) notifies your application of connection issues via:
+
+Watcher Events:
+
+SyncConnected: Successfully connected
+
+Disconnected: Temporarily lost connection
+
+Expired: Session permanently expired (ephemeral nodes deleted)
+
+AuthFailed: Authentication failed
+
+State Change Listeners: Many clients allow you to register listeners that get called on connection state change.
+
+This is how the application becomes aware that ZooKeeper is unreachable.
+
+4. Implications on Application Behavior
+Once ZooKeeper is unreachable:
+
+Leader Election stops: No leader can be elected or confirmed.
+
+Ephemeral nodes are removed after session expiration.
+
+Configuration updates stop — clients can't fetch or watch new data.
+
+Service discovery might fail if based on ephemeral znodes.
+
+The application must decide what to do in such cases, e.g.:
+
+Enter read-only mode
+
+Stop background jobs that require coordination
+
+Show degraded status to monitoring systems
+
+5. ZooKeeper Failure Scenarios
+Let’s go through different ZooKeeper failure scenarios:
+
+a. Single ZooKeeper Node Fails:
+
+No impact if quorum is intact (i.e., majority of nodes are still up).
+
+Clients automatically switch to another available node.
+
+b. Network Partition Between ZooKeeper and App Server:
+
+Client can't reach ZooKeeper → triggers Disconnected or Expired after timeout.
+
+c. Entire ZooKeeper Ensemble Down:
+
+Clients can’t connect.
+
+Session expires → app knows ZooKeeper is dead.
+
+All ephemeral nodes are lost.
+
+Watches are lost and must be re-registered once reconnected.
+
+6. Client Logic – Handling ZooKeeper Downtime
+Your application should implement handlers like:
+
+java
+Copy
+Edit
+public class ZKWatcher implements Watcher {
+    @Override
+    public void process(WatchedEvent event) {
+        switch (event.getState()) {
+            case SyncConnected:
+                System.out.println("Connected to ZooKeeper");
+                break;
+            case Disconnected:
+                System.out.println("ZooKeeper temporarily unavailable");
+                break;
+            case Expired:
+                System.out.println("ZooKeeper session expired – leadership lost");
+                // Reconnect and re-register znodes
+                break;
+            case AuthFailed:
+                System.out.println("Authentication failed");
+                break;
+        }
+    }
+}
+You can also use Apache Curator which provides higher-level abstractions like ConnectionStateListener.
+
+01:26:00
+
 
 
 
