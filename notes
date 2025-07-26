@@ -16181,7 +16181,116 @@ public class ZKWatcher implements Watcher {
 }
 You can also use Apache Curator which provides higher-level abstractions like ConnectionStateListener.
 
-01:26:00
+
+Notes  -
+
+https://github.com/kanmaytacker/system-design/blob/master/notes/zookeeper-kafka.md
+
+https://docs.google.com/document/d/1qNTHCsUCI8pQF_NuHLzrixU7xm72sm6SkKLUDWcXzLk/edit?tab=t.0
+
+Zookeeper is being deprecated, and replaced by KRaft-based clusters.
+
+S3 - 
+
+Requirements - 
+
+We should be able to store very large files. 
+It should be durable.
+Files should be downloadable. 
+
+Large files are divided into chunks and stored on the distributed servers.
+
+We also need to store the chunks metadata. 
+
+HDFS - Hadoop Distributed file system - 
+
+In this each chunk size will be 128 MB.
+
+There two different types of machines in this - 
+
+1) Name Node - on this chunk metadata is stored. This data is stored in memory.
+
+2) Data Node - on this data is stored. Data is stored on disk.
+
+Name Node servers are replicated and they follow master slave architecture. Data on name node is very less so there is no need to shard this data.
+
+Data nodes are also replicated.
+
+File uploading flow - When file is uploaded to S3, first application server will divide it into chunks, then metadata of all these chunks are stored name node server and then chunks are stored on Data node.
+
+
+File downloading flow - When file is downloaded, The application server sends that request to HDFS client, Then HDFS app servers will fetch the chunks metadata from Name node servers, and then for each chunk it will fetch the data from data nodes and send it to the user.
+
+
+Bittorrent Internals - 
+
+https://www.youtube.com/playlist?list=PLsdq-3Z1EPT1rNeq2GXpnivaWINnOaCd0
+
+
+
+--------------------------------------
+
+System Design - Design Uber 
+
+
+Zomato example - 
+
+https://docs.google.com/document/d/1_f-7o1jjqZU549f5RAoXQDWnC8Ylg4oAIdLrgnA_XP4/edit?tab=t.0
+
+
+Uber intracity - Provides options in single city.
+
+So in this we can have city as the sharding key. 
+
+but in one city there can be millions of cabs, which is very hard to store in a single shard.
+
+
+For every second the driver location is changing, The app will call the backend api and send its latest location, which will be stored in cache first and then it will be stored in the database.
+
+
+User, Driver and bookings data is structured so we can store it in the database.
+
+User makes a booking, we store that booking in a database, then find the nearest cab for the user, to find the nearest cab for the user - first find out the grid of the user and then find out the cabs available in that grid, Then select one of the cab on the basis of user preferance, Then notify user and driver of the booking.
+
+And if there are no cabs in users grid then it will search in the nearby grids. 
+
+When driver moves it will change its location and this information needs to be updated in the backend and this information will be huge and needs very low latency and as users location is changing we will also have to update the quad tree based on no of drivers present in the quad tree. 
+
+Uber operates in 13k cities and there are 8 Million drivers and on average uber completes 500 trips per second.
+
+location updates per second =
+
+Writes - 8 Million drivers * 12 hours per day per driver * 1 update per 10 seconds = 4 lakhs update per second. 
+
+Reads - 
+
+30 million trips per day = 500 trips per second 
+
+on average each trip will have 2 calls to the nearest neighbour api, Now to book 500 trips each  second, we will get 500 * 2 = 1000 requests per second. 
+
+
+From above data we can say that our system is write heavy, To optimize it we can reduce the no of writes to database by using caching and updating the database after certain no of updates in the cache.
+
+Grid data is stored in memory for faster access. 
+
+We do not have to update every change in drivers location in the quad tree, Our quad tree should update when the drivers location moves from one grid to another grid. 
+
+ So to detect this grid change, we can have an api which will send the current grid and nearby grids to the driver, grid is rectangular in shape so we only have to send two diagonal co-ordinates of the grid. once driver moves from one grid to another grid then it will call the grid update api and this data will be stored  on Redis first and then it will update in database. 
+ 
+For each city we will create a quad tree based on current cab locations and this quad tree will be stored on redis memory. We will also maintain last known location of the cab in redis. Only send location to quad tree if drivers grid changes.  
+ 
+Instead of quad tree uber uses hex tree.
+
+Solve below question - 
+
+https://leetcode.com/problems/construct-quad-tree/description/
+
+
+------------------------
+
+
+Hashing : Introduction 
+
 
 
 
