@@ -16292,6 +16292,308 @@ https://leetcode.com/problems/construct-quad-tree/description/
 Hashing : Introduction 
 
 
+HashSet (java.util.HashSet)
+A HashSet is a collection that contains unique elements only, backed by a HashMap internally.
+
+1. add(E e)
+Purpose: Adds the specified element to the set if it is not already present.
+
+Returns: true if this set did not already contain the specified element.
+
+java
+Copy
+Edit
+HashSet<String> set = new HashSet<>();
+set.add("apple");  // true
+set.add("apple");  // false (duplicate)
+2. contains(Object o)
+Purpose: Checks whether the specified element exists in the set.
+
+Returns: true if the set contains the element.
+
+java
+Copy
+Edit
+set.contains("apple");  // true
+3. remove(Object o)
+Purpose: Removes the specified element from the set if it exists.
+
+Returns: true if the element was present and removed.
+
+java
+Copy
+Edit
+set.remove("apple");  // true
+4. size()
+Purpose: Returns the number of elements in the set.
+
+java
+Copy
+Edit
+set.size();  // e.g., 0 after removal
+5. isEmpty()
+Purpose: Checks if the set is empty.
+
+java
+Copy
+Edit
+set.isEmpty();  // true
+6. clear()
+Purpose: Removes all elements from the set.
+
+java
+Copy
+Edit
+set.clear();
+7. iterator()
+Purpose: Returns an iterator to traverse the elements.
+
+java
+Copy
+Edit
+Iterator<String> it = set.iterator();
+while (it.hasNext()) {
+    System.out.println(it.next());
+}
+✅ HashMap (java.util.HashMap)
+A HashMap stores key-value pairs. Keys are unique, values can be duplicated.
+
+1. put(K key, V value)
+Purpose: Adds or replaces the key-value pair.
+
+Returns: The previous value associated with the key or null if none.
+
+java
+Copy
+Edit
+HashMap<String, Integer> map = new HashMap<>();
+map.put("apple", 10);
+map.put("apple", 20);  // replaces 10 with 20
+2. get(Object key)
+Purpose: Retrieves the value for the given key.
+
+Returns: The value associated with the key, or null if not found.
+
+java
+Copy
+Edit
+map.get("apple");  // 20
+3. containsKey(Object key)
+Purpose: Checks whether the key exists.
+
+Returns: true if the key is present.
+
+java
+Copy
+Edit
+map.containsKey("apple");  // true
+4. containsValue(Object value)
+Purpose: Checks whether any key maps to the given value.
+
+java
+Copy
+Edit
+map.containsValue(20);  // true
+5. remove(Object key)
+Purpose: Removes the key and its associated value.
+
+Returns: The value that was removed or null.
+
+java
+Copy
+Edit
+map.remove("apple");  // 20
+6. putIfAbsent(K key, V value)
+Purpose: Inserts the key-value pair only if the key is not already present.
+
+java
+Copy
+Edit
+map.putIfAbsent("banana", 30);  // adds banana if not present
+7. keySet()
+Purpose: Returns a Set view of all keys.
+
+java
+Copy
+Edit
+Set<String> keys = map.keySet();
+8. values()
+Purpose: Returns a Collection view of all values.
+
+java
+Copy
+Edit
+Collection<Integer> values = map.values();
+9. entrySet()
+Purpose: Returns a set of key-value pairs (Map.Entry).
+
+java
+Copy
+Edit
+for (Map.Entry<String, Integer> entry : map.entrySet()) {
+    System.out.println(entry.getKey() + " -> " + entry.getValue());
+}
+10. replace(K key, V value)
+Purpose: Replaces the value for the given key if present.
+
+
+map.replace("banana", 50);
+
+
+
+insert, search, size, delete operations are constant time in hashmap and hashset.
+
+Q - Given N elements & Q queries. Find the frequency of elements provided in the query.
+
+Solution - use hashmap.
+
+
+Q - Given N elements. Find the first non repeating element.
+
+Solution - 
+
+Aways ask clarifying questions if something is not clear. In this case they have not mention the range of value of array elements and data type of the array elements.
+
+BF - For each element find frequency and and return the element which has frequency equal to 1. Iterate an array from left to right. 
+
+
+Idea 2 - Create frequency hashmap, iterate an array from left to right and find the first element whose frequency is equal to 1.
+
+
+Q - Count of distinct elements in the array. 
+
+use hashset and at the end return the size of the hashset as ans.
+
+Q - Given an array of N elements, Check if there exists a subarray with sum equal to 0.
+
+Solution - 
+
+BF - 
+
+for ( l from 0 to n-1) {
+
+for( r from l to N-1) {
+
+total =0;
+
+
+for( i from l to r ){
+
+total += A[i];
+}
+
+if( total == 0 ) return true;
+
+}
+
+}
+
+return false;
+
+TC - O(N^3) 
+SC - O(1)
+
+Idea 2 - 
+
+Observation - If sum repeats in prefix sum this implies that subarray sum is equal to 0. and if prefix sum value is equal to 0 then we can say that sum of array elements till that point is equal to 0.
+
+Code - 
+
+total =0
+
+Hashmap <Int,Int> hm;
+
+for( i from 0 to n-1){
+
+total += A[i];
+
+if( hm.search(total) == false) {
+
+hm.insert( total, 1);
+} else {
+
+return true;
+}
+
+if( total == 0 ) 
+return true;
+
+}
+
+return false;
+
+Approach 2 - 
+
+total =0
+
+Hashmap <Int,Int> hm;
+
+hm.insert(0, 1) // inserting 0 in the hashmap.
+// this is to handle the edge case.
+
+
+for( i from 0 to n-1){
+
+total += A[i];
+
+if( hm.search(total) == false) {
+
+hm.insert( total, 1);
+} else {
+
+return true;
+}
+
+if( total == 0 ) 
+return true;
+
+}
+
+return false;
+
+
+TC - O(n)
+SC - O(n)
+
+
+Variations of above problems - 
+
+Q count all subarrays sum ==0
+
+Q Length of the longest subarray with sum == 0
+
+Q Length of the longest subarray with sum == k.
+
+
+----------------------
+
+Hashing 2 - problems 
+
+
+
+----------------------
+
+
+DSA - be good - Practice - Create an excel - Topic wise questions you have solved, commit solutions to github, update excel daily, Time taken to solve the question. 
+
+Revise problem from the excel and solve it again in mind, if you are able to solve it within 15 minuts then you are good, if not then solve the problem again. 
+
+LLD - Take actual mock interview, Do maching coding coding. 
+
+SQL - Practice queries.
+
+Java, Spring Boot - while writing code think from practical perspective, where this can be applied, see source code of internal functions, Create project around the problems you are facing, document the project like it is your startup, implement features other that CRUD operations.
+
+
+Set expectations company wise.
+
+Schedule next mentor  session within next 3 weeks. 
+
+Share the git link - to review the code. 
+
+Start attending lectures live, ask questions, 
+
+Skip HLD for now.  
 
 
 
