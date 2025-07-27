@@ -16570,6 +16570,295 @@ Q Length of the longest subarray with sum == k.
 Hashing 2 - problems 
 
 
+Q -Given an arr[N] and k. Check if there exists a pair(i, j) such that arr[i] + arr[j] = k && i != j.
+
+BF - 
+
+for ( r from 0 to n-1 ) {
+
+for ( l from 0 to r-1 ) {
+
+if ( A[l] + A[r] == k) return true;
+
+}
+
+}
+
+return false
+
+
+TC - O(N^2)
+SC - O(1)
+
+
+Idea 2 - 
+
+a + b = k 
+
+b = k - a
+
+So we will find if b value exists in the array. 
+
+for ( r from 0 to n-1 ) {
+
+need = k - A[r];
+
+for ( l from 0 to r-1 ) {
+
+if ( A[l] == need ) return true;
+
+}
+
+}
+
+return false
+
+
+TC - O(N^2)
+SC - O(1)
+
+We can improve above search with the help of hashset.
+
+Code - 
+
+Hashset <Int> hs ;
+
+for( int i from 0 to n-1) {
+
+need = k - A[i];
+
+if( hs.search(need) == true) {
+
+	 return true;
+	 
+	 }
+	 
+	 hs.insert(A[i];
+	 
+}
+
+return false;
+
+TC - O(n)
+SC - O(n)
+
+
+Q - Count no of pairs with sum = K where (i, j) == (j, i)
+
+Solution - 
+
+BF - for every pair check total == k. 
+
+TC - O(n^2)
+SC - O(1)
+
+Idea 2 - 
+
+use hashmap to store the frequency of the elements.
+
+HM<int, int> hm;
+
+pairs =0;
+
+for i from 0 to n-1 {
+
+need = k-A[i];
+
+if( hm.search(need) == true) {
+
+pairs += hm.get(need);
+}
+
+// add A[i] to frequency map.
+
+if( hm.search( A[i] == false) {
+
+hm.insert( A[i], 1);
+
+}
+else {
+
+f = hm.get( A[i]);
+hm.insert( A[i] , f+1);
+}
+
+}
+
+return pairs;
+
+
+TC - O(n)
+SC - O(n)
+
+
+Q - Subarray with sum equal to k. 
+
+Given an array of size n. check if there is a subarray with sum =k.
+
+
+BF - 
+
+for l from 0 to n-1 {
+
+for r from l to n-1 {
+
+total =0
+
+for i from l to r {
+
+total += A[i]; }
+
+if( total == k ) return true;
+
+}
+
+}
+
+return false;
+
+TC - O(n^3)
+SC - O(1)
+
+Idea 2 - 
+
+Create prefix sum array.
+
+
+pf[n];
+
+pf[0] = A[0];
+
+for i from 1 to n-1 {
+pf[i] = pf[i-1] + A[i];
+}
+
+Hashset<int> hs ;
+
+hs.insert(0) // this is to handle the single element edge case.
+
+
+for i from 0 to n-1 {
+
+need = pf[i] - k;
+
+if( hs.search(need) == true) {
+return true;
+}
+
+hs.add( pf[i]);
+
+}
+
+return false;
+
+
+TC - O(n)
+SC - O(n)
+
+
+Q - Distinct elements 
+
+Given an array A of n integers, denoting the sequence of topics a learner interacted with for a module, and a number B denoting the window size. Your mission is to determine the count of different topics the learned engaged within each window of size B.
+
+idea - for every window count the distinct element. 
+
+s =0, e = b-1
+
+for( e from k-1 to n-1 ) {
+
+// window from s to e
+Hashset<int> hs;
+
+for i from s to e ) {
+
+hs.insert(A[i]);
+
+}
+
+print(hs.size);
+
+s++;
+
+}
+
+
+TC - O(n * B)
+SC - O(k)
+
+
+Idea 2 - 
+
+Sliding window + HashMap
+
+ 
+ 
+HashMap<int, int> hm;
+
+// loop over the first window and create frequency map.
+
+for i from 0 to k-1 {
+
+key = A[i];
+
+if( hm.search( key) == false) {
+hm.insert( key, 1);
+}
+else {
+f = hm.get(key);
+hm.insert( key, f+1);
+}
+
+}
+
+
+ans.add( hm.size());
+
+// sliding window 
+
+s=1, e=k
+
+while( e < n ) {
+
+// remove A[l -1 ] from window
+
+tval = A[s-1];
+
+hm.put( tval, hm.get( tval));
+
+if( hm.get( tval) == 0 ) {
+hm.delete( tval);
+}
+
+// Add A[e] to the window
+
+val = A[e];
+
+if( hm.search(val) == false) {
+
+hm.insert(val, 1);
+} else {
+f = hm.get(val);
+hm.insert( val, f+1);
+}
+
+ans.add(hm.size())
+
+s++;
+e++;
+}
+
+return ans;
+
+
+TC - O(n-k+k)
+SC - O(k)
+
+
+
+
+
+
+
 
 ----------------------
 
