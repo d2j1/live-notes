@@ -16853,6 +16853,77 @@ return ans;
 TC - O(n-k+k)
 SC - O(k)
 
+------------------------
+
+Sorting 1: Count Sort & Merge Sort
+
+
+Q - Count Sort - 
+
+Find the smallest number that can be formed by rearranging the digits of the given number in an array. Return the smallest number in the form of an array.
+
+Idea 1 - Sort the given array - TC( nlogn )
+
+
+Idea 2 - Expected time complexity O(n)
+
+create frequency array of the array elements.
+
+Then from this frequecy array create final ans by appending elements.
+
+Code - 
+
+F[10] // freq array to store the count of digits.
+
+for i form 0 to n-1 {
+
+dig = A[i];
+
+F[dig]++;
+}
+
+for dig from 0 to 9 {
+
+freq = F[dig];
+
+k=0;
+
+for i from 1 to freq {
+
+A[k] = dig;
+k++;
+}
+
+}
+
+TC - O(n)
+SC - O(10) = O(1)
+
+
+Above approach will not work if A[i] = 10^9
+
+how to handle negative numbers in this case - 
+
+Use hashmap or offset the range of numbers - means convert the numbers into positive. ex to convert -2 to positive do -2-x =0. So here x will be -2 and at the end we will get 4 as the positive number for -2.
+
+
+Q - Googles Gamil offers an all inboxes feature that allows users to view emails from multiple email accounts in one seamless interface. This is particularly useful for users managing personal and professional communications through separate accounts. 
+
+The feature ensures that emails from all accounts are merged into a single feed sorted by date and time, facilitating better email managemembt and access.
+
+Problem - 
+
+Develop a function to emulate the All inboxex feature of gmail. 
+
+You are given two sorted arrays that represents timestamps of emails from two different email accounts. Each element in the array is an email object. 
+
+Your task is to merge these two arrays into a single list, ensuring that the resulting list is sorted by the timestamp, allowing the user to view emails in a chronological order from accounts combined.
+
+Idea 1 - combine elements from both the arrays in one new array and then sort the new array.
+
+TC - O( (N+M) log(M+N))
+
+
 
 
 
