@@ -17300,8 +17300,153 @@ return r;
 
 }
 
-47:53
+TC - O(nlogn)
+SC - O(logn) - recursion stack used - log n is the depth of recursive tree.
 
+Worst case - if array is already sorted - 
+
+TC - O(n^2)
+SC - O(n)
+
+Average case - 
+
+TC - O(nlogn)
+SC - O(logn)
+
+Arrays.sort - uses quick sort internally.
+
+Randomised quick sort - In this we can choose any random element as pivot the only change needed is swap(A, 0 , random_index)
+
+Comparator - 
+
+if we want first argument to come before second - return negative.
+
+If we want second argument to come before first - return positive.
+
+if both are same then return 0.
+
+
+Q - Given  arr[N], sort the data in ascending order of count of factors. If count of factors are equal, then sort the elements on the basis of their value.
+
+arr = 9, 3, 10, 6, 4
+fact= 3, 2,  4, 4, 3
+
+Sroted array will be  = 
+
+3, 4, 9, 6, 10.
+
+Code - 
+
+
+public class FactorSortSimple {
+
+    // Function to count the number of factors of a number
+    public static int countFactors(int num) {
+        int count = 0;
+        for (int i = 1; i <= Math.sqrt(num); i++) {
+            if (num % i == 0) {
+                if (i == num / i) {
+                    count += 1; // Perfect square (like 4 → 2x2)
+                } else {
+                    count += 2; // i and num/i are two different factors
+                }
+            }
+        }
+        return count;
+    }
+
+    public static void main(String[] args) {
+        Integer[] arr = {9, 3, 10, 6, 4};
+
+        Arrays.sort(arr, new Comparator<Integer>() {
+            public int compare(Integer a, Integer b) {
+                int factorsA = countFactors(a);
+                int factorsB = countFactors(b);
+
+                if (factorsA < factorsB) {
+                    return -1; // a comes before b
+                } else if (factorsA > factorsB) {
+                    return 1;  // b comes before a
+                } else {
+                    // Same number of factors, compare values
+                    if (a < b) {
+                        return -1;
+                    } else if (a > b) {
+                        return 1;
+                    } else {
+                        return 0; // both are equal
+                    }
+                }
+            }
+        });
+
+        // Print the sorted array
+        System.out.println("Sorted array:");
+        for (int num : arr) {
+            System.out.print(num + " ");
+        }
+    }
+
+
+
+Q - Largest number - 
+
+Given a list of non negative integer A[]. Arrange them such that they form the largest numbers.
+
+
+Idea 1 - convert the numbers into strings and then concatenate them. 
+
+int compare( int a, int b){
+
+String sa = String(a)
+String sb = String(b)
+
+String x = sa + sb;
+String y = sb+ sa;
+
+if( x > y ) return -1;
+
+else if ( x < y) return 1;
+
+else return 0;
+
+}
+
+
+
+Use above compare function defination in comparator.
+
+Q - B closest point to origin 
+
+Given two arrays x[] and y[]. 
+
+{ x(i), y(i) } - Point on zero plane, return B closest points to the origin.
+
+Distance from (0,0) to (x, y) = sqrt( x^2 + y^2)
+
+
+Ans - 
+
+List<List<int>> points = [[3,3], [-2, 4], [5, -1]]
+
+Collection.sort( points, comparator );
+
+
+int comparator( List<Integer> p1, List<Int> p2 ){
+
+int d1 = p1[0] * p1[0] + p1[1] * p1[1].
+
+
+int d1 = p2[0] * p2[0] + p2[1] * p2[1].
+
+
+if( d1 < d2 ) return -1;
+ if ( d2 < d1) return 1;
+ return 0;
+ 
+ }
+ 
+ 
 ----------------------
 
 
