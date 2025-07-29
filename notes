@@ -16923,13 +16923,384 @@ Idea 1 - combine elements from both the arrays in one new array and then sort th
 
 TC - O( (N+M) log(M+N))
 
+Idea 2 - Maintain two index starting from 0th index. 
+
+ ans[N+M]
+ 
+ a=0, b=0, c=0
+ 
+ while( a < N && b < M){
+ 
+ if( A[a] < B[b] ) {
+ 
+ C[c] = A[a];
+ c++;
+ a++;
+ 
+ } else {
+ C[c] = B[b];
+ c++;
+ b++;
+ }
+
+}
+
+
+while( a < N) {
+
+ C[c] = A[a];
+ c++;
+ a++;
+ }
+ 
+ while( b < M ) {
+  C[c] = B[b];
+ c++;
+ b++;
+ }
+ 
+ TC - O(M+N)
+ SC - O(M+N)
+
+
+Merge Sort - 
+
+Divide the array in the middle, like this keep dividing till only one element left and then merge the two elements in sorted manner. 
+
+
+Code - 
+
+void mergeSort( A[], low, high) {
+
+if( low == high) return;
+
+mid = (low + high) /2;
+
+ mergeSort( A[], low, mid);
+ 
+  mergeSort( A[], mid+1, high);
+  
+  merge( A, low, mid, high);
+  
+}
+  
+void merge(A, low, mid, high ){
+
+// merge two sorted arrays 
+
+// low to mid 
+
+C[high - low + 1];
+
+a=low, b=mid+1, c =0
+
+while( a <= mid && b <= high ){
+
+if( A[a] < A[b] ) {
+
+C[c] = A[a];
+c++;
+a++;
+
+} else {
+
+C[c] = A[b];
+c++;
+b++
+}
+
+}
+
+while( a <= mid) {
+
+C[c] = A[a];
+c++;
+a++;
+}
+
+while( b <= high) {
+
+C[c] = A[b];
+c++;
+b++;
+}
+ 
+a = low;
+  
+for( i=0; i< C.length; i++){
+
+A[a] = C[i];
+a++;
+}
+
+}  
+
+TC - 
+
+TC - for merge = O(n), for divide the array it will create log(n) levels so log(n) time. So in total it will take = n log(n)
+
+SC - O(n)
+
+Stable sort and Inplace sort - 
+
+Order of input is preserved, if the two same elements are present then their original relative order is maintained in the sorted array.
+
+Merge sort is stable sort.
+
+Inplace sort - In this we do not use any extra space.
+
+Merge sort is not inplace.
+
+Selection sort, bubble sort and insertion sort are the inplace sorting algorithm.
 
 
 
+Q - Given two array, A[n] and B[m]. Calculate number of pairs i, j, such that A[i] > B[j]
 
 
+Idea 1 - Check for all pairs.
 
 
+pairs=0;
+
+for i from 0 to n-1 {
+
+for j from 0 to m-1 {
+
+if( A[i] > B[j] ) pairs++;
+}
+}
+
+TC - O(n^2)
+
+  
+  Idea 2 - what if both arrays are sorted?
+  
+  A.sort()
+  B.sort()
+  
+  a=b=0
+  
+  while( a < N && b < M ){
+  
+  if( A[a] > B[b] ){
+  
+  b++;
+  count += n-a;
+  } else {
+  a++;
+  }
+  
+  }
+  
+  TC - O(n+m + nlogn + mlogm) = O(nlogn + mlogm)
+  SC - 
+  
+  Merge sort - O(n+m)
+  HeapSort - O(1)
+  
+  
+  Q- Inversion count - 
+  
+  Given an a[n], calculate number of pairs [i,j] such that i <j && a[i] > a[j], i and j are index of array.
+  
+  BF - 
+  
+  for i from 0 to n-1 {
+  
+  for j from i+1 to n-1 {
+  
+  if( A[i] > A[j] ){ cnt++; }
+  
+  }
+  
+  }
+  
+  idea 2 - 
+	
+	Using merge sort logic to get the count logic.
+	
+	code - 
+	
+	cnt=0;
+
+void mergeSort( A[], low, high) {
+
+if( low == high) return;
+
+mid = (low + high) /2;
+
+ mergeSort( A[], low, mid);
+ 
+  mergeSort( A[], mid+1, high);
+  
+  merge( A, low, mid, high);
+  
+}
+  
+void merge(A, low, mid, high ){
+
+// merge two sorted arrays 
+
+// low to mid 
+
+C[high - low + 1];
+
+a=low, b=mid+1, c =0
+
+while( a <= mid && b <= high ){
+
+if( A[a] < A[b] ) {
+
+C[c] = A[a];
+c++;
+a++;
+
+} else {
+
+C[c] = A[b];
+c++;
+b++;
+
+cnt += mid - a+1;
+}
+
+}
+
+while( a <= mid) {
+
+C[c] = A[a];
+c++;
+a++;
+}
+
+while( b <= high) {
+
+C[c] = A[b];
+c++;
+b++;
+}
+ 
+a = low;
+  
+for( i=0; i< C.length; i++){
+
+A[a] = C[i];
+a++;
+}
+
+}  
+
+----------------------------
+
+Sorting 2: Quick Sort & Comparator Problems
+
+
+Q - given an integer arary, consider frist element as pivot, rearrange the elements such that for all i:
+if A[i] < p then it should be present on left side.
+
+if A[i] > p then it should be present on right side.
+
+Idea 1 - Sort the array. 
+
+TC - O(nlogn)
+
+Idea 2 - create a new array for ans. 
+
+first add the all the elements which are less than pivot and then add pivot and then add elements which are greater than pivot to the ans array.
+
+TC - O(n)
+SC - O(N)
+
+Idea 3 - Quick select - 
+
+
+p= A[0]
+
+l = 1;
+r = n-1
+
+while( l <= r) {
+
+if( A[l] < p ){
+
+l++;
+}
+
+else if( A[r] > p ) {
+ r--;
+ }
+ else { 
+ 
+ swap(A, l, r);
+ l++; r--;
+ }
+ 
+ }
+ 
+ swap(A, 0,r);
+ 
+ TC - O(n)
+ SC - O(1)
+ 
+ 
+ Quick sort - 
+ 
+ 
+Quick Sort is a divide-and-conquer sorting algorithm that works by partitioning an array into two subarrays based on a pivot element, and then recursively sorting the subarrays.
+
+🔹 Core Idea:
+Choose a Pivot: Select an element from the array as the pivot (commonly first, last, middle, or a random element).
+
+Partitioning: Rearrange elements such that:
+
+Elements less than the pivot are on the left.
+
+Elements greater than the pivot are on the right.
+
+Recursively apply the above steps to the subarrays on the left and right of the pivot.
+
+Code - 
+
+
+void quickSort( arr[], int io, int hi){
+
+if( lo < hi) {
+
+pi = quickSelect(A, lo, hi);
+
+quickSort(A, lo, pi-1);
+quickSort(A, pi+1, hi);
+
+}
+
+}
+
+int quickSelect( int[] A, int lo, int hi ){
+
+p = A[lo];
+l = lo + 1;
+r = hi;
+
+while( l <= r) {
+
+if (A[l] < p ) l++;
+else if( A[r] > p ) r--;
+else{
+swap(A, l , r);
+l++;
+r--;
+}
+
+}
+
+swap(A, lo, r);
+
+return r;
+
+}
+
+47:53
 
 ----------------------
 
