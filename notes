@@ -18315,6 +18315,204 @@ Kafka demo -
 
 https://github.com/kanmaytacker/system-design/tree/master/demos/kafka
 
+---------------------------
+
+System Design - Design an OTT platforms 
+
+
+On these platforms first uploaded video content is converted into different resolutions like from 4k to 1080, 720, 360p etc.
+
+How OTT decides the best resolution to show to the user?
+
+1) Screen size
+2) Network Speed of the user - by using speed test techniques
+
+
+https://www.deviceinfo.me/ - This api gives the device information. 
+
+Once files of different resolutions are created those files are divided into small chunks and frontend will stream these chunks. 
+
+
+these video files are stored on s3.
+
+Devices has different types of codecs - 
+mp4, mkv, avi, mpeg, webM, mov etc. 
+
+
+How should we decide the chunk size?
+1) By size
+2) By time
+3) Scene baesd chunking
+
+
+Adaptive bitrate streaming - This is used to avoid buffering when users network bandwidth is dropped by lowering or upgrading the resolution of the video.
+
+HLS protocol - This is adaptive streaming algorithm, and it is developed by apple for their own devices and used by all apple devices.
+
+What is HLS?
+HLS (HTTP Live Streaming) is a media streaming protocol developed by Apple.
+It is used to stream audio and video content over the internet, both live and on-demand.
+
+HLS works by breaking the content into small file segments, serving them over standard HTTP, and allowing clients to download and play them sequentially.
+
+It supports features like:
+
+Adaptive bitrate streaming (quality changes depending on network speed)
+
+Live and on-demand playback
+
+Works on most browsers and devices
+
+Firewall and CDN friendly (uses HTTP)
+
+How HLS Works (Step-by-Step)
+Let’s go through the full lifecycle of how HLS delivers content to a viewer.
+
+1. Video Encoding and Segmentation
+The first step is to encode the video and audio and break it into small segments (usually 2 to 10 seconds long).
+
+The video is encoded into multiple quality levels (low, medium, high bitrate).
+
+Each quality level is broken into small .ts files (MPEG Transport Stream format).
+
+For example:
+
+segment1.ts, segment2.ts, segment3.ts (low quality)
+
+segment1.ts, segment2.ts, segment3.ts (medium quality)
+
+and so on...
+
+This process is called segmentation.
+
+2. Create Playlist Files (.m3u8)
+HLS uses a special playlist file with extension .m3u8.
+
+There are two types of playlist files:
+
+a) Media Playlist (for each quality level)
+It lists the URLs of all .ts video segments for that bitrate.
+
+Example (low.m3u8):
+
+bash
+Copy
+Edit
+#EXTM3U
+#EXT-X-TARGETDURATION:10
+#EXT-X-MEDIA-SEQUENCE:0
+#EXTINF:10,
+segment1.ts
+#EXTINF:10,
+segment2.ts
+#EXTINF:10,
+segment3.ts
+Each #EXTINF line tells the player the duration of the segment in seconds.
+
+b) Master Playlist
+This file lists all available quality levels and points to their respective media playlists.
+
+Example (master.m3u8):
+
+bash
+Copy
+Edit
+#EXTM3U
+#EXT-X-STREAM-INF:BANDWIDTH=800000
+low.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=1600000
+medium.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=3200000
+high.m3u8
+When the player downloads this master playlist, it chooses the appropriate stream based on network conditions.
+
+3. Serving Over HTTP
+All .ts files and .m3u8 playlists are served using a normal HTTP server or a CDN.
+
+No special streaming server is needed.
+
+Can be cached by CDNs to reduce latency and bandwidth.
+
+4. Client/Player Behavior
+The client (e.g., browser or mobile app) does the following:
+
+Downloads the master.m3u8 file.
+
+Selects the right media playlist (low.m3u8, medium.m3u8, etc.) based on network conditions.
+
+Starts downloading .ts segments from that playlist.
+
+Buffers a few seconds and starts playback.
+
+Continuously monitors network conditions.
+
+If bandwidth improves or drops, it switches to a different quality stream (adaptive bitrate).
+
+As new segments are generated (for live streaming), the media playlist gets updated and the client downloads the latest ones.
+
+5. Live vs. Video on Demand (VOD)
+For Live Streaming:
+New .ts segments are generated every few seconds.
+
+Media playlist (.m3u8) is updated dynamically.
+
+Example: Segment list might contain only the last 3-5 segments.
+
+Player polls the .m3u8 file periodically to get the latest segments.
+
+For Video on Demand:
+All .ts segments and playlists are pre-generated.
+
+Playlists are static.
+
+Works like streaming a pre-recorded movie.
+
+6. Adaptive Bitrate Streaming
+This is one of the key features of HLS.
+
+Multiple renditions of the same video (different resolutions and bitrates)
+
+Player can switch quality without stopping the video
+
+Prevents buffering on poor connections
+
+Improves video quality when high bandwidth is available
+
+Example:
+
+Start with 480p (low bitrate)
+
+Switch to 720p or 1080p if network gets better
+
+Fall back to 360p if bandwidth drops
+
+All of this happens seamlessly for the user.
+
+
+Data Processing pipeline - 
+
+When user uploads the video, first application server will store the video on S3 bucket and store its metadata in the database. 
+
+Once it is stored on S3 we need to convert it into different resolutions, create chunks, add trademark, create subtitles, create thumbnails.
+
+All above operations we need to perform asynchronously for faster processing.
+
+We will use message queues for all these async operations and workers will pick up the messages from the kafka and start working on all above mentioned tasks asynchronously. There will be workers like subtitle worker, thumbnail worker, resolution worker who will pick up the messages from the message queue.
+
+CDN is used to host the chunks for faster access. 
+
+CDN url is also stored in the database with the chunk metadata. 
+
+In case of live streaming file is not present to us for preprocessing, and we have to process incoming input live. 
+
+Hotstar notes - https://docs.google.com/document/d/11DI5PTm_Mlw3kWEDoOpiNxYO7ba183bd8R6pzey5hDs/edit?tab=t.0
+
+Some one notes - https://github.com/kanmaytacker/system-design/blob/master/OTT/ott-system-design.md
+
+
+---------------------------
+
+System Design - ID generator, Rate Limiting and Introduction to microservices 
 
 
 
