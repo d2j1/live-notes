@@ -18515,6 +18515,255 @@ Some one notes - https://github.com/kanmaytacker/system-design/blob/master/OTT/o
 System Design - ID generator, Rate Limiting and Introduction to microservices 
 
 
+ID generator - In few applications we need to get the unique identifiers from the front end instead of generating them at the backend. For such use cases we need ID generator api. 
+
+Id generator should return unique, numeric, monotonic - Always increasing values.
+
+Math.random -  this will generate duplicate values. 
+Database Autoincreament - This will become single point of failure, slow and can not handle heavy load. 
+
+UUID - Universally unique identifiers - It is 128 bit string and guarantees to be unique.
+
+What is a UUID?
+A UUID is a 128-bit number used to uniquely identify information in computer systems. It is commonly displayed as a 36-character string (including hyphens), such as:
+
+Copy
+Edit
+f47ac10b-58cc-4372-a567-0e02b2c3d479
+UUID Version 8 (Latest)
+Motivation for Version 8
+Earlier UUID versions (like v1-v5) had fixed meanings:
+
+Version 1 used timestamps and MAC addresses.
+
+Version 4 was random.
+
+Version 5 used SHA-1 hashes of names.
+
+However, real-world use cases often required UUIDs with custom semantics (e.g., embedding timestamps, node IDs, or custom bits). Version 8 was created to standardize such practices while allowing flexibility in encoding application-specific data.
+
+Structure of UUID v8
+UUID v8 still follows the 128-bit format, but now:
+
+4 bits are reserved to indicate the version (i.e., 1000 for version 8).
+
+2-3 bits are reserved for variant info (which indicates the layout and compatibility).
+
+The remaining bits (117+ bits) are available for custom application data.
+
+Bit-level breakdown (from most significant to least):
+
+48–60 bits: Flexible/custom data (e.g., time, node ID, etc.)
+
+4 bits: Version (8)
+
+Remaining bits: Custom data + reserved bits for variant
+
+This means you can:
+
+Embed a timestamp (e.g., UNIX epoch or TAI time)
+
+Embed a shard ID, node ID, machine ID
+
+Use random or pseudo-random bits
+
+Design for lexical sorting or database sharding
+
+The layout is application-defined as long as it respects the UUID version and variant bits.
+
+Generation Logic
+There is no single rule for how the UUID v8 is generated. You choose a layout suitable for your system and encode it.
+
+Example approach:
+
+Take current Unix timestamp in milliseconds (e.g., 64 bits).
+
+Add a machine ID (e.g., 16 bits).
+
+Add a process/thread ID or sequence number (e.g., 16 bits).
+
+Fill remaining bits with randomness.
+
+Inject version (4 bits = 8) at the appropriate position.
+
+Set the variant bits as per RFC 9562.
+
+This gives you:
+
+A UUID that is unique, lexically sortable, and encodes useful metadata.
+
+You may use a hex string formatter and inject hyphens at the standard positions.
+
+Benefits of UUID v8
+Fully customizable layout.
+
+No central authority needed.
+
+Allows timestamps and identifiers without ambiguity.
+
+Good for distributed systems needing ordering or traceability.
+
+Well-suited for microservices, databases, and logging systems.
+
+Example Use Cases
+Event IDs in logging systems: embed timestamp + server ID
+
+Order IDs in e-commerce: encode user or location + timestamp
+
+Sharded databases: encode shard ID + timestamp
+
+Observability traces: encode source system + sequence
+
+Summary
+UUID v8 is the latest version as of 2024, allowing flexible and application-defined identifiers while maintaining the UUID structure and versioning standard. It empowers developers to build identifiers that are unique, meaningful, and efficient for sorting and distributed use.
+
+Snowflake - 
+
+
+The Snowflake ID generation algorithm is a widely used method for generating unique, time-ordered, and scalable 64-bit identifiers in distributed systems. It was originally developed by Twitter in 2010 to address the need for distributed ID generation at massive scale without central coordination.
+
+Purpose of Snowflake ID
+Generate unique 64-bit integers (not strings like UUID)
+
+Ensure global uniqueness across distributed systems
+
+Maintain rough time order
+
+Work without coordination between machines (no central bottleneck)
+
+Be scalable and high-performance
+
+Structure of a Snowflake ID (64 bits)
+A Snowflake ID is composed of multiple parts that together form a 64-bit integer:
+
+Timestamp (usually 41 bits)
+
+Data center ID or Region ID (usually 5 bits)
+
+Machine ID or Worker ID (usually 5 bits)
+
+Sequence number (usually 12 bits)
+
+Let’s break each component down:
+
+1. Timestamp (41 bits)
+Represents the milliseconds since a custom epoch (not UNIX epoch).
+
+Stores the number of milliseconds that have passed since a specific start time (e.g., Twitter uses November 4, 2010).
+
+This ensures IDs are time-sortable.
+
+41 bits can represent about 69 years of time in milliseconds.
+
+2. Data Center ID (5 bits)
+Identifies the physical data center or logical region.
+
+5 bits can encode 32 different data centers.
+
+This prevents collisions across regions.
+
+3. Machine ID (5 bits)
+Identifies the specific node or machine within the data center.
+
+5 bits can represent up to 32 different machines per data center.
+
+This allows parallel generation on multiple machines.
+
+4. Sequence Number (12 bits)
+This is a counter that resets every millisecond.
+
+If multiple IDs are requested within the same millisecond from the same machine, this number increments.
+
+12 bits allows 4096 IDs per millisecond per machine.
+
+Final Bit Layout (Total 64 bits)
+Assuming Twitter-style configuration:
+
+1 bit: unused or sign bit (always 0, since ID is non-negative)
+
+41 bits: timestamp in milliseconds
+
+5 bits: data center ID
+
+5 bits: machine ID
+
+12 bits: sequence number
+
+This layout supports:
+
+69 years of timestamp
+
+1024 machines (32 DCs × 32 machines)
+
+4096 IDs per machine per millisecond
+
+How Snowflake Works (Step-by-Step)
+Get the current timestamp in milliseconds.
+
+Subtract the custom epoch to get a relative timestamp.
+
+Check if it's the same millisecond as the last generated ID:
+
+If yes, increment the sequence number.
+
+If the sequence overflows (exceeds 4095), wait until the next millisecond.
+
+If the timestamp has moved forward, reset the sequence to 0.
+
+Assemble all parts (timestamp, datacenter ID, machine ID, sequence) into a 64-bit integer using bit shifts.
+
+Return the final ID.
+
+Example of a Generated ID
+Suppose:
+
+Current timestamp: 2025-08-05T12:00:00.000Z → 1765000000000 ms
+
+Custom epoch: 2020-01-01T00:00:00.000Z → 1577836800000 ms
+
+Relative timestamp: 187163200000
+
+Data center ID: 5
+
+Machine ID: 12
+
+Sequence number: 144
+
+The ID is built like this:
+
+(timestamp << 22) | (datacenter << 17) | (machine << 12) | sequence
+
+Each part is packed into its place using left-shift operations.
+
+Properties of Snowflake IDs
+Globally unique: Guaranteed by using data center, machine, and sequence.
+
+Roughly time ordered: Because the timestamp is the highest part.
+
+Compact: 64-bit integer is smaller than UUID (128 bits).
+
+Fast: Fully local, no central coordination.
+
+Decodable: You can extract timestamp, machine ID, etc., from the ID.
+
+Use Cases
+Generating IDs for database primary keys (especially in NoSQL systems).
+
+Assigning IDs in event logs, messages, orders, or transactions.
+
+Useful in distributed systems, microservices, or event-driven architectures.
+
+Drawbacks
+Depends on accurate system clocks.
+
+Not suitable for systems that need IDs across leap seconds or out-of-order clocks.
+
+Time rollback (e.g., due to NTP) can cause duplicate IDs unless handled carefully.
+
+
+
+
+
 
 
 ----------------------
