@@ -17447,6 +17447,878 @@ if( d1 < d2 ) return -1;
  }
  
  
+---------------------
+ 
+ System Design - Kafka 
+ 
+
+Commuication types - 
+
+Synchronous - This happens immediately. 
+
+Asynchronous - This happens eventually. 
+
+Synchronous example - 
+
+In email sending service like gmail when user sends the mail request will go to the application server and then on application server it will do some validation and then store it in the database and then send it to the receiver using SMTP or POP3.
+
+In this flow user is kept waiting until whole process is completed. 
+
+This approach has very low throughput and bad user experience.
+
+We can improve throughput and user experience by implementing this flow with asynchronous mechanism.
+
+Asynchronous example - 
+
+Email will be sent by the user then application server will store it in the persistant database. Then we will take this mail and put it in the message queue for further processing and update the user.
+
+And we will have seperate servers who will keep look at the message queue for new messages and get that message and process it for validation, malicious content detection and then send the mail to the receiver. 
+
+This asynchronous mechanism is very easy to scale, has very high throughput. 
+
+Pros - 
+
+Decoupling - results into scalability, fault tolerence.
+High Throughput.
+Better user experience.
+
+Cons - 
+
+Bad user experience in case of invalid email address.
+Higher processing time.
+More infrastructure - Costly.
+
+
+In this application server publish the message in the queue or push the message in the queue, This mechanism is called as pub-sub publisher and subscriber. And subscribers, consumers or receivers will consume the messages from queue. 
+
+We use message queue only when we are okay with eventual consistency. 
+
+Message Queues - 
+
+Kafka - Very powerful queue with lot of features. 
+
+RabbitMQ - use for simple use case. 
+ 
+SQS - Amazon developed this. 
+pubsub- GCP.
+
+
+Kafka - Open source, developed by Linkedin. This provides very high throughput, It can handle about 10 million messages per second. It has very low latency. easily scalable. 
+
+
+Producer produces the messages or events or tasks - 
+
+Each message will have topic, key and value.
+
+example - When we place an order on ecomm platform. We will have to perform below tasks - 
+
+Invoice
+Notification via SMS or EMail, update the inventory details. 
+
+ What is a Topic in Kafka?
+In Apache Kafka, a topic is a logical channel to which data is published by producers and from which data is consumed by consumers. It acts like a named stream of messages. Think of a topic as a category or feed name to which records are sent.
+
+Each topic is identified by a unique name and is the core abstraction for organizing and managing messages in Kafka.
+
+A topic allows Kafka to store and group related messages together, such as all sensor data, user activity logs, or transaction events.
+
+2. How Topics Work
+When a producer wants to send a message, it sends it to a specific topic. That message is not sent directly to a consumer. Instead, it is written to a durable log on Kafka servers (called brokers), and the consumer later reads it from there.
+
+Topics are not queues. Messages in topics are not removed after consumption. Kafka allows multiple consumers to read from the same topic independently, which makes it ideal for broadcasting data to many consumers.
+
+3. Partitions and Ordering
+Each topic in Kafka is divided into one or more partitions. A partition is an ordered, immutable sequence of messages that is continually appended to. Each message within a partition has a unique identifier called an offset, which represents the position of the message in the partition.
+
+Ordering of messages is guaranteed only within a partition, not across partitions.
+
+For example, if a topic has 3 partitions, and 100 messages are published, they will be distributed across the 3 partitions. Within each partition, the order is preserved, but across partitions, Kafka does not guarantee global order.
+
+4. Role of Producers and Consumers with Topics
+A producer sends (publishes) messages to a topic.
+
+A consumer subscribes to a topic and reads (consumes) messages from it.
+
+Producers can optionally provide a key with the message. Kafka uses this key to determine the partition where the message should go. If no key is provided, Kafka uses round-robin or other load-balancing methods to distribute messages across partitions.
+
+Consumers can read from one or more partitions of a topic and can be grouped into consumer groups. Each consumer in a group reads from a unique subset of partitions, allowing parallel processing.
+
+5. Topic Example in Real Application
+Imagine an agriculture application where users post items for sale, weather services push updates, and farms have IoT sensors sending data. You may have topics like:
+
+A topic named market-posts where all new product listings (sell or rent) are published.
+
+A topic named weather-updates where real-time weather information is streamed.
+
+A topic named sensor-data where sensor devices push data like temperature, soil moisture, etc.
+
+In this setup:
+
+The producer for market-posts could be your backend server that processes user post submissions.
+
+The consumer for market-posts might be the search indexing service or a UI feed updater.
+
+A producer for sensor-data might be an IoT gateway device sending JSON data periodically.
+
+A consumer for sensor-data might be a machine learning model that processes and stores sensor metrics.
+
+6. Topic Retention and Durability
+Kafka topics retain messages for a configured retention period, even after the message has been read by consumers. This is unlike traditional messaging systems that delete messages after delivery.
+
+The retention can be configured in two ways:
+
+Time-based (e.g., retain messages for 7 days)
+
+Size-based (e.g., retain up to 1GB of data per partition)
+
+This allows Kafka to support replays and late-consuming consumers. A new consumer can join at any time and process older messages from the beginning.
+
+7. Replication and Fault Tolerance
+Each partition of a topic can be replicated across multiple Kafka brokers. This replication is configured using a replication factor.
+
+For example, if a topic has a replication factor of 3, each partition will be stored on 3 different brokers. One broker acts as the leader of the partition, and the others act as followers.
+
+This ensures data availability even if one or more brokers fail.
+
+8. Topic Configuration Parameters
+Kafka allows topic-level configuration to control behavior:
+
+retention.ms: How long to retain data in milliseconds.
+
+cleanup.policy: Can be delete (default) or compact. Compact keeps only the latest value per key.
+
+num.partitions: Number of partitions for the topic. More partitions allow higher parallelism.
+
+replication.factor: Number of brokers each partition is replicated to.
+
+segment.bytes: Maximum size of a log segment file before a new one is created.
+
+These settings can be configured at topic creation time or updated later.
+
+
+Kafka is distributed across many machines. 
+
+Kafka Topic Example: Agriculture Marketplace
+Assume you are building an agriculture marketplace application called AgriPulse, where farmers can post their products (like wheat, rice, tractors) for sale or rent, and buyers can see those posts in real time.
+
+Now you want to use Kafka to transmit new product posts from the backend service to other services like:
+
+A search indexing service
+
+A notification service
+
+A feed update service
+
+To do this, you create a Kafka topic called:
+
+Copy
+Edit
+market-posts
+This topic will act as a communication channel for all product post events.
+
+Step-by-Step Flow
+Step 1: A Farmer Posts a New Product
+A user (farmer) submits a product to sell:
+
+makefile
+Copy
+Edit
+Product: Wheat
+Quantity: 100 kg
+Price: ₹25/kg
+UserId: farmer123
+PostType: sell
+This data is sent to your backend API, and your backend acts as a Kafka producer. It prepares a message like this:
+
+json
+Copy
+Edit
+{
+  "userId": "farmer123",
+  "postType": "sell",
+  "product": "Wheat",
+  "quantity": 100,
+  "pricePerKg": 25
+}
+This message is published to the Kafka topic market-posts.
+
+Step 2: Kafka Stores the Message in a Partition
+Let’s say the topic market-posts has 3 partitions:
+
+sql
+Copy
+Edit
+market-posts
+├── Partition 0
+├── Partition 1
+└── Partition 2
+Kafka will store the message in one of these partitions.
+
+If a key is provided (like userId = farmer123), Kafka uses the key to decide which partition to use (based on hash).
+
+If no key is provided, Kafka may use a round-robin approach to distribute messages.
+
+Let’s assume the message went to Partition 1. It is stored like this:
+
+mathematica
+Copy
+Edit
+Partition 1:
+Offset 0: {"userId": "farmer123", "postType": "sell", "product": "Wheat", ...}
+Kafka assigns an offset to the message. In this case, the offset is 0 (first message in this partition).
+
+Step 3: Consumer Services Read the Message
+You have 3 services that need this message:
+
+The search indexing service (to make it searchable)
+
+The notification service (to alert interested buyers)
+
+The UI feed update service (to show in real-time feed)
+
+Each of these services is a Kafka consumer that subscribes to the topic market-posts.
+
+These consumers read the message stored at Partition 1, Offset 0.
+
+Even after they read the message, Kafka does not delete it immediately.
+
+Kafka will keep this message for a configured retention period (e.g., 7 days).
+
+Each consumer keeps track of the offset they have read, independently.
+
+Step 4: Another Farmer Posts a Product
+Now another user posts a tractor for rent.
+
+json
+Copy
+Edit
+{
+  "userId": "farmer999",
+  "postType": "rent",
+  "product": "Tractor",
+  "rentPerDay": 500
+}
+This message is also sent to the market-posts topic, and Kafka stores it in, say, Partition 0, at offset 5.
+
+mathematica
+Copy
+Edit
+Partition 0:
+Offset 5: {"userId": "farmer999", "postType": "rent", "product": "Tractor", ...}
+Again, all subscribed consumers will receive this new message.
+
+Summary of What Just Happened
+A topic (market-posts) was created to handle all product posting messages.
+
+Multiple messages were published to this topic using a producer.
+
+The topic was partitioned into 3 sub-logs (Partition 0, 1, 2).
+
+Kafka assigned a unique offset to each message within a partition.
+
+Multiple consumers read from the topic independently.
+
+Kafka retained the messages even after consumers read them.
+
+Ordering was preserved within each partition, not across the whole topic.
+
+Additional Example for Understanding
+Let’s say Partition 0 looks like this:
+
+mathematica
+Copy
+Edit
+Partition 0:
+Offset 0: Post A (Tractor)
+Offset 1: Post B (Fertilizer)
+Offset 2: Post C (Harvester)
+Partition 1 looks like:
+
+mathematica
+Copy
+Edit
+Partition 1:
+Offset 0: Post D (Wheat)
+Offset 1: Post E (Maize)
+If a consumer is reading from Partition 0, it sees messages in order A -> B -> C.
+
+Another consumer can read from Partition 1 and sees D -> E.
+
+Kafka allows many consumers to join a consumer group, and each one will read a different partition for parallel processing.
+
+
+In consumer group one message will only be consumed by one consumer.
+
+Kafka Partition (Detailed Explanation)
+A partition is a subdivision of a topic.
+Kafka does not store all topic data in one big log. Instead, each topic is split into multiple partitions, and each partition is a sequential, append-only log.
+
+Each message in a partition is assigned a unique offset, starting from 0 and increasing as new messages arrive.
+
+Example:
+
+Suppose a topic market-posts has 3 partitions.
+
+mathematica
+Copy
+Edit
+Partition 0: Offset 0 → Message A
+             Offset 1 → Message B
+
+Partition 1: Offset 0 → Message C
+             Offset 1 → Message D
+
+Partition 2: Offset 0 → Message E
+             Offset 1 → Message F
+Kafka writes messages to these partitions, either:
+
+Based on message key (hash of key decides the partition)
+
+Or in round-robin manner (if no key)
+
+Partitions provide parallelism. Kafka can write and read messages in parallel, improving performance.
+
+Also, ordering of messages is only guaranteed within a single partition, not across partitions.
+
+2. Kafka Consumer Groups
+A consumer is an application (or a thread) that reads messages from Kafka.
+
+Kafka introduces the concept of consumer groups to allow multiple consumers to share the load of consuming messages from a topic.
+
+Definition:
+A consumer group is a group of one or more consumers that work together to consume messages from one or more topics.
+
+Kafka ensures that each partition of a topic is consumed by only one consumer within the group at a time.
+
+This allows you to scale your consumers horizontally.
+
+Example:
+Let’s say the topic market-posts has 3 partitions:
+
+Partition 0
+
+Partition 1
+
+Partition 2
+
+You create a consumer group called feed-group, which has 3 consumers:
+
+Consumer-1
+
+Consumer-2
+
+Consumer-3
+
+Kafka assigns one partition to each consumer:
+
+Consumer-1 → Partition 0
+
+Consumer-2 → Partition 1
+
+Consumer-3 → Partition 2
+
+Now all 3 consumers will process messages in parallel from their assigned partitions. No two consumers in the same group will read from the same partition.
+
+If one consumer fails, Kafka rebalances and reassigns partitions to the remaining consumers.
+
+3. Consumer Group Coordinator
+Kafka uses a special internal process called the Consumer Group Coordinator to manage consumer groups.
+
+Who is the coordinator?
+Each Kafka broker can act as a consumer group coordinator. When a consumer group starts consuming, Kafka will choose one broker to be the coordinator for that group.
+
+This broker is responsible for:
+
+Tracking all active consumers in the group
+
+Assigning partitions to consumers
+
+Handling rebalances when consumers join or leave the group
+
+Managing offset commits (when a consumer acknowledges it has read a message)
+
+What happens during group coordination?
+Here is the typical flow:
+
+When a consumer starts, it sends a JoinGroup request to the Kafka broker.
+
+Kafka chooses one of the consumers as the group leader.
+
+The group leader runs a partition assignment strategy, like:
+
+RangeAssignor
+
+RoundRobinAssignor
+
+StickyAssignor
+
+The leader assigns partitions to each consumer in the group.
+
+The assignment is sent back to the group coordinator, which forwards it to all consumers.
+
+This process is called a group rebalance.
+
+4. Group Rebalancing
+Group rebalancing happens when:
+
+A new consumer joins the group
+
+An existing consumer leaves or crashes
+
+Partitions are added to the topic
+
+During rebalancing:
+
+Kafka stops sending new messages to consumers
+
+The group coordinator triggers the group leader to recalculate partition assignments
+
+All consumers pause and wait for new assignments
+
+Then they resume consuming from their new partitions
+
+Rebalancing is necessary for consistency, but it causes temporary delays. Frequent rebalancing can hurt performance.
+
+To minimize this, Kafka uses protocols like incremental cooperative rebalancing in modern versions.
+
+5. Summary
+Partitions:
+
+Sub-divide a topic into independent, ordered logs
+
+Messages within a partition have unique offsets
+
+Enable parallelism and scalability
+
+Consumer Groups:
+
+Multiple consumers can join the same group
+
+Kafka assigns each partition to one consumer in the group
+
+Allows parallel processing without duplicate consumption
+
+If number of consumers > number of partitions, extra consumers stay idle
+
+If number of partitions > number of consumers, some consumers handle multiple partitions
+
+Coordinator:
+
+A Kafka broker assigned to manage a consumer group
+
+Responsible for handling consumer membership, offset tracking, partition assignment, and rebalancing
+
+One consumer is selected as group leader to perform the assignment strategy
+
+What is a Kafka Broker?
+A Kafka broker is a server that is part of the Kafka cluster.
+It is responsible for:
+
+Receiving data from producers
+
+Storing data (messages) in partitions
+
+Serving data to consumers
+
+Handling replication of partitions
+
+Acting as a consumer group coordinator (if needed)
+
+Each Kafka broker in a cluster is independent and communicates with others to share responsibilities.
+
+A Kafka cluster is made up of one or more brokers.
+
+Each broker is identified by a unique broker ID.
+
+Kafka brokers use Apache ZooKeeper (or Kafka's built-in controller in newer versions) to manage cluster membership and leadership election.
+
+2. Partitions and Brokers
+Each topic is divided into partitions, and each partition is stored on one or more brokers.
+
+Two Key Concepts:
+Each partition has one leader broker.
+
+The leader handles all reads and writes for that partition.
+
+If replication is enabled (e.g., replication factor = 3), then:
+
+One broker is elected as the leader for the partition.
+
+The other brokers are followers (replicas).
+
+Followers replicate the data from the leader.
+
+Example:
+Suppose we have:
+
+A topic named market-posts
+
+3 partitions: Partition 0, Partition 1, Partition 2
+
+3 brokers: Broker 1, Broker 2, Broker 3
+
+Replication factor = 2
+
+Partition assignment might look like:
+
+Partition 0:
+
+Leader: Broker 1
+
+Follower: Broker 2
+
+Partition 1:
+
+Leader: Broker 2
+
+Follower: Broker 3
+
+Partition 2:
+
+Leader: Broker 3
+
+Follower: Broker 1
+
+Producers always write to the leader broker for each partition.
+
+Consumers also read from the leader broker of the partition.
+
+3. Brokers and Consumer Groups
+A consumer group is a group of consumers working together to consume data from a topic.
+
+Kafka ensures that each partition is consumed by only one consumer in a group.
+
+When a consumer group starts, one broker becomes the group’s coordinator.
+
+The broker’s role with consumer groups:
+Tracks membership: which consumers are in the group
+
+Assigns partitions to consumers
+
+Manages heartbeats to detect consumer failure
+
+Triggers rebalance when group membership changes
+
+Handles offset commits (where each consumer left off)
+
+This is managed using the GroupCoordinator logic on the broker.
+
+4. Real-World Example (Putting It All Together)
+Let’s walk through a full example with brokers, partitions, and consumer groups.
+
+Scenario:
+Topic: market-posts
+
+Partitions: 3
+
+Brokers: 3 (Broker-1, Broker-2, Broker-3)
+
+Replication Factor: 2
+
+Consumer Group: feed-group with 3 consumers (C1, C2, C3)
+
+One producer: post-service
+
+Step-by-step:
+Step 1: Partition and Broker Assignment
+
+Partition 0 → Leader: Broker-1, Follower: Broker-2
+
+Partition 1 → Leader: Broker-2, Follower: Broker-3
+
+Partition 2 → Leader: Broker-3, Follower: Broker-1
+
+Step 2: Producer sends messages
+
+Producer sends a message to topic market-posts.
+
+Kafka determines which partition to write to (based on key or round-robin).
+
+Suppose it goes to Partition 1.
+
+Kafka routes the write to Broker-2 (leader of Partition 1).
+
+Broker-2 writes the message and replicates it to Broker-3 (follower).
+
+Step 3: Consumers start reading
+
+Consumer group feed-group has 3 consumers:
+
+C1 is assigned Partition 0
+
+C2 is assigned Partition 1
+
+C3 is assigned Partition 2
+
+Each consumer connects to the leader broker of the partition they are assigned to.
+
+C1 connects to Broker-1 (Partition 0)
+
+C2 connects to Broker-2 (Partition 1)
+
+C3 connects to Broker-3 (Partition 2)
+
+Step 4: Group Coordination
+
+Kafka assigns Broker-2 as the coordinator for the feed-group.
+
+Broker-2 handles:
+
+Heartbeats from C1, C2, C3
+
+Rebalance if a consumer leaves
+
+Partition assignment and offset tracking
+
+Step 5: Fault Tolerance
+
+Suppose Broker-2 crashes.
+
+ZooKeeper (or Kafka controller) detects the failure.
+
+For Partition 1, Broker-3 (follower) becomes the new leader.
+
+Consumers connected to Partition 1 now read from Broker-3.
+
+Kafka updates metadata and resumes processing.
+
+5. Summary
+Kafka Broker:
+
+A server in the Kafka cluster.
+
+Stores data, handles producer writes and consumer reads.
+
+Each partition has one broker as its leader.
+
+Brokers replicate data for high availability.
+
+Can act as a consumer group coordinator.
+
+Partitions:
+
+Subdivide topics for parallel processing.
+
+Stored on brokers.
+
+One broker is the leader for each partition.
+
+Consumer Groups:
+
+Group of consumers consuming from a topic.
+
+Kafka assigns one partition per consumer in the group.
+
+Only one consumer in a group reads from a partition at a time.
+
+Group coordinator (a broker) manages group membership and partition assignment.
+
+Working Together:
+
+Producers write to partition leaders (brokers).
+
+Consumers read from partition leaders.
+
+Brokers coordinate partition assignments and replication.
+
+Brokers rebalance consumers when group membership changes.
+
+
+Kafka provides delivery guarantees (also known as message delivery semantics) to define how reliably data is transmitted between producers, brokers, and consumers.
+
+These delivery types are:
+
+At most once
+
+At least once
+
+Exactly once
+
+Let’s now go through each of them in detail — how they work internally, their trade-offs, and which scenarios they’re used in.
+
+1. At Most Once Delivery
+Definition:
+A message is delivered zero or one time, but never more than once.
+
+Meaning:
+Messages may be lost, but they are never duplicated.
+
+Delivery is fastest, but not reliable.
+
+When it happens:
+The producer sends a message and does not retry if something goes wrong.
+
+If an acknowledgment is not received, the producer gives up.
+
+Consumer commits the offset before processing the message.
+
+If the consumer crashes during processing, it won't reprocess the message.
+
+Example in Kafka:
+Producer sends a message and sets acks=0 or acks=1 (meaning it does not wait for full acknowledgement).
+
+Consumer commits the offset before actually processing the message.
+
+If the producer or consumer crashes before completion, the message is lost.
+
+Use Case:
+Use when message loss is acceptable.
+
+Example: Monitoring system where sending every log isn't critical.
+
+High throughput is more important than perfect accuracy.
+
+2. At Least Once Delivery
+Definition:
+A message is guaranteed to be delivered, but it can be delivered more than once.
+
+Meaning:
+No messages are lost, but some messages may be redelivered.
+
+Duplicates are possible, so you must handle idempotency at consumer level.
+
+When it happens:
+The producer retries sending a message if it doesn't get an acknowledgment from the broker.
+
+The consumer processes the message, then commits the offset after processing.
+
+If the consumer crashes after processing but before committing, it reprocesses the message after restart (causing a duplicate).
+
+Example in Kafka:
+Producer sends a message with acks=all, and retries > 0.
+
+Consumer processes first, then commits offset (enable.auto.commit=false and commits manually).
+
+This ensures message is not lost, but the same message can be processed twice.
+
+Use Case:
+Reliable systems where loss is not acceptable.
+
+Example: Financial transactions, order processing, billing.
+
+Must ensure the processing logic is idempotent (i.e., duplicate processing has no side effects).
+
+3. Exactly Once Delivery
+Definition:
+A message is guaranteed to be delivered only once and without duplicates.
+
+Meaning:
+No loss, no duplication.
+
+Most difficult and expensive to achieve.
+
+Kafka provides end-to-end exactly-once semantics (EOS) using internal mechanisms.
+
+How Kafka Implements It:
+Kafka achieves this with the help of:
+
+Idempotent producers
+
+Transactional messaging
+
+Atomic writes across multiple partitions and topics
+
+Idempotent producer:
+
+Ensures that duplicate messages are not stored if the producer retries due to timeout or failure.
+
+This is enabled by setting enable.idempotence=true on the producer.
+
+Transactions:
+
+Kafka producers can group multiple messages into a single atomic transaction.
+
+Consumers can use transactional IDs to ensure they read and commit only completed transactions.
+
+Kafka ensures atomicity and isolation using transaction logs in brokers.
+
+Requirements:
+Producer must enable idempotent mode and transactions.
+
+Consumer must read from transactional topics.
+
+Broker and client must support Kafka 0.11 or later.
+
+Example in Kafka:
+Producer starts a transaction.
+
+Sends multiple messages across partitions.
+
+Commits the transaction.
+
+Consumers configured to read only committed transactions will get the messages once.
+
+Use Case:
+Critical systems where data accuracy is paramount.
+
+Example: Bank transfers, inventory updates, analytics pipelines that should not double count.
+
+More complex to set up but avoids both message loss and duplicate delivery.
+
+Summary Comparison
+At Most Once
+
+Message might be lost
+
+Never duplicated
+
+Fast, but unreliable
+
+At Least Once
+
+Message is never lost
+
+Can be duplicated
+
+Requires idempotent processing logic
+
+Exactly Once
+
+Message is neither lost nor duplicated
+
+Reliable, but more complex
+
+Uses Kafka transactions and idempotent producer
+
+Final Notes
+Kafka’s delivery guarantee depends on:
+
+Producer configuration
+
+acks, retries, enable.idempotence, transactional.id
+
+Consumer configuration
+
+When and how offsets are committed
+
+Broker configuration
+
+To support transactions and durable writes
+
+If you're building a system and want to choose between them:
+
+Use at most once only when message loss is okay.
+
+Use at least once if you can tolerate duplicates and need reliability.
+
+Use exactly once if you need perfect correctness and can afford the setup complexity
+
+
+As one partition can have only one consumer, It may happen that comsumption speed is very low which will result in the lot of messages in the queue and this is called as consumer log, to avoid this issue either create more partitions or rebalance the messages between multiple partitions.
+
+Kafka internally used to use zookeeper but in newer versions it has started using KRaft algorithm.
+
+
+Kafka Notes - https://docs.google.com/document/d/1yxR5Vy-vavT1l-xlI9ZOlJRvxs8IMOWWTebALxFd32g/edit?tab=t.0
+
+Kafka demo - 
+
+https://github.com/kanmaytacker/system-design/tree/master/demos/kafka
+
+
+
+
+
 ----------------------
 
 
@@ -17519,5 +18391,10 @@ Magicpatterns to generate UI designs.
 
 
 Prompt - Do not make any changes, until you have 95% confidence that you know what to build ask me follow up questions untill you have that confidence.
+
+
+------------------------
+
+
 
 
