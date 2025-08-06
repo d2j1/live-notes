@@ -18512,7 +18512,7 @@ Some one notes - https://github.com/kanmaytacker/system-design/blob/master/OTT/o
 
 ---------------------------
 
-System Design - ID generator, Rate Limiting and Introduction to microservices 
+System Design - ID generator, Rate Limiting
 
 
 ID generator - In few applications we need to get the unique identifiers from the front end instead of generating them at the backend. For such use cases we need ID generator api. 
@@ -18761,8 +18761,690 @@ Not suitable for systems that need IDs across leap seconds or out-of-order clock
 Time rollback (e.g., due to NTP) can cause duplicate IDs unless handled carefully.
 
 
+Rate limiting - 
+
+Rate limiting can be done at front end and back end also.
+
+Front end rate limiting - 
+
+Debouncing - In this api calls to backend are delayed by few miliseconds from the last keystroke. ex - Frontend will call search api of backend after 10 miliseconds from last button pressed from keyboard.
+
+Throttling - In a fixed unit time only one call to backend is allowed.
+ex - in 100 ms only allow one request. 
 
 
+Backend rate limiting - 
+
+What is Rate Limiting?
+Rate limiting is a mechanism used to control how frequently a user or system can perform an action. This is essential in APIs, network systems, or any multi-user platform to prevent:
+
+Abuse (e.g., brute-force attacks or spam)
+
+Overloading servers with traffic
+
+Fair resource sharing among users
+
+For example, an API might allow only 100 requests per user per minute. If a user exceeds this, further requests will be denied until the next time window.
+
+The core challenge in rate limiting is balancing between performance, fairness, and resilience.
+
+To implement rate limiting, several algorithms are available. Each one works differently and has trade-offs in accuracy, burst tolerance, and resource usage.
+
+1. Token Bucket Algorithm
+Core Idea:
+The token bucket algorithm imagines a "bucket" that holds tokens. Each token represents permission to make one request. Tokens are added to the bucket at a fixed rate, and when the user makes a request, they consume one token. If no tokens are available, the request is denied.
+
+Step-by-Step Explanation:
+A bucket has a maximum size, say 100 tokens.
+
+Tokens are added to the bucket at a steady rate. For example, one token every 100 milliseconds.
+
+When a request comes in:
+
+If the bucket has at least one token, remove one token and allow the request.
+
+If the bucket is empty, reject the request (or queue it, depending on system behavior).
+
+If tokens keep accumulating and the bucket is full, extra tokens are discarded.
+
+Burst Support:
+Token bucket allows bursty traffic. If a user is idle for a while, tokens accumulate. So when the user starts sending requests, they can send many at once (as long as there are tokens). Once tokens are used up, the system throttles them back to the regular rate.
+
+Example:
+Rate: 10 tokens per second
+
+Bucket size: 50 tokens
+
+If a user makes no requests for 5 seconds, the bucket has 50 tokens.
+
+Now they can send 50 requests in one burst. After that, they are limited to 10 requests per second.
+
+Pros:
+Handles bursty traffic well.
+
+Smooth over time, adaptive to user behavior.
+
+Very efficient in terms of memory and performance.
+
+Cons:
+Slightly complex to implement in distributed systems.
+
+Needs time-based token refill logic.
+
+2. Leaky Bucket Algorithm
+Core Idea:
+The leaky bucket algorithm also uses a bucket analogy, but with a different behavior. Requests are added to the bucket as they arrive. The bucket leaks at a fixed rate, which means the system processes requests at a constant rate, regardless of how many arrive.
+
+Step-by-Step Explanation:
+Imagine a bucket where water (requests) is poured in at varying rates.
+
+The bucket leaks at a steady rate, for example, 10 drops (requests) per second.
+
+If requests arrive faster than the leak rate, the bucket starts filling up.
+
+If the bucket overflows (too many requests), extra requests are discarded.
+
+Burst Handling:
+Leaky bucket does not support bursts. It strictly processes requests at a fixed rate. Even if you have been idle for a while, you can’t suddenly send a large number of requests. It ensures constant output, which is useful for controlling load precisely.
+
+Example:
+Leak rate: 10 requests per second
+
+If 50 requests arrive instantly, only 10 per second are allowed
+
+The rest are either queued or dropped
+
+Pros:
+Ensures a smooth, predictable flow of traffic.
+
+Good for rate shaping in networking or telecommunication systems.
+
+Cons:
+Does not support bursty clients well.
+
+May increase latency due to queuing.
+
+Requests may be dropped even if overall usage is fair.
+
+3. Fixed Window Counter
+Core Idea:
+In this method, time is divided into fixed-length windows, such as 1 minute. A counter is maintained for each user or IP during each window.
+
+Step-by-Step Explanation:
+Set a fixed time window, like 60 seconds.
+
+Initialize a counter to zero at the beginning of the window.
+
+For every incoming request:
+
+If the counter is below the limit (say 100), increment the counter and allow the request.
+
+If the counter has reached the limit, reject the request.
+
+When the window ends, reset the counter to zero and start a new window.
+
+Burst Handling:
+Fixed window allows bursts at the boundary of time windows. That is, a user could send 100 requests at the last second of one window and then 100 more in the first second of the next window. This results in 200 requests within two seconds.
+
+Example:
+Limit: 100 requests per 60 seconds
+
+A user sends 100 requests between 00:59 and 01:00, and another 100 between 01:00 and 01:01.
+
+Technically allowed, but causes sudden load spike.
+
+Pros:
+Very simple to implement.
+
+Efficient in terms of memory and CPU usage.
+
+Cons:
+Allows spikes at window edges.
+
+Not accurate over short periods.
+
+No smoothing or burst control.
+
+4. Sliding Window Algorithm
+There are two common implementations of this algorithm: log-based and counter-based. Both address the burst problem seen in fixed windows.
+
+A. Sliding Window Log
+Core Idea:
+Keep a log (a list) of timestamps of all requests made in the recent sliding time window (like the last 60 seconds). When a new request arrives, check how many requests were made in that sliding window.
+
+Step-by-Step Explanation:
+Maintain a list of timestamps for all requests.
+
+When a new request arrives:
+
+Remove all timestamps older than the current time minus window length (e.g., older than 60 seconds).
+
+Count the remaining timestamps.
+
+If the count is less than the limit, allow the request and add the new timestamp.
+
+Otherwise, reject it.
+
+Burst Handling:
+It handles bursts more accurately. It does not allow a user to concentrate all requests at a window boundary. Because it tracks all requests in a rolling fashion, usage is evenly distributed.
+
+Pros:
+Very accurate.
+
+Prevents boundary spike issues.
+
+Cons:
+Expensive in terms of memory and CPU.
+
+Not suitable for high-traffic systems due to log storage overhead.
+
+B. Sliding Window Counter (Approximation)
+Core Idea:
+This is an optimized version of the sliding window log. Instead of storing every timestamp, we break the sliding window into smaller sub-windows and maintain a counter for each.
+
+Step-by-Step Explanation:
+Divide the total window (say 1 minute) into N small buckets (say 6 buckets of 10 seconds each).
+
+Each bucket has a counter for how many requests were made in that segment.
+
+When a request comes in:
+
+Identify which bucket the current time falls into and increment that bucket’s count.
+
+Sum the counts of all buckets within the sliding window.
+
+If the total is below the limit, allow the request; else reject.
+
+As time moves forward, the oldest bucket is discarded and a new one is added.
+
+Pros:
+Much better performance than log-based.
+
+Avoids spikes and allows for smoother rate limiting.
+
+Low memory usage.
+
+Cons:
+Slight approximation, not 100% accurate.
+
+Slightly more complex than fixed window or token bucket.
+
+Which Algorithm is Most Efficient?
+If your system needs to allow occasional bursts and scale well, token bucket is generally the best balance of flexibility, simplicity, and performance.
+
+If you require strict control with no burst tolerance (such as in network throttling or DDoS protection), leaky bucket is better.
+
+If you're okay with approximation but want to avoid sharp spikes and scale to many users, sliding window counter is often the best choice.
+
+Fixed window is simple but can lead to unfair spikes and is generally only used in basic or non-critical use cases.
+
+ID generation notes - 
+
+https://docs.google.com/document/d/16kv3_cUMRo9VLeJp64qSgSeKL2eOJgUdJ36wGVJWTm4/edit?tab=t.0
+
+Rate limiting notes - 
+
+https://docs.google.com/document/d/1XiZxw_aTxqnrFYqV-ft0j0qccDEk6uqPpw_EH9PuOQo/edit?tab=t.0
+
+----------------------------
+
+System Design : Microservices 
+
+Monolithic Architecture
+What is Monolithic Architecture?
+A monolith is a single-tiered software application where all the components — such as UI, business logic, and data access — are developed and deployed as one unit. In a typical monolithic application, you write your entire codebase in one code repository, build it as one project, and deploy it to a single server or container.
+
+Everything is tightly coupled, and all modules of the application (like user management, billing, notifications, etc.) share the same codebase, memory space, and deployment lifecycle.
+
+How it Works
+All logic (authentication, business rules, database operations) resides in a single codebase.
+
+When you build the application, it is compiled or packaged into one artifact (e.g., JAR, WAR, or Docker image).
+
+Deployed on a single server or behind a load balancer.
+
+Any change, even in a small part, requires redeploying the entire application.
+
+Advantages of Monolithic Architecture
+Simplicity: Easy to understand, especially for smaller teams or early-stage startups.
+
+Easy development and testing: All code is in one place; developers can run the entire application locally.
+
+Less operational overhead: Fewer deployments and environments to manage.
+
+Performance: No overhead of inter-service network calls.
+
+Disadvantages of Monolithic Architecture
+Tight coupling: A change in one module may impact others.
+
+Scalability limitations: Cannot scale parts of the application independently. You must scale the whole app, even if only one module needs more resources.
+
+Deployment challenges: Minor changes require redeploying the entire application.
+
+Reduced agility: Difficult to adopt different technologies or languages for specific features.
+
+Barrier to continuous delivery: Long build and test cycles.
+
+Hard to manage with large teams: As the codebase grows, coordination becomes difficult.
+
+Microservices Architecture
+What is Microservices Architecture?
+Microservices architecture is a distributed system design approach where the application is broken down into a set of independent, loosely-coupled services, each responsible for a specific business capability. Each service is a small application that has its own codebase, database, and is deployed independently.
+
+Services communicate with each other via REST APIs, gRPC, message queues, or event streams.
+
+How it Works
+The application is split into multiple small services like:
+
+User Service
+
+Product Service
+
+Order Service
+
+Payment Service
+
+Notification Service
+
+Each microservice:
+
+Has its own code repository
+
+Uses its own database or data storage
+
+Can be written in a different language or framework
+
+Is deployed independently
+
+Services interact over the network using HTTP, gRPC, or messaging protocols like Kafka or RabbitMQ.
+
+Advantages of Microservices Architecture
+Independent development and deployment: Teams can work on and deploy services without coordinating with others.
+
+Scalability: Scale only the services that need more resources.
+
+Resilience: A failure in one service does not necessarily bring down the entire system.
+
+Technology diversity: Each team can choose the best tech stack for their service.
+
+Faster time-to-market: Teams can move quickly without waiting for monolithic release cycles.
+
+Better team ownership: Teams own services end-to-end (build, test, deploy, monitor).
+
+Disadvantages of Microservices Architecture
+Operational complexity: More services mean more deployments, logs, monitoring, and testing challenges.
+
+Network overhead: Inter-service communication over the network introduces latency.
+
+Data consistency: Achieving transactional consistency across services is harder.
+
+Difficult debugging: Tracing bugs across distributed services is complex.
+
+DevOps requirement: Needs automation, CI/CD pipelines, observability, and container orchestration (like Kubernetes).
+
+Security risks: Inter-service communication needs proper authentication and encryption.
+
+Example of a Microservices-Based E-commerce Application
+User Service
+
+Handles registration, login, and user profile
+
+Uses its own user database
+
+Product Service
+
+Manages product catalog, categories, and inventory
+
+Communicates with User Service for authorization
+
+Cart Service
+
+Handles shopping cart operations
+
+Order Service
+
+Places orders and manages order history
+
+Interacts with Payment and Inventory services
+
+Payment Service
+
+Manages payments, refunds, invoices
+
+Notification Service
+
+Sends email, SMS, or push notifications on user actions
+
+API Gateway
+
+Acts as a single entry point for frontend or external clients
+
+Routes traffic to the appropriate service
+
+Service Discovery
+
+Helps services find each other using a registry like Eureka or Consul
+
+Each of these services can be scaled independently, written in different languages (e.g., Node.js for notifications, Java for orders), and updated without redeploying others.
+
+In service oriented architecture microservices shares the common database.
+
+We can have two load balancers - External load balancer - This will face the requests coming from the actual users, and then internal load balancers - This will face the requests coming from the external load balancers. External load balancer will be used to distrbute the request between network of different internal load balancers.
+
+Also for one single system we can have multiple entry points, and this is achieved by using swiss cheese pattern.
+
+Communication between microservices happens through internal load balancer and with the help of gRPC protocol. 
+
+External loadbalancer is usually api gateway.
+
+
+1. What is an API Gateway?
+An API Gateway is a server that acts as an entry point for all client requests to your backend services. It sits between the client and the collection of backend services, and its job is to receive requests from the client, route them to the appropriate service, perform various cross-cutting functions, and return the response back to the client.
+
+Think of it as the front door to your system.
+
+Why do we need an API Gateway?
+In modern applications, especially those following microservices architecture, we break the system into multiple small services (authentication service, product service, payment service, etc.). Now, exposing each of these to the client can be messy:
+
+The client would need to know how to call each service.
+
+There’s no central place for logging, authentication, or throttling.
+
+Cross-cutting concerns like rate limiting, SSL, auth, logging are repeated across services.
+
+An API Gateway solves this by becoming the central mediator between the client and backend services.
+
+2. Functions of an API Gateway
+a. Request Routing
+API Gateway inspects the request and routes it to the appropriate microservice. For example:
+
+/api/auth/login → AuthService
+
+/api/products → ProductService
+
+b. SSL Termination (more on this shortly)
+API Gateway can handle HTTPS encryption and decryption, offloading that responsibility from the backend.
+
+c. Authentication and Authorization
+It can validate JWT tokens or API keys before forwarding the request to the service.
+
+d. Rate Limiting and Throttling
+Limits how many requests a client can make in a certain time period to prevent abuse.
+
+e. Load Balancing
+Distributes requests to multiple instances of a service for scalability and high availability.
+
+f. Response Aggregation (Backend-for-Frontend)
+It can combine responses from multiple backend services into a single response for the client. This is especially useful for mobile or single-page apps.
+
+g. Caching
+Frequently requested data can be cached to reduce load on backend services.
+
+h. Logging and Monitoring
+Central point to log requests/responses, track metrics, and monitor system health.
+
+3. Usage of API Gateway in Practice
+In microservices-based systems, all external traffic goes through the gateway.
+
+For mobile and web apps, the frontend calls only the API gateway, not the backend directly.
+
+In a monolith system, it might not be necessary, but in systems with multiple services or frontend variants, it becomes essential.
+
+Popular API Gateways:
+
+Kong
+
+NGINX
+
+AWS API Gateway
+
+Zuul (Netflix)
+
+Spring Cloud Gateway
+
+
+4. What is SSL Termination or SSL Offloading?
+Background: What is SSL?
+SSL (now TLS) is a security protocol used to encrypt communication between the client (like your browser) and the server.
+
+When you see https:// in the browser, it means SSL/TLS is being used.
+
+It ensures confidentiality (data is encrypted) and integrity (data is not tampered with).
+
+What is SSL Termination?
+SSL Termination (also called SSL Offloading) refers to the process of decrypting HTTPS (SSL/TLS) traffic at the API Gateway level before passing it to backend services over HTTP or a secure channel.
+
+The idea is:
+
+Let the API Gateway handle SSL decryption (which is CPU-intensive).
+
+Then send the decrypted request to internal backend services.
+
+So, backend services don’t have to manage SSL certificates or encryption logic. They only handle plain HTTP.
+
+How It Works (Step-by-Step)
+Client → API Gateway:
+The client makes an HTTPS request like:
+GET https://api.myapp.com/products.
+
+SSL Termination at API Gateway:
+
+The gateway holds the SSL certificate for api.myapp.com.
+
+It decrypts the request.
+
+API Gateway → Internal Services:
+
+Gateway forwards the request to the backend (e.g., ProductService) as HTTP or mTLS (internal encryption).
+
+The backend doesn't need to worry about SSL.
+
+Backend → API Gateway → Client:
+
+The response is sent back through the gateway.
+
+The gateway re-encrypts it into HTTPS for the client.
+
+Why Use SSL Termination?
+a. Performance Optimization
+SSL decryption is CPU-intensive.
+
+Instead of each microservice doing it, the API gateway does it once at the edge.
+
+b. Centralized Certificate Management
+Easier to manage and rotate certificates.
+
+No need to install certificates on every service.
+
+c. Simpler Backend Configuration
+Backend services can focus only on business logic.
+
+No need to configure HTTPS at each service.
+
+When Not to Use SSL Termination?
+If security policy mandates end-to-end encryption, then:
+
+Use SSL passthrough (where gateway forwards encrypted traffic as-is).
+
+Or use mTLS between gateway and internal services.
+
+Example in Practice
+Let’s say you have:
+
+Frontend at https://myapp.com
+
+API Gateway at https://api.myapp.com
+
+Backend services: AuthService, ProductService, OrderService
+
+Without SSL Termination:
+Each backend service must handle HTTPS.
+
+All certificates must be distributed and managed in each service.
+
+More resource usage and complexity.
+
+With SSL Termination:
+API Gateway like NGINX or Kong holds the SSL cert for api.myapp.com.
+
+All requests are decrypted once at the gateway.
+
+Backend services only deal with plain HTTP or secured internal channels.
+
+
+5. Aggregation / Backend-for-Frontend (BFF) Pattern
+What is Backend-for-Frontend (BFF)?
+BFF is a design pattern where you create a dedicated backend layer (often inside or alongside your API Gateway) that aggregates data from multiple services and tailors it specifically for a particular frontend – such as web, mobile, or desktop.
+
+Instead of the frontend calling 3-4 services separately, it makes one call to the BFF, and the BFF does the work of:
+
+Talking to different services.
+
+Combining their responses.
+
+Returning a single optimized response.
+
+This reduces round trips between frontend and backend and simplifies the frontend logic.
+
+Why is this needed?
+In microservices:
+
+Data is split across multiple services (e.g., UserService, ProductService, OrderService).
+
+A single page on the frontend might need data from all three.
+
+Without aggregation:
+
+Frontend makes 3 separate API calls.
+
+Increases latency and complexity.
+
+More logic on the frontend to coordinate responses.
+
+With aggregation (BFF):
+
+Frontend makes one API call to the API Gateway or BFF.
+
+The gateway/BFF internally makes 3 calls, merges data, and returns a composed response.
+
+Example: Product Page in Agripulse
+Let’s say you’re building a page to show detailed product info.
+
+Frontend Needs:
+Basic product info (name, price, description) → ProductService
+
+Seller info (name, rating) → UserService
+
+Availability and rental status → InventoryService
+
+Current user's like/comment state → InteractionService
+
+Without Aggregation:
+Frontend has to:
+
+Make 4 API calls:
+
+/product/123
+
+/user/789
+
+/inventory/123
+
+/interactions/product/123/user/456
+
+Combine the data manually.
+
+Handle loading states, errors, retries, etc.
+
+This is inefficient, especially for mobile where performance and latency are critical.
+
+With Aggregation at API Gateway or BFF:
+Frontend:
+Makes one call:
+
+GET /api/bff/productPage/123?viewerId=456
+
+API Gateway/BFF does:
+GET /product/123
+
+GET /user/789 (sellerId from product)
+
+GET /inventory/123
+
+GET /interactions/product/123/user/456
+
+Then:
+Merges and returns:
+
+json
+Copy
+Edit
+{
+  "product": {
+    "id": "123",
+    "name": "Tractor",
+    "price": "₹2,00,000",
+    "description": "High-power diesel tractor"
+  },
+  "seller": {
+    "id": "789",
+    "name": "Rajesh",
+    "rating": 4.6
+  },
+  "inventory": {
+    "available": true,
+    "rentalStatus": "available"
+  },
+  "viewerInteraction": {
+    "liked": true,
+    "comments": [
+      { "text": "Good condition", "by": "Amit" },
+      ...
+    ]
+  }
+}
+Where Does Aggregation Happen?
+Aggregation can be done at:
+
+Inside the API Gateway (if it supports programmable logic):
+
+Tools like Kong, AWS API Gateway with Lambda, or Spring Cloud Gateway + filters.
+
+Dedicated BFF Service:
+
+You write a custom backend service that only aggregates and shapes responses for frontend.
+
+Good for complex aggregation logic or when frontend teams need flexibility.
+
+Advantages of Aggregation / BFF
+Reduces Number of Client Calls
+
+Only one call instead of many.
+
+Reduces Latency
+
+Gateway can make parallel calls internally.
+
+Tailored Responses
+
+Frontend gets exactly the shape of data it needs (not raw backend responses).
+
+Cleaner Frontend Code
+
+Business logic stays in backend.
+
+Centralized Error Handling
+
+Gateway can handle fallback logic if one service is down.
+
+When Not to Use BFF
+If your backend is very small or monolithic, it may be unnecessary.
+
+For internal tools with limited frontend requirements.
+
+When you can afford slightly more complex frontend code.
+
+01:52:30
 
 
 
