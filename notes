@@ -19444,9 +19444,1196 @@ For internal tools with limited frontend requirements.
 
 When you can afford slightly more complex frontend code.
 
-01:52:30
+
+gRPC uses HTTP version 2. gRPC is 5 times faster than REST.
 
 
+
+Microservices notes - 
+
+https://docs.google.com/document/d/1z4fwdEz3XNT5hCyaKxdxxF7oDcAOpw3Z5xhAeMYfsvY/edit?tab=t.0
+
+Observability in microservices - 
+
+Observability in microservices architecture refers to the ability to understand and monitor the internal states and behaviors of services based on the data they produce. It is essential for debugging, performance optimization, root cause analysis, and maintaining the health of distributed systems. As microservices are independent and decentralized, observability becomes a foundational capability for managing system complexity.
+
+Let’s break it down into deeper concepts.
+
+1. Why Observability is Important in Microservices
+Microservices systems involve many small, independent services communicating over networks. These services may be developed and deployed separately, run on different machines or containers, and scale dynamically. Because of this complexity:
+
+Failures are inevitable and often hard to detect.
+
+Traditional debugging methods like logs on a single machine are insufficient.
+
+A single user request may traverse multiple services, making it hard to track its journey and pinpoint failures or performance bottlenecks.
+
+Therefore, observability allows teams to:
+
+See what's happening in the system in real-time.
+
+Identify the root cause of problems.
+
+Optimize performance and resource usage.
+
+Ensure reliability and SLA compliance.
+
+2. Three Pillars of Observability
+Observability is typically built on three core pillars:
+
+a) Logs
+Logs are immutable, timestamped records of events that happened in the system.
+
+They help developers understand what the application was doing at a specific time.
+
+In microservices, logs should be structured (JSON or key-value format) to allow for automated processing.
+
+Centralized logging (e.g., using ELK stack or Fluentd) is essential for gathering logs from all services.
+
+b) Metrics
+Metrics are numeric values captured at regular intervals to represent the state or performance of a component.
+
+Examples include CPU usage, request latency, memory usage, error rates, and throughput.
+
+Metrics are highly useful for real-time alerting, dashboards, and trend analysis.
+
+Tools like Prometheus, Grafana, and Datadog are commonly used.
+
+c) Traces
+Traces follow a single request as it travels through multiple services.
+
+They help visualize and understand the journey of a request.
+
+Each step of the request is tracked with a unique trace ID and spans.
+
+Distributed tracing tools like Jaeger, Zipkin, or OpenTelemetry provide this functionality.
+
+3. Observability vs Monitoring
+Monitoring is about collecting and analyzing data based on known failure modes. It is typically reactive.
+
+Observability is proactive. It allows you to ask new questions without having pre-defined dashboards or alerts.
+
+In other words, monitoring tells you when something is wrong; observability helps you understand why.
+
+4. Key Practices to Enable Observability
+To build an observable microservices system, certain design and implementation practices must be followed:
+
+a) Centralized Logging
+All microservices should log to a central system that supports search, filtering, and correlation. Timestamps, service names, request IDs, and severity levels should be part of each log entry.
+
+b) Correlation IDs
+Every incoming request should carry a unique correlation ID (or trace ID), which should be passed to all downstream services. This enables tracking a request's full journey.
+
+c) Instrumentation
+Code needs to be instrumented to expose useful metrics and trace spans. You can use libraries like Micrometer (for Java), OpenTelemetry, or built-in SDKs provided by your observability platform.
+
+d) Alerting and Dashboards
+Once metrics and logs are in place, build real-time dashboards to monitor key indicators and set up alerting mechanisms for anomalies like error spikes or high latencies.
+
+e) Error and Exception Tracking
+Use tools that can automatically capture and aggregate exceptions, such as Sentry or Rollbar. This helps in identifying application-level bugs quickly.
+
+5. Challenges in Observability for Microservices
+High Cardinality: Metrics can explode in number if not carefully defined (e.g., per-user metrics).
+
+Context Propagation: Without a consistent way to propagate context like trace IDs, tracing breaks.
+
+Data Overload: Too much observability data without a clear strategy can overwhelm and become expensive.
+
+Distributed Debugging: Debugging across services requires clear traceability, which depends on uniform practices.
+
+6. Modern Observability Tools
+Popular tools and platforms for observability in microservices:
+
+Logging: ELK (Elasticsearch, Logstash, Kibana), Fluentd, Loki
+
+Metrics: Prometheus, Grafana, Datadog, New Relic
+
+Tracing: Jaeger, Zipkin, Honeycomb, OpenTelemetry
+
+7. Observability in DevOps and SRE Practices
+In modern DevOps and Site Reliability Engineering (SRE), observability plays a critical role in ensuring system reliability. SREs use Service Level Indicators (SLIs), Service Level Objectives (SLOs), and error budgets in conjunction with observability data to make engineering decisions.
+
+Final Thoughts
+Observability is not just about tools. It’s a design philosophy and engineering discipline that promotes transparency, resilience, and agility in microservices systems. By designing for observability from day one—instrumenting services, centralizing data, and building a culture of curiosity and learning—you ensure your distributed systems can be understood, maintained, and evolved with confidence.
+
+
+Two phase commit - 
+
+
+The Two-Phase Commit (2PC) protocol is a classic way to maintain data consistency across distributed systems, like microservices, when performing a distributed transaction involving multiple services or databases.
+
+In microservices, where each service has its own database and transactions span multiple services, maintaining atomicity (either all succeed or none succeed) is challenging. This is where 2PC comes in—it coordinates the commit across services in two distinct phases: prepare and commit/rollback.
+
+What is Two-Phase Commit (2PC)?
+2PC is a distributed algorithm used to ensure all-or-nothing outcomes in a distributed system. It involves a coordinator and multiple participants (resources like databases or services). The coordinator ensures that either all participants commit or none of them do.
+
+Example Scenario
+Suppose you're building an e-commerce system using microservices. Let’s say when a user places an order:
+
+Order Service creates an order record.
+
+Inventory Service reserves items from stock.
+
+Payment Service charges the customer.
+
+All three services must succeed or else the operation should fail completely.
+
+Phase 1: Prepare Phase (Voting Phase)
+The coordinator (could be the Order Service or a dedicated transaction manager) sends a prepare request to all participating services.
+
+Each participant does the following:
+
+Executes the operation up to the point of committing (but does not commit yet).
+
+Locks the necessary resources to ensure consistency (e.g., rows in the database).
+
+Writes the pending changes to a transaction log (often on disk).
+
+Responds back with "Yes (Ready)" if it’s safe to commit or "No (Abort)" if there’s an issue (e.g., DB failure, constraint violation).
+
+The coordinator waits for all responses.
+
+Phase 2: Commit or Rollback Phase
+Case 1: All participants responded "Yes"
+
+The coordinator sends a commit message to all participants.
+
+Each participant then commits the transaction and releases locks.
+
+They send an acknowledgment back to the coordinator.
+
+Case 2: Any participant responded "No"
+
+The coordinator sends a rollback message to all participants.
+
+Each participant rolls back the transaction and discards the temporary changes.
+
+Acknowledgment of rollback is sent back.
+
+This guarantees atomicity: either all changes happen or none happen.
+
+Detailed Step-by-Step with Our Example
+Order Service (Coordinator) initiates the transaction.
+
+Sends prepare to:
+
+Inventory Service: checks stock, locks item rows, logs pending reservation, responds "Yes".
+
+Payment Service: checks account balance, holds funds, logs pending charge, responds "Yes".
+
+Order Service receives all "Yes" responses.
+
+Commit Phase:
+
+Sends commit to Inventory Service: confirms reservation, releases lock.
+
+Sends commit to Payment Service: confirms charge, releases funds.
+
+If, say, Inventory had responded "No" in prepare phase:
+
+Order Service sends rollback to Payment and Inventory services to cancel everything.
+
+Pros of 2PC in Microservices
+Strong Consistency
+
+Guarantees atomicity across distributed services. All services either commit or none do.
+
+Simplicity of Logic
+
+Straightforward to implement conceptually, especially with traditional RDBMS that support XA transactions.
+
+Coordinated Rollback
+
+Explicit rollback ensures system doesn’t enter partial failure state.
+
+Cons of 2PC in Microservices
+Blocking Protocol
+
+Participants lock resources during prepare phase until commit/rollback. This can lead to resource contention and scalability issues.
+
+Single Point of Failure
+
+If the coordinator crashes after prepare but before sending commit/rollback, participants are left in an uncertain state (also known as the blocking problem).
+
+No Fault Tolerance for Long Failures
+
+Participants might wait indefinitely if they don’t receive the final decision. This breaks the resiliency and independence principles of microservices.
+
+Tight Coupling
+
+2PC introduces tight coupling between services and requires all of them to support transactional behavior, violating microservices autonomy.
+
+Not Web Scale
+
+2PC is not recommended for high-scale distributed systems where services are independently deployable and highly available.
+
+Why 2PC is Rarely Used in Microservices Today
+Microservices prefer eventual consistency and favor patterns like Sagas or event-driven architectures over strongly consistent, blocking protocols like 2PC.
+
+The coordination overhead, resource locking, and fault sensitivity make it ill-suited for the loosely coupled, high-availability nature of microservices.
+
+Alternatives to 2PC in Microservices
+Saga Pattern
+
+Break the transaction into a series of local transactions with compensating actions in case of failure.
+
+Works well in asynchronous, eventual consistency scenarios.
+
+Event-Driven Architecture
+
+Services publish events and react to changes via subscribers. Decouples services and improves availability.
+
+Outbox Pattern
+
+Stores outgoing events in the same local DB transaction, then relays them to message queues for distributed communication.
+
+Conclusion
+Two-Phase Commit is a traditional, blocking protocol for achieving distributed consistency. It ensures atomicity but suffers from serious drawbacks in the context of microservices—particularly scalability, availability, and decoupling.
+
+While useful in tightly integrated, transactional systems, it’s rarely practical in modern cloud-native microservice systems, which favor patterns like Sagas and eventual consistency for reliability and resilience.
+
+
+SAGA pattern - 
+
+The Saga Pattern is a widely adopted approach in microservices architecture to maintain data consistency across multiple services without relying on distributed transactions like Two-Phase Commit (2PC).
+
+In a Saga, a distributed transaction is broken into a series of local transactions, each executed by a different service. If any transaction fails, compensating transactions are executed to undo the effects of the previous successful transactions.
+
+You asked specifically about the Orchestrator-Based Saga, so let’s dive deep into that.
+
+What is an Orchestrator-Based Saga?
+In an orchestrator-based saga, a central controller (called the Saga orchestrator) is responsible for:
+
+Coordinating the entire workflow.
+
+Deciding which service to call next.
+
+Handling success/failure of each step.
+
+Invoking compensating actions if needed.
+
+Unlike the choreography-based saga, where services communicate directly by listening to and publishing events, the orchestrator explicitly tells services what to do, like a conductor in an orchestra.
+
+Why Use Orchestrator-Based Saga in Microservices
+You need centralized control of the business process.
+
+You want explicit visibility into what happens at each step.
+
+Easier to manage complex transactional flows.
+
+Easier to test and debug because the control logic is centralized.
+
+Detailed Example: E-commerce Order Placement Saga
+Let’s say you have an e-commerce system with these microservices:
+
+Order Service
+
+Inventory Service
+
+Payment Service
+
+Notification Service
+
+Goal:
+When a customer places an order:
+
+Create the order.
+
+Reserve inventory.
+
+Process payment.
+
+Notify the customer.
+
+Each step is a local transaction handled by one microservice. If any step fails, previous steps are rolled back using compensating transactions.
+
+Saga Flow (with Orchestrator)
+Let’s assume we have a Saga Orchestrator service that manages the whole flow.
+
+1. Step-by-Step Flow (Success Path)
+1. Order Service: Create Order
+
+Orchestrator calls Order Service to create a new order in PENDING state.
+
+Order Service saves it and returns ORDER_ID.
+
+2. Inventory Service: Reserve Stock
+
+Orchestrator calls Inventory Service to reserve items.
+
+Inventory Service locks/reserves stock for the given order.
+
+3. Payment Service: Process Payment
+
+Orchestrator calls Payment Service to charge the customer.
+
+Payment is processed, and confirmation is returned.
+
+4. Notification Service: Send Confirmation
+
+Orchestrator calls Notification Service to send confirmation message.
+
+5. Order Service: Mark Order as Completed
+
+Orchestrator updates order status to COMPLETED.
+
+2. Flow with Failure and Compensation
+Let’s say the Payment Service fails (e.g., insufficient funds). Then:
+
+The Orchestrator triggers compensating transactions:
+
+Calls Inventory Service to release reserved stock.
+
+Calls Order Service to cancel the order (update state to CANCELLED).
+
+May notify customer of failure.
+
+Service Responsibilities in the Saga
+Saga Orchestrator:
+
+Maintains the saga state (e.g., using a state machine or database).
+
+Calls services in sequence.
+
+Handles responses and triggers compensations if needed.
+
+Order Service:
+
+createOrder()
+
+cancelOrder() (compensation)
+
+Inventory Service:
+
+reserveStock()
+
+releaseStock() (compensation)
+
+Payment Service:
+
+processPayment() (no compensation — if it fails, nothing is charged)
+
+Notification Service:
+
+sendConfirmation() (optional, may or may not be compensatable)
+
+Saga State Transitions (Internally in Orchestrator)
+The orchestrator tracks each saga as a state machine:
+
+INITIATED
+
+ORDER_CREATED
+
+INVENTORY_RESERVED
+
+PAYMENT_PROCESSED
+
+COMPLETED
+
+On failure at any state, it moves to:
+
+ROLLBACK_INITIATED
+
+Compensating actions execute
+
+Final state: ROLLBACK_COMPLETED or CANCELLED
+
+Implementation Considerations
+Use a durable saga state store (e.g., a relational DB) to avoid loss of state.
+
+Design idempotent service endpoints so retrying does not cause inconsistent state.
+
+Ensure compensating transactions are robust and well-tested.
+
+Timeout or retry logic should be implemented in the orchestrator.
+
+Consider side-effects (e.g., sending emails) — these might not be undoable.
+
+Benefits of Orchestrator-Based Saga
+Centralized Control
+
+All logic is visible and managed in one place.
+
+Better Error Handling
+
+The orchestrator can handle failures in a structured way.
+
+Easier Testing
+
+You can simulate entire sagas and verify workflows step-by-step.
+
+Separation of Concerns
+
+Services only expose local transactional and compensating APIs. Orchestration logic is external.
+
+Drawbacks
+Tight Coupling to Orchestrator
+
+All services rely on the orchestrator to be functional.
+
+Single Point of Bottleneck
+
+Orchestrator can become a central point of failure or performance bottleneck.
+
+Complex Logic in Orchestrator
+
+As the number of steps grows, orchestrator becomes harder to manage and debug.
+
+Conclusion
+The Orchestrator-Based Saga Pattern is a powerful solution for handling distributed transactions in microservices when strong consistency is not feasible and 2PC is too heavyweight.
+
+It breaks down a complex, cross-service operation into small, manageable local transactions, while still providing rollback guarantees through compensating actions. The orchestrator maintains clear control of the saga’s execution flow, making it suitable for business-critical workflows that require transparency, failure recovery, and maintainability.
+
+
+The Saga Pattern (Choreography-based) is a technique used in microservices architecture to ensure data consistency across multiple services without relying on distributed transactions like Two-Phase Commit (2PC).
+
+Unlike the orchestrator-based saga, where a central orchestrator coordinates the steps, the choreography-based saga uses event-driven communication where each service performs its own local transaction and then emits events to trigger the next service. There is no central coordinator. Each service listens for specific events and reacts accordingly.
+
+What is a Choreography-Based Saga?
+In choreography:
+
+Each service knows what to do when it receives a specific event.
+
+After completing its work, it emits another event, which other services are subscribed to.
+
+This continues until the whole business process is complete.
+
+Each service:
+
+Listens to specific events (usually from a message broker like Kafka, RabbitMQ, or SNS/SQS).
+
+Performs its own local transaction.
+
+Publishes the next event if successful.
+
+Performs compensating actions if something goes wrong.
+
+This model is decentralized and follows the event-driven architecture pattern.
+
+Real-World Example: E-commerce Order Placement
+Assume the following microservices are involved:
+
+Order Service – receives the order.
+
+Inventory Service – checks and reserves items.
+
+Payment Service – processes the payment.
+
+Shipping Service – prepares shipment.
+
+Notification Service – informs the customer.
+
+The business flow:
+
+User places an order.
+
+Inventory is reserved.
+
+Payment is processed.
+
+Shipment is prepared.
+
+Notification is sent.
+
+Choreography Saga Execution (Success Path)
+Step-by-step flow:
+1. Order Created
+
+Order Service receives an order.
+
+Stores it in its DB with PENDING state.
+
+Publishes event: OrderCreated.
+
+2. Inventory Reserved
+
+Inventory Service listens for OrderCreated.
+
+Reserves items (local DB transaction).
+
+Publishes event: InventoryReserved.
+
+3. Payment Processed
+
+Payment Service listens for InventoryReserved.
+
+Charges customer.
+
+Publishes event: PaymentSuccessful.
+
+4. Shipment Started
+
+Shipping Service listens for PaymentSuccessful.
+
+Prepares shipment.
+
+Publishes event: ShipmentCreated.
+
+5. Customer Notified
+
+Notification Service listens for ShipmentCreated.
+
+Sends confirmation email or SMS.
+
+Each service only knows about the event it listens to, and doesn’t know about the full flow.
+
+Handling Failures with Compensation
+Suppose the payment fails due to insufficient funds.
+
+Here’s how it is handled:
+
+Payment Service attempts to process payment after InventoryReserved.
+
+Payment fails.
+
+Publishes event: PaymentFailed.
+
+Now compensation begins:
+
+Inventory Service listens for PaymentFailed.
+
+It runs releaseStock() (compensating transaction).
+
+Publishes InventoryReleased.
+
+Order Service listens for InventoryReleased.
+
+Updates order status to CANCELLED.
+
+Each service takes care of compensating its own previous actions when it sees a failure event.
+
+Choreography Event Flow Summary
+Main Event Flow (Success):
+
+OrderCreated
+
+InventoryReserved
+
+PaymentSuccessful
+
+ShipmentCreated
+
+CustomerNotified
+
+Compensating Flow (Failure after Inventory Reserved):
+
+OrderCreated
+
+InventoryReserved
+
+PaymentFailed
+
+InventoryReleased
+
+OrderCancelled
+
+Benefits of Choreography-Based Saga
+Loose Coupling
+
+Services are decoupled. They only react to events they care about.
+
+No need for a central coordinator.
+
+Scalability
+
+Works well in highly scalable systems using message brokers.
+
+Resilience
+
+If one service is down, the event is kept in the queue and retried.
+
+High Autonomy
+
+Each microservice owns its own transaction and logic.
+
+Easy Extension
+
+Adding a new step (e.g., analytics or logging service) is simple: just subscribe to an event.
+
+Drawbacks of Choreography-Based Saga
+Complex Debugging
+
+Since control is decentralized, understanding the full flow requires tracing events through logs or a tracing system.
+
+Hard to Monitor
+
+No central place to observe the complete transaction. Requires distributed tracing tools like Jaeger, Zipkin, or OpenTelemetry.
+
+Tight Event Coupling
+
+Services are coupled through the event schema. Changes in event structure must be backward-compatible.
+
+Compensation is Tricky
+
+Compensating actions must be manually implemented and carefully tested for correctness.
+
+Eventual Consistency
+
+Services are only consistent eventually, not immediately.
+
+How to Implement Choreography-Based Saga
+Event Broker (like Kafka, RabbitMQ, AWS SNS/SQS)
+
+Reliable delivery and persistence of events.
+
+Each Service:
+
+Listens for events.
+
+Executes local transaction.
+
+Emits next event or failure event.
+
+Has compensating endpoint and event listener if needed.
+
+Logging and Monitoring
+
+Use correlation IDs to trace events.
+
+Centralized log storage (e.g., ELK stack).
+
+Use distributed tracing tools to trace request flow across services.
+
+Conclusion
+The Choreography-Based Saga pattern is a decentralized way to handle distributed transactions in microservices using event-driven communication. Each service executes its transaction and emits events to move the workflow forward or to signal a failure.
+
+It fits well in cloud-native architectures, promoting loose coupling, high scalability, and autonomy. However, it comes with challenges around visibility, error handling, and event management. With careful design, clear compensating logic, and good observability, it can power complex business workflows reliably.
+
+
+CQRS pattern - 
+
+The CQRS (Command Query Responsibility Segregation) pattern is an advanced architectural pattern used in microservices and domain-driven design to separate read operations (queries) from write operations (commands). This separation helps handle complex business logic, scalability, performance, and consistency needs in distributed systems.
+
+What is CQRS in Microservices Context?
+In a typical CRUD system, the same data model and service are used for both:
+
+Reading data (Query)
+
+Modifying data (Command)
+
+But as the system grows, these concerns often conflict:
+
+Reads need to be fast, scalable, and optimized for views.
+
+Writes need strong validation, business rules, and transactional consistency.
+
+CQRS splits these two paths into separate models, services, and even databases, allowing each to evolve independently and optimize for their responsibilities.
+
+Core Principles of CQRS
+Command = Write Operation
+
+Changes application state.
+
+Can involve complex business logic and validations.
+
+Does not return data, only acknowledgment (e.g., success/failure).
+
+Query = Read Operation
+
+Does not modify data.
+
+Optimized for fast data retrieval.
+
+Often uses denormalized views.
+
+Separation of Read and Write Models
+
+Write model uses domain models and validation logic.
+
+Read model is often denormalized, optimized for query speed.
+
+Optional: Event Sourcing
+
+Commands generate events.
+
+The read model subscribes to these events to build its own view.
+
+Detailed Example: Online Bookstore
+Let’s say you're building a Bookstore Application with the following features:
+
+Users can place orders.
+
+Users can view order history.
+
+Admins can change order status (e.g., confirm, ship, cancel).
+
+Analytics dashboard shows top selling books.
+
+Microservices Involved:
+Order Command Service
+
+Order Query Service
+
+Inventory Service
+
+Shipping Service
+
+Notification Service
+
+Analytics Service
+
+CQRS Pattern Applied to This Scenario
+Step 1: Command Flow (Write Path)
+User places an order:
+
+API request hits Order Command Service.
+
+This service:
+
+Validates the request (e.g., book exists, stock available).
+
+Creates order entity in write database (e.g., orders_cmd_db).
+
+Publishes event: OrderPlaced.
+
+Inventory Service listens to OrderPlaced:
+
+Reserves stock.
+
+Publishes event: InventoryReserved.
+
+Shipping Service listens to InventoryReserved:
+
+Prepares for shipment.
+
+Publishes event: ShipmentPrepared.
+
+Notification Service listens to events like:
+
+OrderPlaced
+
+ShipmentPrepared
+
+Sends emails/SMS.
+
+Step 2: Query Flow (Read Path)
+User views order history or tracking page:
+
+API request hits Order Query Service.
+
+The query service:
+
+Fetches data from read-optimized database (e.g., orders_query_db).
+
+This DB is denormalized, includes order_status, book_titles, estimated_delivery, etc.
+
+Important: The read DB is built using events emitted by the command path.
+
+How Read Model is Built
+Order Command Service emits: OrderPlaced, OrderShipped, OrderCancelled
+
+A background Projection/Handler listens to these events and updates the read database.
+
+OrderPlaced → insert new order record.
+
+OrderShipped → update status to "Shipped".
+
+OrderCancelled → update status to "Cancelled".
+
+This way, the read side is always eventually consistent with the write side.
+
+Benefits of Using CQRS in Microservices
+Scalability
+
+Scale read and write sides independently.
+
+Queries are often 80–90% of load; can scale read replicas horizontally.
+
+Performance Optimization
+
+Read side is optimized for views, pagination, filters.
+
+Write side focuses on validation, domain rules.
+
+Simplified Models
+
+Domain (write) model focuses on business logic.
+
+Read model is tailored to UI or reporting needs.
+
+Separation of Concerns
+
+Different teams can work on reads and writes independently.
+
+Clean separation makes testing and debugging easier.
+
+Event Replay and Audit Trail
+
+If combined with event sourcing, you can rebuild the read DB from events.
+
+Full trace of how system state evolved over time.
+
+Drawbacks and Challenges
+Eventual Consistency
+
+Read data may lag slightly behind writes.
+
+Requires handling stale data and user expectations.
+
+Increased Complexity
+
+More services, databases, and message brokers to manage.
+
+Requires careful orchestration and infrastructure.
+
+Duplicated Logic
+
+Data transformations from events to read models must be maintained.
+
+Complex Transactions
+
+Multi-entity transactions are harder to coordinate. Usually handled via sagas.
+
+Debugging Across Boundaries
+
+Errors in one pipeline can cause desync between read/write models.
+
+When to Use CQRS
+Use CQRS when:
+
+Your application has high read/write imbalance (e.g., 1000 reads for every write).
+
+The domain is complex, with rich business rules for writes but simple reads.
+
+You need high scalability, especially for reporting and dashboards.
+
+You want clear separation between UI views and transactional logic.
+
+You’re building event-driven microservices with independent services reacting to events.
+
+Avoid CQRS when:
+
+The system is simple (e.g., CRUD admin dashboard).
+
+You don’t need separate scalability or optimization for reads/writes.
+
+You are early in development and don’t want the complexity yet.
+
+Conclusion
+CQRS in microservices is a powerful pattern that separates the command (write) and query (read) responsibilities, allowing each to scale and evolve independently. It fits perfectly with event-driven systems, and when used correctly, provides great flexibility, performance, and maintainability.
+
+However, it comes with trade-offs: increased complexity, eventual consistency, and a steeper learning curve. In mission-critical or high-scale systems, CQRS combined with event sourcing, sagas, and projections forms the backbone of robust, scalable distributed systems.
+
+
+Distributed tracing - 
+
+What is Distributed Tracing?
+In a monolithic application, when a user performs an action (like placing an order), everything happens inside a single process, and you can trace that operation easily using logs.
+
+In a microservices architecture, this same action can trigger multiple services, each possibly deployed on different servers. For example:
+
+The Order Service receives the request.
+
+It calls the Inventory Service to check availability.
+
+Then calls the Payment Service to charge the customer.
+
+Then calls the Notification Service to send a confirmation email.
+
+Each of these services might log their own activities, but without a way to connect them, it becomes nearly impossible to trace a full transaction end-to-end.
+
+Distributed tracing solves this by providing a way to track a user request across multiple services and observe how long each part took and where errors occurred.
+
+Core Concepts
+1. Trace
+A trace represents the full journey of a request, from the moment it enters the system to its final response. It contains all the spans involved in fulfilling that request.
+
+2. Span
+A span represents a single unit of work (e.g., an HTTP request to a service). It contains:
+
+A unique ID
+
+Start and end timestamps
+
+Metadata (such as service name, method name)
+
+Parent span ID (to show how it's related to other spans)
+
+3. Context Propagation
+As the request travels from service to service, the trace context (trace ID and span ID) must be propagated along with it via headers (e.g., X-B3-TraceId, X-B3-SpanId, traceparent for W3C standard). This allows the tracing system to stitch the spans together into one trace.
+
+How It Works
+Let’s take an example: a user places an order on an e-commerce site.
+
+Frontend Service
+
+Starts the trace.
+
+Adds a trace-id in HTTP headers and sends it to the backend.
+
+Order Service
+
+Receives the trace context.
+
+Starts a new span for "Create Order".
+
+Calls the Inventory Service with the same trace context.
+
+Inventory Service
+
+Creates a new span under the same trace ID.
+
+Checks availability, responds.
+
+Span ends.
+
+Payment Service
+
+Another new span under the same trace ID.
+
+Performs payment logic.
+
+Span ends.
+
+Notification Service
+
+Final span, sends email.
+
+Ends the span.
+
+All these spans are now part of the same trace and can be visualized together.
+
+Example Trace Flow (Simplified):
+mathematica
+Copy
+Edit
+Trace ID: 12345
+
+Span 1: Frontend -> Order Service       [Parent: None]
+Span 2: Order Service -> Inventory      [Parent: Span 1]
+Span 3: Order Service -> Payment        [Parent: Span 1]
+Span 4: Order Service -> Notification   [Parent: Span 1]
+This forms a hierarchical tree of spans, allowing you to visualize the entire request flow.
+
+Tools That Enable Distributed Tracing
+OpenTelemetry (open standard for collecting traces, metrics, and logs)
+
+Jaeger (open-source distributed tracing backend)
+
+Zipkin (another popular tracing system)
+
+AWS X-Ray, Azure Application Insights, Google Cloud Trace
+
+These tools provide UI dashboards where you can:
+
+Visualize trace timelines
+
+See which services took the most time
+
+Drill down into failures
+
+Analyze latency
+
+Benefits of Distributed Tracing in Microservices
+End-to-End Visibility
+
+Understand the full lifecycle of a request across microservices.
+
+Performance Monitoring
+
+Detect which service is a bottleneck.
+
+Root Cause Analysis
+
+Pinpoint where an error or timeout occurred.
+
+Improved Debugging
+
+Especially helpful when logs from different services are disconnected.
+
+Helps During Failures
+
+Trace IDs can be added to logs so you can correlate logs and trace together.
+
+Challenges
+Context Propagation: All services must be updated to forward and respect trace headers.
+
+Instrumentation Overhead: Every service must be instrumented using libraries like OpenTelemetry SDK.
+
+Data Volume: Traces can generate a lot of data. You need efficient sampling and storage.
+
+To do hands on - https://sandbox.sentry.io/explore/traces/?mode=samples&project=4508160351666176&query=&statsPeriod=14d&table=trace
+
+
+Thundering hurd problem - In this when service comes online it receives lot of requests which overwhelms the service. 
+
+To handle this requests are timed out, retries, re try after some time - Exponential backoff.
+
+Circuit Breaker - 
+
+What Is the Circuit Breaker Pattern?
+The Circuit Breaker is a fault-tolerance pattern used to prevent cascade failures in distributed systems like microservices.
+
+It detects failures and stops making requests to a failing service for a period of time, giving it a chance to recover and avoiding wasting system resources or causing more widespread failures.
+
+Why Do We Need It?
+In a microservices architecture:
+
+Services often depend on each other via HTTP/gRPC calls.
+
+If one service is slow or down, and others keep calling it, it can cause:
+
+Thread starvation
+
+Timeouts piling up
+
+Overall application crash
+
+This is where the Circuit Breaker helps.
+
+Analogy: Electrical Circuit Breaker
+Just like in your home:
+
+When a device causes an overload (too much current), the circuit trips, cutting off the power.
+
+This prevents damage to the rest of your electrical system.
+
+Once things cool down, the circuit breaker is reset, and electricity flows again.
+
+In microservices:
+
+A failing service is like a faulty device.
+
+The circuit breaker trips after repeated failures.
+
+After a while, it tries again to see if the service is healthy.
+
+States of Circuit Breaker
+There are 3 main states:
+
+1. Closed State (Normal Operation)
+All requests go through to the downstream service.
+
+If calls fail repeatedly (based on a threshold), the breaker opens.
+
+Example:
+
+Out of 10 requests, 6 failed — if the threshold is 50%, it will now open the circuit.
+
+2. Open State (Tripped)
+Calls are blocked immediately — no traffic is sent to the failing service.
+
+Calls fail fast, so threads/resources aren’t held up.
+
+After a cooldown time (e.g., 30 seconds), the circuit transitions to HALF-OPEN to test if recovery is possible.
+
+3. Half-Open State (Testing Recovery)
+A few trial requests are allowed through (say 1 or 2).
+
+If the test call succeeds, the circuit goes back to CLOSED.
+
+If the call fails, the circuit returns to OPEN again and waits longer.
+
+Real-World Example: E-Commerce App
+Let’s say your application has these microservices:
+
+Order Service (handles orders)
+
+Inventory Service (checks stock)
+
+Payment Service (processes payments)
+
+Scenario:
+Payment Service is slow or down (network issue).
+
+Order Service keeps calling it and waits each time for a timeout (5s).
+
+After 100 users try to place orders, all the threads are waiting on payment calls → thread pool exhausted → even healthy parts of Order Service start failing.
+
+Solution: Circuit Breaker
+Let’s apply the circuit breaker in Order Service when calling the Payment Service.
+
+For every failed call (timeout, 500 errors), the circuit breaker tracks the failure.
+
+If 50% of the last 20 requests failed, it opens the circuit.
+
+For the next 30 seconds, no calls are sent to Payment Service. A fallback is returned immediately (e.g., "Payment system down, try later").
+
+After 30 seconds, it tries 1 request.
+
+If it works, circuit is closed (back to normal).
+
+If not, circuit stays open.
+
+What Happens Behind the Scenes?
+You usually use a library to do this. Common ones:
+
+Resilience4j (Java/Spring Boot)
+
+Hystrix (older, deprecated)
+
+Sentinel (from Alibaba)
+
+Polly (for .NET)
+
+Istio / Envoy (at service mesh level)
+
+Sample Resilience4j Circuit Breaker Config (Spring Boot)
+java
+Copy
+Edit
+@CircuitBreaker(name = "paymentService", fallbackMethod = "fallbackPayment")
+public String callPaymentService() {
+    return restTemplate.getForObject("http://payment-service/pay", String.class);
+}
+
+public String fallbackPayment(Throwable t) {
+    return "Payment service is currently unavailable. Please try again later.";
+}
+Explanation:
+
+If payment service fails continuously, Resilience4j opens the circuit.
+
+Any future calls go to fallbackPayment() immediately (fail fast).
+
+After a cooldown, Resilience4j tries a test call in half-open state.
+
+Metrics Tracked
+A good circuit breaker tracks:
+
+Number of failures
+
+Success/failure ratio
+
+Failure exceptions (timeouts, 500s)
+
+Cooldown period before retrying
+
+Current state (Closed/Open/Half-open)
+
+These are usually exposed via Prometheus, Micrometer, and visualized in Grafana dashboards.
+
+Pros of Circuit Breaker Pattern
+Avoids cascading failures — one slow service won’t bring down others.
+
+Fast failure — saves resources by not calling a known broken service.
+
+Automatic recovery — retries after cooldown.
+
+Fallback support — you can degrade gracefully (e.g., show cached results).
+
+Cons / Challenges
+Complexity — tuning failure thresholds, cooldown, and number of test calls.
+
+Risk of false positives — circuit opens on temporary spikes.
+
+Delayed recovery — even if the service is back, it won’t get traffic until the circuit retries.
+
+Requires metrics and monitoring — to properly configure and respond to state changes.
+
+Summary
+The Circuit Breaker pattern is critical in microservices to build resilient systems. It prevents overload, contains failures, and gives broken services time to recover without overwhelming them or the rest of the system.
+
+It works by monitoring failure rates and automatically opening and closing the circuit based on the health of dependent services. Combined with fallback methods, timeouts, retries, and proper observability, it forms the backbone of fault-tolerant distributed systems.
+
+
+
+Notes - https://docs.google.com/document/d/13Uj4bW3rj2W6_JJbSbRAmPGcylQzDNEpwSfOrAWxP40/edit?tab=t.0
+
+entire HLD curriculum - 
+
+https://docs.google.com/spreadsheets/d/1Zed_C4BHrF2LFer1ZVpQivIU947KvWnRzR9EL1iNv_k/edit?gid=2034634504#gid=2034634504
 
 ----------------------
 
