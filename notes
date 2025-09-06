@@ -20635,8 +20635,414 @@ entire HLD curriculum -
 
 https://docs.google.com/spreadsheets/d/1Zed_C4BHrF2LFer1ZVpQivIU947KvWnRzR9EL1iNv_k/edit?gid=2034634504#gid=2034634504
 
+
+
+
+
 ----------------------
 
+
+Searching 3: Binary Search on Answer 
+
+
+Q - Painters partition problem 1 
+
+Given n boards with length of each board
+a) A painter takes 1 unit of time to paint 1 unit of length.
+b) A board can only be painted by 1 painter.
+c) A painter can only paint boards placed next to each other 
+
+Find the minimum no of painters required to paint all the boards in T unit of time. If its not possivle return infinite.
+
+
+Code - 
+
+
+int cntPainters(int[] A, int time){
+
+// if any A[i] > T return infinity.
+for( int i=0; i<n; i++){
+	if( A[i] > T) return infinity;
+}
+
+area = 0
+painters = 1
+
+for( i from 0 to n-1) {
+
+board = A[i];
+area += board;
+
+
+if( area > T){
+painters += 1;
+area = board
+
+}
+
+}
+
+return painters
+
+}
+}
+
+
+TC - O(n)
+SC - O(1)
+
+
+Q - Painters Partition problem 2 - 
+
+
+Given n boards with length of each board
+a) A painter takes 1 unit of time to paint 1 unit of length.
+b) A board can only be painted by 1 painter.
+c) A painter can only paint boards placed next to each other 
+
+ Find minimum time to paint all boards if P painters are available -
+
+Approach - Using binary search - 
+
+Search space for time - 
+
+l = max(A) // min time taken to paint all boards by maximum possible painters.
+
+r = sum(A) // max time taken to paint all the boards by 1 painter.
+
+
+while( l <= r) {
+
+int mid = (l+r)/2;
+
+int painters = cntPainters(A, mid);
+
+if( painters <= P){
+ans = mid;
+r=mid-1;
+}else{
+l = mid+1;
+}
+
+}
+
+return ans;
+
+
+TC - O(nlog(sum A - Max A))
+SC - O(1)
+
+
+
+Q - Email response handler 
+
+Imagine you are tasked with developing a system for evenly distributing the workload among a team of email response handlers in a customer service department. Each email is assigned a complexity score which represents the estimated time and effort required to address it. The complexity scores the represented as an array, where each element corresponds to a single email.
+
+Task - 
+
+The goal is to divide the array into K contiguous blocks ( where K is the number of email handlers), such that the maximum sum of the complexity scores in any block is minimized. This approach aims to ensure that no single email handler is overwhelmed with high-complexity emails while others have lighter load.
+
+Approach - 
+
+This question is same as previous one. Instead of painters here we are dealing with email handlers.
+
+
+
+Note - to solve the question which involves 'minimize the maximum' or 'maximize the minimum', then use binary search.
+
+
+Q - Farmer has built a barn with N stalls.
+
+A[i] - location of ith stall in sorted order.
+
+Cows are aggressive towards each other. So, farmer wants to maximize the minimum distance between any pair of cows. 
+
+Find max possible minimum distance.
+
+Approach - 
+
+
+Search space - 
+
+l=1 // the minimum distance between two stalls.
+r = A[n-1] - A[0] // max distance between two stalls as provided input array is sorted then this distance will be the maximum possible distance between two stalls.
+
+
+int mooooo(int[] A, int B){
+
+l=1
+r=A[n-1]-A[0]
+ans=-1
+
+while( l <= r){
+
+mid = (l+r)/2;
+
+// no of cows that can be placed with minimum distance as mid.
+
+cows = cntCows(A, mid);
+
+
+if( cows >= k ){
+ans = mid;
+l = mid+1;
+}else{
+r = mid-1;
+}
+}
+
+return ans;
+
+}
+
+TC - O(nlog(search_space) = O(nlog(max(A) - min(A)))
+SC - O(1)
+
+
+// count no of cows that can be placed at min distance 'dist'
+
+int cntCows( int[] A, dist){
+
+cows=1
+lastPlaced = A[0]
+
+for( i from 1 to n-1) {
+
+if( A[i] - lastPlaced >= dist){
+cows+=1;
+lastPlaced = A[i];
+}
+}
+
+return cows;
+
+}
+
+----------------
+
+Linked List: Introduction & Basic Problems
+
+Issues with arrays - 
+need to mention size of the array at start of the array.
+
+Fragmentation - 
+
+What is fragmentation?
+
+When a program runs, it keeps asking the operating system for chunks of memory (for arrays, objects, etc.). Over time, as memory is allocated and freed, the memory can become broken up into pieces.
+
+This problem is called fragmentation.
+
+It makes memory usage inefficient, because even if you have enough total free memory, it may be split into small parts, so a large allocation cannot fit.
+
+Linkedlist - it is space efficient DS which can utilise all free space in memory.
+
+
+Class node {
+
+int val;
+Node next;
+
+public node(int v){
+this.val = v;
+}
+
+}
+
+
+accessing kth element of linkedlist - 
+
+
+int kthElement ( Node head, int k){
+
+if(head == null){
+return -1;
+}
+
+Node temp=head;
+
+// jump k times
+for( i from 1 to k ){
+temp = temp.next;
+}
+return temp.val;
+}
+
+TC - O(k)
+SC - O(1)
+
+Search in linked-list - 
+
+int search( Node head, int k){
+
+if(head == null){
+return -1;
+}
+
+Node temp=head;
+
+while(temp != null){
+
+if(temp.val == target){
+return true;
+}
+temp = temp.next;
+}
+
+return false;
+}
+
+TC - O(n)
+SC - O(1)
+
+Insertion in linked list at kth index - 
+
+
+// returns the head of linked list.
+
+Node insert(Node head, int k, int val){
+
+if(head == null){
+return null;
+}
+
+Node temp=head;
+
+Node new1 = new Node(val);
+
+if(k==0){
+new1.next=temp;
+return new1;
+}
+
+// jump k times
+for( i from 1 to k-1 ){
+temp = temp.next;
+}
+
+new1.next=temp.next;
+temp.next = new1;
+
+return head;
+}
+
+
+TC - O(k)
+SC - O(1)
+
+
+Deletion in linked list - 
+
+Delete the first occurance of value x in the given linked list. if element is not present, leave as is.
+
+
+Node delete(Node head, int val){
+
+if(head == null){
+return null;
+}
+
+Node temp=head;
+
+if( temp.val == val){
+return temp.next;
+}
+
+
+
+while( temp.next != null && temp.next.val != val){
+temp = temp.next;
+}
+
+if(temp.next != null ){
+temp.next=temp.next.next;
+}
+
+return head;
+}
+
+
+TC - O(n)
+SC - O(1)
+
+Q - 
+
+Oneplus has a lineup of N mobile phones ready in the manufacturing line. It has detected a defect in one of their phone models  during production. They have decided to recall all phones of the defective model from their manufacturing line. Your task is to help oneplus remove all defective phones from their production lineup efficiently.
+
+Problem - 
+
+You are given a linked list  A of N nodes where each node represents a specific model type of a oneplus mobile phone in the manufacturing line. Each node contains an integer representing the model number of the phone. You will also be given an integer B which represents the model number of hte defective phone that needs to be removed.
+
+Your goal is to remove all nodes from the linked list that have the model number B and return the modified linked list representing the updated manufacturing line.
+
+Approach - delete all the occurance of the mentioned element.
+
+
+    public static Node deleteAll(Node head, int val) {
+        if (head == null) {
+            return null;
+        }
+
+        // Step 1: Remove occurrences at the head
+        while (head != null && head.val == val) {
+            head = head.next;
+        }
+
+        // If list is empty after removing head nodes
+        if (head == null) {
+            return null;
+        }
+
+        // Step 2: Traverse rest of the list
+        Node temp = head;
+        while (temp.next != null) {
+            if (temp.next.val == val) {
+                temp.next = temp.next.next; // unlink the node
+            } else {
+                temp = temp.next; // move forward
+            }
+        }
+
+        return head;
+    }
+
+
+
+
+Q - reverse the linked list  - 
+
+Node reverse (Node head){
+
+prev = null
+curr = head
+
+while( curr != null ){
+
+nxt = curr.next;
+curr.next = prev;
+prev = curr;
+curr = nxt;
+
+}
+
+return prev;
+
+}
+
+TC - O(N)
+SC - O(1)
+
+
+01:55:49
+
+----------------------
+
+React - 
+
+
+
+
+-----------------------------------------
 
 DSA - be good - Practice - Create an excel - Topic wise questions you have solved, commit solutions to github, update excel daily, Time taken to solve the question. 
 
@@ -20711,6 +21117,46 @@ Prompt - Do not make any changes, until you have 95% confidence that you know wh
 
 ------------------------
 
+Sclaer problems 
+
+Notifications
 
 
+parseInt() - 
 
+String a = "123"
+
+int ans=0;
+
+for(char s: a){
+
+  int temp = (int) s;
+  
+	ans = ans*10+temp;
+	
+	}
+	
+
+
+Never assume 
+clarify problem statement
+
+dry run 
+test cases validation
+
+
+------------------------
+
+AI powered job search - 
+
+1. Get ruthlessly clear on your target - 
+
+Targetting backend heavy engineering roles at series A to C SaaS startups working with Java, Spring Boot and React. Open to remote or india based roles.
+
+2. Build an AI ready resume thats fast to customize - 
+
+Create 1 master resume then 5 to 10 customized versions.
+
+Use AI + Smart prompts to customize these versions.
+
+-------------------------------------------------------
