@@ -21107,285 +21107,252 @@ return hm.get(head);
 
 React - 
 
-Episode-04 | Talk is Cheap, Show Me the Code
+In class based components the states are
+created in constructor.
 
 
-Inline CSS - 
+when class based components are called then first constructor is called and then render is called.
 
-const ResCard = () => {
-  return (
-    <div style={{ backgroundColor: "lightblue", padding: "20px", borderRadius: "10px" }}>
-      <h2 style={{ color: "darkblue" }}>Restaurant Name</h2>
-      <p style={{ fontSize: "14px", color: "gray" }}>Cuisine: Italian</p>
-    </div>
-  );
-};
-
-export default ResCard;
-
-
-Css style using const variable - 
-
-const resCardStyle = {
-  backgroundColor: "lightyellow",
-  padding: "20px",
-  border: "1px solid orange",
-  borderRadius: "10px"
-};
-
-const titleStyle = {
-  color: "darkgreen",
-  fontSize: "20px"
-};
-
-const ResCard = () => {
-  return (
-    <div style={resCardStyle}>
-      <h2 style={titleStyle}>Restaurant Name</h2>
-      <p style={{ color: "brown" }}>Cuisine: Indian</p>
-    </div>
-  );
-};
-
-export default ResCard;
-
-
-Props - 
-
-
-1. Props with values
-
-Passing explicit values:
-
-const ResCard = (props) => {
-  return (
-    <div style={{ padding: "10px", border: "1px solid black" }}>
-      <h2>{props.name}</h2>
-      <p>Cuisine: {props.cuisine}</p>
-    </div>
-  );
-};
-
-// Usage
-<ResCard name="Dominos" cuisine="Pizza" />
-<ResCard name="KFC" cuisine="Chicken" />
-
-2. Props without values (boolean shorthand)
-
-If you pass a prop without a value, React sets it as true.
-
-const ResCard = (props) => {
-  return (
-    <div>
-      <h2>{props.name}</h2>
-      <p>Featured: {props.featured ? "Yes" : "No"}</p>
-    </div>
-  );
-};
-
-// Usage
-<ResCard name="Subway" featured />   // featured = true
-<ResCard name="Burger King" />       // featured = undefined (falsey)
-
-3. Props with default values (using defaultProps)
-const ResCard = ({ name, cuisine = "Not specified" }) => {
-  return (
-    <div>
-      <h2>{name}</h2>
-      <p>Cuisine: {cuisine}</p>
-    </div>
-  );
-};
-
-// Usage
-<ResCard name="Starbucks" cuisine="Coffee" />
-<ResCard name="Local Dhaba" />   // will use default cuisine = "Not specified"
-
-4. Props with object styles (dynamic inline CSS)
-const ResCard = ({ name, cuisine, highlight }) => {
-  const cardStyle = {
-    padding: "15px",
-    border: "1px solid gray",
-    backgroundColor: highlight ? "lightgreen" : "white"
-  };
-
-  return (
-    <div style={cardStyle}>
-      <h2>{name}</h2>
-      <p>Cuisine: {cuisine}</p>
-    </div>
-  );
-};
-
-// Usage
-<ResCard name="Biryani House" cuisine="Biryani" highlight />
-<ResCard name="Dominos" cuisine="Pizza" />
-
-5. Props with children
-
-Special prop for passing JSX/content inside a component.
-
-const ResCard = ({ name, children }) => {
-  return (
-    <div style={{ border: "1px solid black", padding: "10px" }}>
-      <h2>{name}</h2>
-      <div>{children}</div>
-    </div>
-  );
-};
-
-// Usage
-<ResCard name="Food Court">
-  <button>Order Now</button>
-  <p>Open till 11 PM</p>
-</ResCard>
-
-const Greeting = (props) => {
-  return <h1>Hello, {props.name}!</h1>;
-};
-🔹 Passing Props
-1. With values
-jsx
-Copy code
-const Greeting = ({ name, age }) => {
-  return (
-    <h2>
-      Hello {name}, you are {age} years old.
-    </h2>
-  );
-};
-
-// Usage
-<Greeting name="John" age={25} />
-👉 Output: Hello John, you are 25 years old.
-
-2. Without values (Boolean shorthand)
-jsx
-Copy code
-const Button = ({ primary }) => {
-  return (
-    <button style={{ backgroundColor: primary ? "blue" : "gray", color: "white" }}>
-      Click Me
-    </button>
-  );
-};
-
-// Usage
-<Button primary />   // primary = true
-<Button />           // primary = undefined (treated as false)
-👉 <Button primary /> makes the button blue.
-👉 <Button /> makes it gray.
-
-3. With default values (using defaultProps)
-jsx
-Copy code
-const Welcome = ({ name, country }) => {
-  return (
-    <h2>
-      Welcome {name} from {country}!
-    </h2>
-  );
-};
-
-// Default props
-Welcome.defaultProps = {
-  name: "Guest",
-  country: "Unknown"
-};
-
-// Usage
-<Welcome />                      // → Welcome Guest from Unknown!
-<Welcome name="Alice" />          // → Welcome Alice from Unknown!
-<Welcome name="Bob" country="US" /> // → Welcome Bob from US!
-4. Default values (using ES6 destructuring)
-jsx
-Copy code
-const Profile = ({ username = "Anonymous", age = 18 }) => {
-  return (
-    <p>
-      {username}, {age} years old
-    </p>
-  );
-};
-
-// Usage
-<Profile />                // → Anonymous, 18 years old
-<Profile username="Raj" /> // → Raj, 18 years old
-5. Props with functions
-jsx
-Copy code
-const Counter = ({ onIncrement }) => {
-  return <button onClick={onIncrement}>Increase</button>;
-};
-
-// Usage
-<Counter onIncrement={() => alert("Incremented!")} />
-
-
-Destructuring props on the fly -
-
-Example 1: Simple destructuring on the fly
-const Greeting = ({ name, age }) => {
-  return (
-    <h2>
-      Hello {name}, you are {age} years old.
-    </h2>
-  );
-};
-
-// Usage
-<Greeting name="John" age={25} />
-
-
-👉 No need to write props.name or props.age.
-
-🔹 Example 2: With default values while destructuring
-const Profile = ({ username = "Anonymous", age = 18 }) => {
-  return (
-    <p>
-      {username}, {age} years old
-    </p>
-  );
-};
-
-// Usage
-<Profile />                // → Anonymous, 18 years old
-<Profile username="Alice" /> // → Alice, 18 years old
-
-🔹 Example 3: Nested props destructuring
-const UserCard = ({ user: { name, email } }) => {
-  return (
-    <div>
-      <h3>{name}</h3>
-      <p>{email}</p>
-    </div>
-  );
-};
-
-// Usage
-<UserCard user={{ name: "Raj", email: "raj@example.com" }} />
-
-🔹 Example 4: Destructuring + children (on the fly)
-const Card = ({ title, children }) => {
-  return (
-    <div style={{ border: "1px solid black", padding: "10px" }}>
-      <h3>{title}</h3>
-      <div>{children}</div>
-    </div>
-  );
-};
-
-// Usage
-<Card title="Info Card">
-  <p>This is inside the card.</p>
-</Card>
-
-09:24
+when class based components are called then first constructor of the parent class is called and then render of parent class is called and now child constructor is called and then child render is called.
 
 
 
 
+below method is called when component is mounted - 
 
+componentDidMount(){
+
+}
+
+ComponentDidMount is same as useEffect, we can use this for calling apis and other side effects.
+
+below is the order of function calls in class component - 
+1) Constructor 
+2) Render
+3) Component did mount
+
+and below is the order of function call in class component of parent and child - 
+
+1) parent Constructor 
+2) parent Render
+3) child constructor
+4) child render 
+5) child Component did mount
+6) parent Component did mount
+
+
+
+Parent Component with two child components - 
+
+We’re dealing with React class components, and the lifecycle methods constructor, render, and componentDidMount.
+You have a Parent component that renders two Child components.
+
+General Rules
+
+constructor()
+
+Called first when the component is being created.
+
+Initializes state, binds methods.
+
+Never cause side effects (like fetching data).
+
+render()
+
+Called right after constructor.
+
+Should be a pure function of props and state.
+
+Returns JSX.
+
+componentDidMount()
+
+Called once after the component has been inserted into the DOM.
+
+Good for network requests, subscriptions, timers, etc.
+
+Execution Order (Parent → Child)
+
+When the Parent is mounted (first time):
+
+Parent constructor()
+
+Parent render()
+
+Inside render, React sees two children → starts mounting them.
+
+Child1 constructor()
+
+Child1 render()
+
+Child2 constructor()
+
+Child2 render()
+
+Now React has built the virtual DOM tree of Parent + both Children.
+
+It commits this to the actual DOM.
+
+Child1 componentDidMount()
+
+Child2 componentDidMount()
+
+Parent componentDidMount()
+
+Why this order?
+
+React must fully render Parent and its Children before calling componentDidMount.
+
+Children finish mounting before the Parent is considered “done”, so their componentDidMount runs first.
+
+This ensures the Parent can safely interact with Child DOM nodes if needed in its own componentDidMount.
+
+✅ Final Order (mounting phase):
+
+Parent constructor
+Parent render
+Child1 constructor
+Child1 render
+Child2 constructor
+Child2 render
+Child1 componentDidMount
+Child2 componentDidMount
+Parent componentDidMount
+
+
+React component lifecycle - 
+
+
+React Component Lifecycle (Class Components)
+
+Think of a React component’s life in three main phases:
+
+Mounting → when the component is being created and added to the DOM.
+
+Updating → when the component re-renders because of changes.
+
+Unmounting → when the component is removed from the DOM.
+
+Each phase has lifecycle methods that React calls in a specific order.
+
+1. Mounting Phase
+
+This happens when the component is first created and inserted into the DOM.
+
+Order:
+
+constructor(props)
+
+Called before anything else.
+
+Good place to initialize state and bind methods.
+
+Avoid side effects (like API calls) here.
+
+static getDerivedStateFromProps(props, state) (rarely used)
+
+Lets you update state based on props before rendering.
+
+Runs before every render, not just mounting.
+
+render()
+
+The only required method.
+
+Returns JSX to describe what the UI looks like.
+
+Should be pure (no state changes or API calls here).
+
+componentDidMount()
+
+Called once the component is fully mounted in the DOM.
+
+Perfect place for: API calls, setting up subscriptions, timers, DOM manipulation.
+
+2. Updating Phase
+
+This happens whenever a component re-renders due to changes in props or state.
+
+Order:
+
+static getDerivedStateFromProps(props, state)
+
+Same as before (rarely needed).
+
+Runs before each render.
+
+shouldComponentUpdate(nextProps, nextState)
+
+Lets you control performance optimization.
+
+Return true (default) to re-render, or false to block render.
+
+render()
+
+Called again to re-generate the JSX.
+
+getSnapshotBeforeUpdate(prevProps, prevState) (rarely used)
+
+Lets you capture information from the DOM before changes happen.
+
+Example: scroll position.
+
+componentDidUpdate(prevProps, prevState, snapshot)
+
+Called after the DOM is updated.
+
+Useful for reacting to prop/state changes, triggering network requests based on changes.
+
+⚠️ Make sure to wrap side effects in conditions to avoid infinite loops.
+
+3. Unmounting Phase
+
+This happens when the component is removed from the DOM.
+
+Order:
+
+componentWillUnmount()
+
+Cleanup goes here → cancel API calls, remove event listeners, clear timers.
+
+Very important for avoiding memory leaks.
+
+4. Error Handling Phase
+
+React also has lifecycle methods for handling errors in components.
+
+static getDerivedStateFromError(error)
+
+componentDidCatch(error, info)
+
+These are used inside Error Boundaries to catch errors in child components.
+
+✅ Simplified Flow
+Mounting
+constructor → render → componentDidMount
+
+Updating
+getDerivedStateFromProps → shouldComponentUpdate → render → getSnapshotBeforeUpdate → componentDidUpdate
+
+Unmounting
+componentWillUnmount
+
+🧠 Key Points to Remember
+
+constructor → setup state.
+
+render → return JSX (pure).
+
+componentDidMount → API calls, subscriptions.
+
+shouldComponentUpdate → optimization.
+
+componentDidUpdate → run code after update.
+
+componentWillUnmount → cleanup.
+
+
+01:27:25
 
 -----------------------------------------
 
