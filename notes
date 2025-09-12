@@ -21352,8 +21352,144 @@ componentDidUpdate → run code after update.
 componentWillUnmount → cleanup.
 
 
-01:27:25
+componentDidUpdate and componentWillUnmount - 
 
+When a class component mounts (appears on the screen) and then updates (re-renders because of setState or new props), the lifecycle methods fire in this sequence:
+
+1. Mounting phase (when component is first created and inserted into the DOM)
+
+Order:
+
+constructor(props)
+
+Initializes state.
+
+Can bind methods if needed.
+
+Runs only once when the component is created.
+
+render()
+
+Returns JSX to describe what UI should look like.
+
+Pure function → should not have side effects (like data fetching).
+
+componentDidMount()
+
+Runs once after initial render.
+
+Safe place for:
+
+API calls
+
+Subscriptions
+
+Setting up timers
+
+If you call setState here, React will re-render again, but this happens after the initial render.
+
+2. Updating phase (when props or state change)
+
+Whenever you call this.setState() or a parent passes new props, React schedules an update.
+Order:
+
+render()
+
+Runs again to update the UI with new state/props.
+
+componentDidUpdate(prevProps, prevState)
+
+Runs after the re-render and after the updated DOM is painted.
+
+You can compare prevProps and prevState with current ones.
+
+Often used for:
+
+Reacting to prop/state changes (e.g., re-fetching data if an ID changed).
+
+Running code after DOM updates.
+
+⚠️ If you call setState inside componentDidUpdate without a condition, it will cause an infinite loop:
+
+componentDidUpdate() {
+   this.setState({count: this.state.count + 1}); // ❌ infinite loop
+}
+
+
+So, always guard with a condition:
+
+componentDidUpdate(prevProps, prevState) {
+   if (prevState.count !== this.state.count) {
+      console.log("Count changed, safe to update something");
+   }
+}
+
+3. Unmounting phase (when component is removed from DOM)
+
+componentWillUnmount()
+
+Cleanup work:
+
+Clear timers
+
+Remove event listeners
+
+Cancel network requests
+
+Runs only once, right before component is destroyed.
+
+🔹 Where componentDidUpdate Fits
+
+Imagine this flow in your UserClass example:
+
+constructor → initializes state with dummy data.
+
+render → renders with "Dummy Name / Default Location".
+
+componentDidMount → fetch starts, and then setState updates userInfo.
+
+render (again) → now React re-renders with fetched API data.
+
+componentDidUpdate → runs right after the DOM has updated with API data.
+
+If you press your Set Count button:
+
+setState is called → schedules re-render.
+
+render runs with new count.
+
+componentDidUpdate runs → logs "Component Did Update".
+
+🔹 Visual Flow Diagram (Textual)
+Mounting:
+constructor → render → componentDidMount
+
+Updating (on state/prop change):
+render → componentDidUpdate
+
+Unmounting:
+componentWillUnmount
+
+🔹 Key Points about componentDidUpdate
+
+Runs every time the component updates, unless prevented by shouldComponentUpdate (rarely used nowadays).
+
+Good for running side effects that depend on changes.
+
+Receives prevProps and prevState as arguments.
+
+Runs after the DOM has already updated → you can safely manipulate the DOM or read updated values.
+
+👉 So in your example:
+
+First render shows dummy data.
+
+After API fetch, setState updates → triggers re-render.
+
+Right after re-render, componentDidUpdate runs → logs "Component Did Update".
+
+
+45 minutes remaining
 -----------------------------------------
 
 DSA - be good - Practice - Create an excel - Topic wise questions you have solved, commit solutions to github, update excel daily, Time taken to solve the question. 
