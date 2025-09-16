@@ -21107,389 +21107,12 @@ return hm.get(head);
 
 React - 
 
-In class based components the states are
-created in constructor.
 
+Redux - 
 
-when class based components are called then first constructor is called and then render is called.
+React-redux - older version with complex coding techniques.
+Redux-toolkit - New simple, powerful and effective version of  redux.
 
-when class based components are called then first constructor of the parent class is called and then render of parent class is called and now child constructor is called and then child render is called.
-
-
-
-
-below method is called when component is mounted - 
-
-componentDidMount(){
-
-}
-
-ComponentDidMount is same as useEffect, we can use this for calling apis and other side effects.
-
-below is the order of function calls in class component - 
-1) Constructor 
-2) Render
-3) Component did mount
-
-and below is the order of function call in class component of parent and child - 
-
-1) parent Constructor 
-2) parent Render
-3) child constructor
-4) child render 
-5) child Component did mount
-6) parent Component did mount
-
-
-
-Parent Component with two child components - 
-
-We’re dealing with React class components, and the lifecycle methods constructor, render, and componentDidMount.
-You have a Parent component that renders two Child components.
-
-General Rules
-
-constructor()
-
-Called first when the component is being created.
-
-Initializes state, binds methods.
-
-Never cause side effects (like fetching data).
-
-render()
-
-Called right after constructor.
-
-Should be a pure function of props and state.
-
-Returns JSX.
-
-componentDidMount()
-
-Called once after the component has been inserted into the DOM.
-
-Good for network requests, subscriptions, timers, etc.
-
-Execution Order (Parent → Child)
-
-When the Parent is mounted (first time):
-
-Parent constructor()
-
-Parent render()
-
-Inside render, React sees two children → starts mounting them.
-
-Child1 constructor()
-
-Child1 render()
-
-Child2 constructor()
-
-Child2 render()
-
-Now React has built the virtual DOM tree of Parent + both Children.
-
-It commits this to the actual DOM.
-
-Child1 componentDidMount()
-
-Child2 componentDidMount()
-
-Parent componentDidMount()
-
-Why this order?
-
-React must fully render Parent and its Children before calling componentDidMount.
-
-Children finish mounting before the Parent is considered “done”, so their componentDidMount runs first.
-
-This ensures the Parent can safely interact with Child DOM nodes if needed in its own componentDidMount.
-
-✅ Final Order (mounting phase):
-
-Parent constructor
-Parent render
-Child1 constructor
-Child1 render
-Child2 constructor
-Child2 render
-Child1 componentDidMount
-Child2 componentDidMount
-Parent componentDidMount
-
-
-React component lifecycle - 
-
-
-React Component Lifecycle (Class Components)
-
-Think of a React component’s life in three main phases:
-
-Mounting → when the component is being created and added to the DOM.
-
-Updating → when the component re-renders because of changes.
-
-Unmounting → when the component is removed from the DOM.
-
-Each phase has lifecycle methods that React calls in a specific order.
-
-1. Mounting Phase
-
-This happens when the component is first created and inserted into the DOM.
-
-Order:
-
-constructor(props)
-
-Called before anything else.
-
-Good place to initialize state and bind methods.
-
-Avoid side effects (like API calls) here.
-
-static getDerivedStateFromProps(props, state) (rarely used)
-
-Lets you update state based on props before rendering.
-
-Runs before every render, not just mounting.
-
-render()
-
-The only required method.
-
-Returns JSX to describe what the UI looks like.
-
-Should be pure (no state changes or API calls here).
-
-componentDidMount()
-
-Called once the component is fully mounted in the DOM.
-
-Perfect place for: API calls, setting up subscriptions, timers, DOM manipulation.
-
-2. Updating Phase
-
-This happens whenever a component re-renders due to changes in props or state.
-
-Order:
-
-static getDerivedStateFromProps(props, state)
-
-Same as before (rarely needed).
-
-Runs before each render.
-
-shouldComponentUpdate(nextProps, nextState)
-
-Lets you control performance optimization.
-
-Return true (default) to re-render, or false to block render.
-
-render()
-
-Called again to re-generate the JSX.
-
-getSnapshotBeforeUpdate(prevProps, prevState) (rarely used)
-
-Lets you capture information from the DOM before changes happen.
-
-Example: scroll position.
-
-componentDidUpdate(prevProps, prevState, snapshot)
-
-Called after the DOM is updated.
-
-Useful for reacting to prop/state changes, triggering network requests based on changes.
-
-⚠️ Make sure to wrap side effects in conditions to avoid infinite loops.
-
-3. Unmounting Phase
-
-This happens when the component is removed from the DOM.
-
-Order:
-
-componentWillUnmount()
-
-Cleanup goes here → cancel API calls, remove event listeners, clear timers.
-
-Very important for avoiding memory leaks.
-
-4. Error Handling Phase
-
-React also has lifecycle methods for handling errors in components.
-
-static getDerivedStateFromError(error)
-
-componentDidCatch(error, info)
-
-These are used inside Error Boundaries to catch errors in child components.
-
-✅ Simplified Flow
-Mounting
-constructor → render → componentDidMount
-
-Updating
-getDerivedStateFromProps → shouldComponentUpdate → render → getSnapshotBeforeUpdate → componentDidUpdate
-
-Unmounting
-componentWillUnmount
-
-🧠 Key Points to Remember
-
-constructor → setup state.
-
-render → return JSX (pure).
-
-componentDidMount → API calls, subscriptions.
-
-shouldComponentUpdate → optimization.
-
-componentDidUpdate → run code after update.
-
-componentWillUnmount → cleanup.
-
-
-componentDidUpdate and componentWillUnmount - 
-
-When a class component mounts (appears on the screen) and then updates (re-renders because of setState or new props), the lifecycle methods fire in this sequence:
-
-1. Mounting phase (when component is first created and inserted into the DOM)
-
-Order:
-
-constructor(props)
-
-Initializes state.
-
-Can bind methods if needed.
-
-Runs only once when the component is created.
-
-render()
-
-Returns JSX to describe what UI should look like.
-
-Pure function → should not have side effects (like data fetching).
-
-componentDidMount()
-
-Runs once after initial render.
-
-Safe place for:
-
-API calls
-
-Subscriptions
-
-Setting up timers
-
-If you call setState here, React will re-render again, but this happens after the initial render.
-
-2. Updating phase (when props or state change)
-
-Whenever you call this.setState() or a parent passes new props, React schedules an update.
-Order:
-
-render()
-
-Runs again to update the UI with new state/props.
-
-componentDidUpdate(prevProps, prevState)
-
-Runs after the re-render and after the updated DOM is painted.
-
-You can compare prevProps and prevState with current ones.
-
-Often used for:
-
-Reacting to prop/state changes (e.g., re-fetching data if an ID changed).
-
-Running code after DOM updates.
-
-⚠️ If you call setState inside componentDidUpdate without a condition, it will cause an infinite loop:
-
-componentDidUpdate() {
-   this.setState({count: this.state.count + 1}); // ❌ infinite loop
-}
-
-
-So, always guard with a condition:
-
-componentDidUpdate(prevProps, prevState) {
-   if (prevState.count !== this.state.count) {
-      console.log("Count changed, safe to update something");
-   }
-}
-
-3. Unmounting phase (when component is removed from DOM)
-
-componentWillUnmount()
-
-Cleanup work:
-
-Clear timers
-
-Remove event listeners
-
-Cancel network requests
-
-Runs only once, right before component is destroyed.
-
-🔹 Where componentDidUpdate Fits
-
-Imagine this flow in your UserClass example:
-
-constructor → initializes state with dummy data.
-
-render → renders with "Dummy Name / Default Location".
-
-componentDidMount → fetch starts, and then setState updates userInfo.
-
-render (again) → now React re-renders with fetched API data.
-
-componentDidUpdate → runs right after the DOM has updated with API data.
-
-If you press your Set Count button:
-
-setState is called → schedules re-render.
-
-render runs with new count.
-
-componentDidUpdate runs → logs "Component Did Update".
-
-🔹 Visual Flow Diagram (Textual)
-Mounting:
-constructor → render → componentDidMount
-
-Updating (on state/prop change):
-render → componentDidUpdate
-
-Unmounting:
-componentWillUnmount
-
-🔹 Key Points about componentDidUpdate
-
-Runs every time the component updates, unless prevented by shouldComponentUpdate (rarely used nowadays).
-
-Good for running side effects that depend on changes.
-
-Receives prevProps and prevState as arguments.
-
-Runs after the DOM has already updated → you can safely manipulate the DOM or read updated values.
-
-👉 So in your example:
-
-First render shows dummy data.
-
-After API fetch, setState updates → triggers re-render.
-
-Right after re-render, componentDidUpdate runs → logs "Component Did Update".
-
-
-45 minutes remaining
 -----------------------------------------
 
 DSA - be good - Practice - Create an excel - Topic wise questions you have solved, commit solutions to github, update excel daily, Time taken to solve the question. 
@@ -21608,3 +21231,238 @@ Create 1 master resume then 5 to 10 customized versions.
 Use AI + Smart prompts to customize these versions.
 
 -------------------------------------------------------
+
+
+Subham soni DSA - 
+
+Contest 2 - Recursion, OOPS, Hashing & Sorting 
+
+
+Q - Decreasing order words - 
+
+Given an array of strings A of size N. Your task is to rearrange the words in A such that all words are rearranged in an decreasing order of their lengths. If two words have same lenght, arrange them in their original order.
+
+
+Approach - Use comparator 
+
+
+Code - 
+
+Collections.sort( A, (a,b) -> {
+
+int aLen = a.length();
+int bLen = b.length();
+
+return bLen-aLen;
+
+});
+
+return A;
+
+
+
+Q - King and Palindrome 
+
+Once upon a time, there was a king who loved palidromes. He had a secret chamber in his castle where he kept all the palindromic words he had ever encountered. One day, he was presented with a string A of length N and asked his royal advisor to find the length of the longest palindrome that could be made from these letters. The royal advisor was puzzled, as he did not know how to solve this problem. Can you help him and solve the problem?
+
+
+Approach - 
+
+Idea - Maintain a variable to denote if we have seen odd frequency of letters, lets call it has_odd.
+
+always add even frequency for all characters in the ans.
+
+return ans + has_odd(0, 1)
+
+
+Approach explanation - 
+
+
+We’re given a multiset of characters (string).
+We need the maximum length of a palindrome that can be built from these characters.
+
+Key insight:
+A palindrome is symmetric. That symmetry restricts how many characters we can use and how.
+
+Step 1: What can be used?
+
+For each character with frequency f:
+
+You can use f - (f % 2) of them (the largest even number ≤ f).
+Why? Because palindromes need pairs across the center.
+
+This guarantees the maximum symmetric contribution from that character.
+
+Step 2: What about the leftovers?
+
+If any f was odd, then we’ve left behind one unused occurrence.
+
+We can place exactly one such leftover in the center of the palindrome.
+
+More than one leftover in the middle breaks symmetry → not allowed.
+
+So:
+👉 Palindrome length = sum_of_even_parts + (1 if any odd exists).
+
+Step 3: Your Code Matches This Logic
+
+ans += freq if even.
+
+ans += freq - 1 if odd, mark hasOdd = 1.
+
+Finally return ans + hasOdd.
+
+This aligns perfectly with the optimality reasoning.
+
+Step 4: Proving Optimality (what interviewers like to hear)
+
+Claim: The algorithm always gives the maximum possible palindrome length.
+
+Proof sketch:
+
+Every palindrome requires pairs → max usable chars per type = even part.
+So the sum of even parts is unavoidable upper bound.
+
+If any odd frequencies exist, we can take one extra character (the “middle”), increasing length by 1.
+
+That construction is always achievable:
+
+Put f/2 chars on left, f/2 on right for each character.
+
+If we had an odd, pick one of those leftover chars as the center.
+
+Therefore formula = upper bound and achievable → optimal. ✅
+
+Step 5: Dry Runs (interviewer expects examples)
+
+abccccdd
+
+Counts: a=1, b=1, c=4, d=2
+
+Even parts = 4 + 2 = 6
+
+Odd exists → +1
+
+Answer = 7
+
+aaabbbbccdd
+
+Counts: a=3, b=4, c=2, d=2
+
+Even parts = 2 + 4 + 2 + 2 = 10
+
+Odd exists (a=3) → +1
+
+Answer = 11 (entire string used)
+
+abc
+
+Counts: a=1, b=1, c=1
+
+Even parts = 0
+
+Odd exists → +1
+
+Answer = 1
+
+Step 6: Complexity
+
+Counting chars: O(N)
+
+Summing frequencies: O(U), where U = number of unique characters
+
+Space: O(U)
+
+If restricted to ASCII:
+
+U ≤ 128, so it’s effectively O(N) with constant auxiliary space.
+
+Step 7: Interview-Level Takeaways
+
+Observation: longest palindrome = sum of largest even parts + 1 if odd exists.
+
+Why correct? Because symmetry forces pairs, and at most one center.
+
+Edge cases:
+
+All evens → use everything.
+
+All odds → use all but one from each, plus 1 middle.
+
+Optimizations: use int[128] array instead of HashMap for speed in ASCII domain.
+
+
+
+Code - 
+
+
+Map>Character, Integer> hm = new HashMap<>();
+
+
+for( char ch : A.toCharArray() ) {
+
+hm.put( ch, hm.getOrDefault( ch, 0)+1);
+}
+
+
+int hasOdd=0;
+int ans=0;
+
+for( int freq : hm.values()){
+
+
+if( freq%2 == 0) {
+ans + freq;
+} else {
+ans += freq-1;
+hasOdd=1;
+}
+
+}
+
+return ans + hasOdd;
+
+
+Code without using the if else condition - 
+
+
+Map>Character, Integer> hm = new HashMap<>();
+
+
+for( char ch : A.toCharArray() ) {
+
+hm.put( ch, hm.getOrDefault( ch, 0)+1);
+}
+
+
+int hasOdd=0;
+int ans=0;
+
+for( int freq : hm.values()){
+
+ans += freq - (freq&1);
+hasOdd = hasOdd | ( freq & 1);
+}
+
+return ans + hasOdd;
+
+Q - 
+
+what will the function will return at the end - 
+
+int bar(int n) {
+    if (n <= 0) return 0;
+    if (n % 2 == 0) return bar(n-1) + bar(n-2);
+    else return bar(n-1);
+}
+
+
+System.out.print( bar(23) ).
+
+
+Appraoch - 
+
+To solve this kind of question always write this code same code in the question where we can write the code and simply print the ans at the end.
+
+take that ans and select the matching option from the given question.
+
