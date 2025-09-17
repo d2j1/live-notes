@@ -21466,3 +21466,1180 @@ To solve this kind of question always write this code same code in the question 
 
 take that ans and select the matching option from the given question.
 
+
+Q - 
+Trilogy is a game which you are given a number N and queueType T which has 2 values 0 or 1.
+
+You need to add 2 distinct digits from 0 to 9 to the given number at any position such that the resulting number divisible by 3. 
+
+If the queue Type T=0 the resulting number should be smallest number possible.
+
+If the queue type T = 1 the resulting number should be biggest number possible.
+
+
+Approach - 
+
+Step 1: Recall divisibility rule for 3
+
+A number is divisible by 3 iff the sum of its digits is divisible by 3.
+So after inserting 2 new digits (say x and y), we need:
+
+(
+sum of original digits
++
+𝑥
++
+𝑦
+)
+%
+3
+=
+=
+0
+(sum of original digits+x+y)%3==0
+Step 2: Possible digit pairs
+
+We must pick two distinct digits from 0–9 such that the divisibility condition is satisfied.
+That means:
+
+(
+𝑥
++
+𝑦
+)
+%
+3
+=
+=
+(
+−
+sum
+)
+%
+3
+(x+y)%3==(−sum)%3
+
+So we just need to check all valid pairs (x,y).
+
+Step 3: Placement for smallest vs largest
+
+Once we find candidate digits, we must decide where to insert them:
+
+For smallest number (T=0):
+
+Sort the digits ascending (x < y).
+
+Try to insert them greedily at the leftmost possible position so the number remains minimal.
+
+Think like insertion-sort: scan from left, as soon as inserting the digit makes the number larger than current digit, place it just before.
+
+For largest number (T=1):
+
+Sort descending (x > y).
+
+Place greedily at the leftmost possible position to maximize the value.
+
+This is similar to how you’d insert a digit to make the smallest/largest possible number.
+
+Step 4: High-level approach
+
+Compute sum of digits of N.
+
+Generate all digit pairs (i,j), i != j.
+
+Keep only pairs where (i+j+sum) % 3 == 0.
+
+For each valid pair, try inserting them into N at all positions, form candidate numbers.
+
+Depending on T:
+
+pick smallest candidate if T==0,
+
+pick largest candidate if T==1.
+
+Return that number.
+
+Step 5: Java code
+
+Here’s a clear solution:
+
+import java.util.*;
+
+public class TrilogyGame {
+
+    public static String solve(String N, int T) {
+        int sum = 0;
+        for (char c : N.toCharArray()) {
+            sum += c - '0';
+        }
+
+        List<String> candidates = new ArrayList<>();
+
+        // generate digit pairs
+        for (int i = 0; i <= 9; i++) {
+            for (int j = i + 1; j <= 9; j++) {
+                if ((sum + i + j) % 3 == 0) {
+                    // try both orders
+                    candidates.addAll(generateCandidates(N, i, j));
+                    candidates.addAll(generateCandidates(N, j, i));
+                }
+            }
+        }
+
+        if (candidates.isEmpty()) return "-1"; // no solution
+
+        if (T == 0) {
+            return Collections.min(candidates, (a,b) -> {
+                if (a.length() != b.length()) return a.length()-b.length();
+                return a.compareTo(b);
+            });
+        } else {
+            return Collections.max(candidates, (a,b) -> {
+                if (a.length() != b.length()) return a.length()-b.length();
+                return a.compareTo(b);
+            });
+        }
+    }
+
+    private static List<String> generateCandidates(String N, int d1, int d2) {
+        List<String> list = new ArrayList<>();
+        String pair = "" + d1 + d2;
+
+        // insert d1 and d2 in order at all positions
+        for (int pos1 = 0; pos1 <= N.length(); pos1++) {
+            String firstInsert = N.substring(0,pos1) + d1 + N.substring(pos1);
+            for (int pos2 = pos1+1; pos2 <= firstInsert.length(); pos2++) {
+                String secondInsert = firstInsert.substring(0,pos2) + d2 + firstInsert.substring(pos2);
+                list.add(secondInsert);
+            }
+        }
+        return list;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(solve("123", 0)); // smallest
+        System.out.println(solve("123", 1)); // largest
+    }
+}
+
+Complexity
+
+Digit pairs: O(100).
+
+Insertions: O(N²) per pair.
+
+For N up to ~20 digits, this is totally fine.
+
+---------------------------
+
+
+a1) Maximum AND pair - 
+
+
+public class Solution {
+    public int solve(int[] A) {
+
+        int ans=0;
+        int n = A.length;
+        int cnt=0;
+        for( int i =31; i >= 0; i--){
+             cnt = 0;
+
+            for( int j =0; j < n; j++){
+
+                if( checkBit(A[j], i)){
+                   cnt++;  
+                }
+            }
+
+            if( cnt >= 2){
+                ans = ans | (1 << i);
+
+                for( int k=0; k< n; k++){
+
+                    if( !checkBit(A[k] , i)){
+                        A[k] = 0;
+                    }
+                }
+            }
+        }
+
+        return ans;
+    }
+
+    public boolean checkBit(int val, int k){
+
+        if(( val & ( 1 << k)) > 0){
+            return true;
+
+        }else{
+            return false;
+        }
+    }
+}
+
+
+2) Sum of Xor of all pairs - BF and Optimised approach is there in the code editor.
+
+Hint is used to optimise the BF code.
+
+
+3) SUBARRAY OR -
+
+
+the approach for the code which was accepted.
+
+Core Idea
+We iterate over the array and maintain a map of:
+
+all possible OR values for subarrays ending at the current index
+
+how many times each OR appears (i.e. how many subarrays have that OR)
+
+At each index i:
+
+Start new subarray [A[i]]
+
+Extend all subarrays that ended at i - 1 by including A[i]:
+
+OR the previous values with A[i]
+
+Sum (OR value * count) for all subarrays ending at i
+
+🧪 Dry Run on A = [1, 2, 3]
+Initialization
+prev = {} (ORs from previous step)
+
+result = 0
+
+Step 1: i = 0, A[i] = 1
+curr = {1: 1} (new subarray [1])
+
+No prev yet, so nothing to extend.
+
+✔️ Add to result: 1 * 1 = 1
+result = 1
+Update prev = {1: 1}
+
+Step 2: i = 1, A[i] = 2
+Start new: curr = {2: 1} (subarray [2])
+
+Extend previous ORs:
+
+1 | 2 = 3, from 1 subarray → curr[3] = 1
+
+Now curr = {2: 1, 3: 1}
+
+✔️ Add to result:
+2 * 1 + 3 * 1 = 5
+result = 1 + 5 = 6
+Update prev = {2: 1, 3: 1}
+
+Step 3: i = 2, A[i] = 3
+Start new: curr = {3: 1} (subarray [3])
+
+Extend prev:
+
+2 | 3 = 3 → 1 subarray → curr[3] += 1 → 2
+
+3 | 3 = 3 → 1 subarray → curr[3] += 1 → 3
+
+Now curr = {3: 3}
+
+✔️ Add to result:
+3 * 3 = 9
+result = 6 + 9 = 15
+
+
+Scaler topics code - 
+
+ public int solve(int[] A) {
+        int n = A.length;
+        int[] idx = new int[32];
+        long ans = 0;
+        for (int i = 1; i <= n; ++i) {
+            long tmp = A[i - 1];
+            for (int j = 0; j <= 31; ++j) {
+                long pw = 1 << j;
+                if ((tmp & pw) != 0) { //if jth bit is set
+                    ans += pw * i; // add its contribution in ans for all subarrays ending at index i
+                    idx[j] = i; // store the index for next elements
+                } else if (idx[j] != 0) // if jth bit is not set
+                {
+                    ans += pw * idx[j]; // add its contribution in ans for all subarrays ending at index i using 
+                } // the information of last element having jth bit set
+            }
+        }
+        return (int)(ans % 1000000007);
+    }
+
+
+4) Min XOR value - hint is mentioned in the final code.
+
+5) Strange Equality - Hint has been used and code is used from below GitHub repo - 
+
+https://github.com/akashpawar6474/DSA_Problem_Solving/blob/main/Strange%20Equality(sp)
+
+
+
+Recursion 1 - 
+
+1) Find Fibonacci - II
+2)  Print 1 to A function
+3) Find Factorial
+
+additional problems - 
+1)  Sum of Digits!
+2) Print A to 1 function
+3) Decreasing Increasing in one Function - take not of scaler solution.
+
+
+Recursion 2 - 
+
+1) Check Palindrome using Recursion
+2) Print Array using Recursion
+3) TOH - imp points - 1) First move n-1 disks from src to aux tower, Second move largest disk to destination, then move n-1 disks to destination
+4)  All Indices Of Array
+5) Max of an Array Using Recursion
+6)  Implement Power Function
+
+
+then copy the code from code editor.
+
+
+Additional - 
+1) First Index using Recursion
+2) Last Index using Recursion
+3)  Tower of Hanoi
+4)  Is magic?
+5) Kth Symbol - Hard
+
+
+HLD - Design S3 - 
+
+1) In the context of storing large files in chunks, what are the challenges of dividing files into smaller chunks?
+
+Ans - Collation of chunks, High metadata overhead, Slow download speeds
+
+2) Why is a variable-size grid approach preferred for location-based systems?
+
+ans - It optimizes query performance in dense and sparse areas.
+
+3) What is the primary advantage of using a QuadTree for spatial data partitioning?
+
+ans - It efficiently handles dynamic changes in data.
+
+4) In HDFS, what does the NameNode server primarily store information about?
+
+ans - File metadata and data node locations
+
+5) To improve fault tolerance, what technique does HDFS use for data placement across different machines and racks?
+
+ans - Rack-Aware Algorithm
+
+6) When determining the grid to which a point belongs in a QuadTree, what is the time complexity based on the number of points (N) in the tree?
+
+ans - Logarithmic time: O(log N)
+
+7) What is the time complexity of finding the grid to which a point belongs in a QuadTree?
+
+ans - O(log N)
+
+
+----------------
+
+Create projects.
+Solve DSA questions. 
+Market is bad and resume is also bad.
+Good DSA, LLD, HLD and projects.
+Host project and ask people to use it.
+5 questions daily and try to maintain the streak - time is not equal to effort	
+
+1) Should I create full stack projects?
+2) Please share the features I should add in the projects.
+3) How many projects I should create?
+4) Is Agripulse project good enough for resume?
+	
+-------------------------------
+
+
+Stack 1 - Implementation and Basic Problems  
+
+It follows the last in first out principle.
+
+ex - stack of plates, stack of chairs, stack of functions (Call stack), Browser History, undo/redo.
+
+
+Scenario - 
+
+In a flipkart warehouse, boxes are stacked one over another. Each box is tagged with a weight, and for safety, heavier boxes must be placed below lighter ones. Workers need a system to check if adding a new box on top is safe.
+
+Worker want to perform two kinds of operations - Add - a new box of some weight on the top.
+Remove - the top most box.
+
+
+
+Operations in stack - 
+
+push(x) - add x on top of stack.
+pop() - removes top of stack.
+top() / peek() - return the value stored at top of stack.
+isEmtpty() - checks if stack is empty or not.
+
+Note - all the above operations are O(1)
+
+
+Implementation of stack using an array - 
+
+using arrays implement above operations in constant time.
+
+
+int t=-1;
+
+void push(int x){
+
+if( t == A.length){
+return overflow;
+}
+
+ t += 1;
+A[t] = x;
+}
+
+int pop(){
+
+if( t==-1){
+return underflow;
+}
+
+int tval = A[t];
+t--;
+return tval;
+}
+
+
+int top(){
+return A[t];
+}
+
+Boolean isEmpty(){
+return t == -1;
+}
+
+
+when we pop from an empty array - it is underflow
+When we push in a full array - it is overflow
+
+
+Implementing stack using linked list - 
+
+ class Node {
+    int data;
+    Node next;
+
+    public Node(int data) {
+        this.data = data;
+        this.next = null;
+    }
+}
+
+// Stack class using linked list
+public class Stack {
+    private Node top;
+
+    // Constructor
+    public Stack() {
+        this.top = null;
+    }
+
+    // Push operation
+    public void push(int x) {
+        Node newNode = new Node(x);
+        newNode.next = top;
+        top = newNode;
+    }
+
+    // Pop operation
+    public void pop() {
+        if (isEmpty()) {
+            System.out.println("Stack Underflow");
+            return;
+        }
+        top = top.next;
+    }
+
+    // Top / Peek operation
+    public int top() {
+        if (isEmpty()) {
+            throw new RuntimeException("Stack is empty");
+        }
+        return top.data;
+    }
+
+    // Check if stack is empty
+    public boolean isEmpty() {
+        return top == null;
+    }
+
+    // Optional: Print stack for debugging
+    public void printStack() {
+        Node current = top;
+        while (current != null) {
+            System.out.print(current.data + " -> ");
+            current = current.next;
+        }
+        System.out.println("NULL");
+    }
+
+
+TC for all above operations is O(1)
+
+
+Q - check whether the given sequence of parenthesis is valid or not?
+
+
+Approach - 
+
+Always keep track of the last opening bracket in the stack. 
+
+whenever we need to keep track of last thing then we should use stack to solve that question.
+
+
+Code - 
+
+Function isValid(s: String) -> Boolean
+    Create an empty stack st
+
+    For each character c in s:
+        If c is an opening bracket ('{', '[', '('):
+            st.push(c)
+        Else:
+            // c is a closing bracket
+            If st is empty:
+                Return false    // no matching opening bracket
+            Else:
+                topChar = st.peek()
+
+                If (c == '}' and topChar == '{') or
+                   (c == ']' and topChar == '[') or
+                   (c == ')' and topChar == '('):
+                    st.pop()
+                Else:
+                    Return false    // mismatched pair
+
+    End For
+
+    // After processing all characters
+    If st is empty:
+        Return true    // all brackets matched properly
+    Else:
+        Return false   // some opening brackets not closed
+End Function
+
+
+TC - O(n)
+SC - O(n)
+
+
+Q - Double character trouble 
+
+Given a string st, reove equal pair of consecutive elements till possible. Return the strings without adjacent duplicates.
+
+ex - 
+
+abbd = ad
+abccbde = ade
+
+abbbd = abd
+
+
+code - 
+
+stack st;
+
+for( I from 0 to n-1){
+
+ch = s[i];
+
+if( st.isEmpty()){
+st.push(ch);
+}else if( ch == st.peek()){
+st.pop();
+} else {
+
+st.push(ch);
+
+}
+
+}
+
+
+ans = ""
+
+while( ! st.isEmpty()){
+ans += st.pop();
+}
+
+return reverse(ans)
+
+TC- O(n * n) - second n is the string concatenation time.
+
+SC -O(n)
+
+use string builder to reduce the TC of concatenation.
+
+
+Q - Evaluate given valid post fix expression.
+
+ex -> 5 2 * 3 - 
+
+ans for above will be = 7
+
+
+
+code - 
+
+Stack st;
+
+
+for( i. from 0 to n-1) {
+
+ch = s[i];
+
+
+if( ch is an operator ) {
+
+x = st.pop();
+y = st.pop();
+
+st.push ( x ch y) ; // push the result of operation. ch here is operator.
+
+} else {
+
+st.push(ch);
+}
+
+}
+
+return st.peek();
+
+
+Conclusion - 
+
+Stack is LIFO.
+
+All operations on stack is constant in TC.
+
+Stack can be used for checking parenthesis, for evaluating expression etc.
+
+we can implement stack using array (static and dynamic arrays) and linked list.
+
+
+
+-------------------
+
+
+Stack 2 - Nearest Smaller / Greater Element 
+
+
+Nearest smaller element  - 
+
+Given an array of size N. for every index i, find the nearest element which is smaller than ith element on left side.
+
+
+ex - 4, 5, 2, 10, 3, 2
+
+ans = -1, 0, -1, 2, 2, -1
+
+
+BF - 
+
+for ( i from 0 to n-1) {
+
+mi = -1;
+
+for( j from i-1 to 0 ) {
+
+if ( A[j] < A[i] ) 
+{ mi = j; break;  }
+
+}
+
+ans[i] = mi;
+
+}
+
+return ans;
+
+
+TC - O(N^2)
+
+
+Optimization - 
+
+
+arr = [- - - - - 8 - - - - 5 - - - -]
+
+in above dash is the any value, from above we can say that elements after 5 will not have 8 as the minimum value on the left side, because 5 less than 8 and that will be the minimum value for the elements after 5.
+
+Idea - Since we need to keep track of the last min value then we can use the stack.
+
+
+code - 
+
+
+ans[n]
+stack st;
+
+for ( i from 0 to n-1 ) {
+
+while( !st.isEmpty() && A[st.peek()] >= A[i] ) {
+
+st.pop();
+
+}
+
+if( st.isEmpty() ) {
+ans[i] = -1;
+} else {
+ans[i]= st.peek();
+}
+
+st.push(i);
+
+}
+
+return ans;
+
+
+TC - O(n) - each element will be visited mostly twice.
+
+SC - O(n)
+
+
+Q 2 - 
+
+Find nearest smaller or equal element on left side.
+
+
+
+ans[n]
+stack st;
+
+for ( i from 0 to n-1 ) {
+
+while( !st.isEmpty() && A[st.peek()] > A[i] ) {
+
+st.pop();
+
+}
+
+if( st.isEmpty() ) {
+ans[i] = -1;
+} else {
+ans[i]= st.peek();
+}
+
+st.push(i);
+
+}
+
+return ans;
+
+
+
+Q - Find nearest greater on left side ?
+
+
+ans[n]
+stack st;
+
+for ( i from 0 to n-1 ) {
+
+while( !st.isEmpty() && A[st.peek()] <= A[i] ) {
+
+st.pop();
+
+}
+
+if( st.isEmpty() ) {
+ans[i] = -1;
+} else {
+ans[i]= st.peek();
+}
+
+st.push(i);
+
+}
+
+return ans;
+
+
+
+Q - find nearest greater than or equal on left?
+
+
+ans[n]
+stack st;
+
+for ( i from 0 to n-1 ) {
+
+while( !st.isEmpty() && A[st.peek()] < A[i] ) {
+
+st.pop();
+
+}
+
+if( st.isEmpty() ) {
+ans[i] = -1;
+} else {
+ans[i]= st.peek();
+}
+
+st.push(i);
+
+}
+
+return ans;
+
+
+
+Q - Find nearest smaller on right.
+
+
+ans[n]
+stack st;
+
+for ( i from n-1 to 0 ) {
+
+while( !st.isEmpty() && A[st.peek()] >= A[i] ) {
+
+st.pop();
+
+}
+
+if( st.isEmpty() ) {
+ans[i] = n;
+} else {
+ans[i]= st.peek();
+}
+
+st.push(i);
+
+}
+
+return ans;
+
+Q - Find nearest smaller or equal on right?
+
+ans[n]
+stack st;
+
+for ( i from n-1 to 0 ) {
+
+while( !st.isEmpty() && A[st.peek()] > A[i] ) {
+
+st.pop();
+
+}
+
+if( st.isEmpty() ) {
+ans[i] = n;
+} else {
+ans[i]= st.peek();
+}
+
+st.push(i);
+
+}
+
+return ans;
+
+
+Q - Find nearest greater on right? 
+
+ans[n]
+stack st;
+
+for ( i from n-1 to 0 ) {
+
+while( !st.isEmpty() && A[st.peek()] <= A[i] ) {
+
+st.pop();
+
+}
+
+if( st.isEmpty() ) {
+ans[i] = n;
+} else {
+ans[i]= st.peek();
+}
+
+st.push(i);
+
+}
+
+return ans;
+
+
+Q - Find nearest greater or equal on right?
+
+ans[n]
+stack st;
+
+for ( i from n-1 to 0 ) {
+
+while( !st.isEmpty() && A[st.peek()] < A[i] ) {
+
+st.pop();
+
+}
+
+if( st.isEmpty() ) {
+ans[i] = n;
+} else {
+ans[i]= st.peek();
+}
+
+st.push(i);
+
+}
+
+return ans;
+
+
+Q - A person uses google map to find the nearest restaurants and picks one based on it's proximity. Unfortunately, after vising, they realised that the restaurant didn't meet their expectations.
+
+Task - 
+
+Let's break it down with a simple example. You have a list of restaurants and their ratings. For each restaurant, we are going to find the next restaurant to the right on the list that's not just close but also has a higher rating than the current one. If there's no better option on the list, we will say there's none available.
+
+Problem - 
+
+Given a sequence of restaurants listed on google maps with their ratings, create a tool that helps users discover the rating of the next higher rated restaurant to the right for each listed establishment.
+
+Approach - 
+
+This problem is same as Nearest greater on right.
+
+
+Q - 
+
+Find the largest area of rectangle ( formed by continuous bars) in histogram.
+
+Find the area of largest rectangle formed by continuous bars. 
+
+
+BF - 
+
+maxArea=0;
+
+for ( left from 0 to n-1){
+
+for( right from left to n-1){
+
+h = infinity.
+
+for( i from left to right ){
+
+h = Math.min( h, A[i]);
+}
+
+w = right - left+1;
+
+maxArea = max( maxArea, w*h);
+
+}
+
+}
+
+return maxArea;
+
+TC - O(n^3)
+SC - O(1)
+
+by using carry forward technique in above we can reduce the TC to O(n^2) 
+
+
+Idea in above -for every subarray find the minimum height
+
+Idea 2 - for every height find the maximum possible width.
+
+So basically for each place or index of the array we need to find nearest smaller on left (j) and nearest smaller on right (k).
+
+So the width = k-j-1 and height = A[i]
+
+
+Code - 
+
+NSL[n]
+NSR[n]
+
+maxArea =0
+
+fo( i from 0 to n-1 ) {
+
+height = A[i];
+
+l = NSL[i];
+r = NSR [i];
+
+width = r-l-1;
+area = height * width;
+
+maxArea = max( maxArea, area);
+
+}
+
+return maxArea;
+
+
+TC = O(n)
+SC - O(n)
+
+
+Q - find sum of (max-min) for all subarrays.
+
+BF - 
+
+iterate each subarray and find min and max and keep track of the difference between these.
+
+TC - O(n^3)
+
+
+using carry forward - we will be able to achieve TC  - O(n^2)
+
+Observation - we can find the sum of all max of all subarrays and sum of min of all subarrays and then take the difference of these. This will also give the correct ans.
+
+
+Sum of all subarrays max value - 
+
+We can use the contribution technique to find the sum of all max values of all subarrays.
+
+
+arr = [1, 8, 3, 5, 4, 2, 11, 7, 2]
+
+All subarrays in which 5 is max -
+
+[3, 5], [3, 5, 4], [3, 5, 4, 2],  [5], [5, 4], [5, 4, 2]
+
+
+contribution = A[i] * All subarrays in which A[i] is max.
+
+in this if we find nearest greater on left and nearest greater on right then we can calculate contribution easily.
+
+choices of left index = 2 or 3 ( two choices)
+
+choices of right index = 3, 4 and 5 ( three choices)
+
+so total choices will be = 2 * 3 = 6 choices i will get.
+
+
+Generalisation - 
+
+i - is current index
+j - nearest greater on left
+k - nearest greater on right
+
+
+
+Total subarrays where arr[i] is max = (i-j) * (k-i)
+
+= ( i - ngl[i] ) * ( ngr[i] - i ) = these are the no of subarrays where A[i] is max.
+
+
+ans =0
+
+
+ngr[n]
+ngl[n]
+
+for( i from 0 to n-1){
+
+count = ( ngr[i] - i) * ( i-ngl[i] );
+
+ans += A[i] * count;
+}
+
+return ans;
+
+TC - O(n)
+SC - O(n)
+
+
+----------------------------
+
+Queues: Implementation & Problems 
+
+
+Think of the BF of the problem.
+
+Always verbelize while solving something.
+
+Try to take hints.
+
+
+----------------
+
+
+doc - https://docs.google.com/document/d/1X2RWURrbQ08N0LrUYzV-bFSYk1l0vi3JLvIiD7GgWLU/edit?tab=t.0
+
+Enqueue all elements in stack 2 and whenever we have to dequeue move all elements from stack 2 to stack 1 and then pop the element from stack 1.
+
+
+void enqueue( int x){
+st2.push(x);
+}
+
+TC - O(1)
+
+void move() {
+
+// move all elements of st2 and push to st1.
+
+while( !st2.isEmpty()){
+
+x = st2.pop();
+st1.push(x);
+}
+
+}
+
+TC - O(k) - for moving k elements.
+
+
+int dequeue() {
+
+if( st1.isEmpty()){
+move();
+}
+
+if( st1.isEmpty()) return underflow;
+
+return st1.pop();
+
+}
+
+Worst case TC - TC - O(N)
+Avg case TC - TC - O(1)
+
+int front(){
+
+if( st1.isEmpty()){
+move();
+}
+
+if( st1.isEmpty()) return underflow;
+
+
+return st1.peek();
+}
+
+worst case TC - O(N)
+abg case TC - O(1)
+
+On avg stack operations per enqueue or dequeue = 2.
+
+We are using dynamic array then we will not have to deal with overflow.
+
+01:17:00
