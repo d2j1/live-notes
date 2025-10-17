@@ -9,7 +9,7 @@ UAN password - DJ@TechM748711
 
 Prompt engineering course - https://learn.deeplearning.ai/chatgpt-prompt-eng/lesson/2/guidelines
 
-open ai api key - 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
+
 
 
 Zlib password - Zlib@098
@@ -8134,5 +8134,6 @@ data variables - these are used to get the data from the external file or api.
 
 
 variables are created in the pre script and delelted in the test or post script tabs. this is done by using the scripts.
+
 
 
